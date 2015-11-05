@@ -107,54 +107,65 @@
                             data: request,
                             dataType: 'json',
                             success: function (data) {
-                                var $suggestions = '<div id="suggestion-header">' + settings.heading + '</div> ' +
-                                    '<ul id="suggestion-box-list">';
+                                resetSelection();
 
-                                $.each(data.results, function (key, value) {
-                                    if (value.suggestion) {
-                                        matches = true;
-                                        $suggestions += '<li><a href="' + value.url + '">' + value.suggestion + '</a></li>';
-                                    } else {
-                                        matches = false;
-                                        $suggestionBox.css('display', 'none');
-                                    }
+                                if(data.results) {
+                                    var $suggestions = '<div id="suggestion-header">' + settings.heading + '</div> ' +
+                                        '<ul id="suggestion-box-list">';
 
-                                    if (key === (settings.results - 1)) {
-                                        return false;
-                                    }
-                                });
-                                $suggestions += '</ul>';
-                                // Check for focus before showing suggestion box. User could have clicked outside before request finished.
-                                if (document.activeElement.id == 'search') {
-                                    if (matches) {
-                                        $suggestionBox.html($suggestions);
-                                        var searchBoxWidth = (
-                                            $searchBox.width() +
-                                            getCssValue($searchBox, 'border-left') +
-                                            getCssValue($searchBox, 'border-right') +
-                                            getCssValue($searchBox, 'padding-left') +
-                                            getCssValue($searchBox, 'padding-right') -
-                                            getCssValue($suggestionBox, 'border-left') -
-                                            getCssValue($suggestionBox, 'border-right') -
-                                            getCssValue($suggestionBox, 'padding-left') -
-                                            getCssValue($suggestionBox, 'padding-right')
-                                        );
-
-                                        if (settings.menuWidth == 'auto') {
-                                            $suggestionBox.css({
-                                                'min-width': searchBoxWidth
-                                            });
-                                        } else if (settings.menuWidth == 'constrain') {
-                                            $suggestionBox.css({
-                                                'width': searchBoxWidth
-                                            });
-                                        }
-
-                                        if (settings.fadeIn) {
-                                            $suggestionBox.fadeIn();
+                                    $.each(data.results, function (key, value) {
+                                        if (value.suggestion) {
+                                            matches = true;
+                                            $suggestions += '<li><a href="' + value.url + '">' + value.suggestion + '</a></li>';
                                         } else {
-                                            $suggestionBox.css('display', 'block');
+                                            matches = false;
+                                            $suggestionBox.css('display', 'none');
                                         }
+
+                                        if (key === (settings.results - 1)) {
+                                            return false;
+                                        }
+                                    });
+
+                                    $suggestions += '</ul>';
+                                    // Check for focus before showing suggestion box. User could have clicked outside before request finished.
+                                    if (document.activeElement.id == 'search') {
+                                        if (matches) {
+                                            $suggestionBox.html($suggestions);
+                                            var searchBoxWidth = (
+                                                $searchBox.width() +
+                                                getCssValue($searchBox, 'border-left') +
+                                                getCssValue($searchBox, 'border-right') +
+                                                getCssValue($searchBox, 'padding-left') +
+                                                getCssValue($searchBox, 'padding-right') -
+                                                getCssValue($suggestionBox, 'border-left') -
+                                                getCssValue($suggestionBox, 'border-right') -
+                                                getCssValue($suggestionBox, 'padding-left') -
+                                                getCssValue($suggestionBox, 'padding-right')
+                                            );
+
+                                            if (settings.menuWidth == 'auto') {
+                                                $suggestionBox.css({
+                                                    'min-width': searchBoxWidth
+                                                });
+                                            } else if (settings.menuWidth == 'constrain') {
+                                                $suggestionBox.css({
+                                                    'width': searchBoxWidth
+                                                });
+                                            }
+
+                                            if (settings.fadeIn) {
+                                                $suggestionBox.fadeIn();
+                                            } else {
+                                                $suggestionBox.css('display', 'block');
+                                            }
+                                        }
+                                    }
+                                }else{
+                                    if (settings.fadeOut) {
+                                        $suggestionBox.fadeOut();
+                                    } else {
+                                        $suggestionBox.css('display', 'none');
                                     }
                                 }
                             },

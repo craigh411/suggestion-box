@@ -37,7 +37,7 @@ gulp.task('compress', function () {
 });
 
 gulp.task('sass:watch', function () {
-    gulp.watch('src/scss/**/*.scss', ['sass', 'autoprefixer', 'cssmin']);
+    gulp.watch('src/scss/**/*.scss', ['sass']);
 });
 
 gulp.task('js:watch', function () {
