@@ -1,0 +1,52 @@
+$background-color: #fff;
+$border-color: #ccc;
+$hover-color: #eee;
+$header-color: #999;
+$text-color: #000;
+$font-family: inherit;
+
+#suggestion-box {
+  color: $text-color;
+  display: none;
+  font-family: $font-family;
+  border: 1px solid $border-color;
+  background: $background-color;
+  padding: 0;
+  margin: 0 10px 0 0;
+
+  ul {
+    list-style: none;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    clear: both;
+
+    > li {
+      padding: 0;
+      margin: 0;
+    }
+  }
+
+  a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+    padding: 10px;
+  }
+
+  #suggestion-header {
+    margin-right: 10px;
+    margin-top: 5px;
+    font-weight: bold;
+    font-size: 0.8em;
+    color: $header-color;
+    float: right;
+
+  }
+
+  .selected {
+    background-color: $hover-color;
+  }
+}
