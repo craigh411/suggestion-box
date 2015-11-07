@@ -9,6 +9,7 @@ var autoprefixer = require('gulp-autoprefixer');
 var cssmin = require('gulp-cssmin');
 var sourcemaps = require('gulp-sourcemaps');
 var notify = require('gulp-notify');
+var Server = require('karma').Server;
 
 gulp.task('default', ['sass', 'compress']);
 gulp.task('watch', ['sass:watch', 'js:watch']);
@@ -42,4 +43,14 @@ gulp.task('sass:watch', function () {
 
 gulp.task('js:watch', function () {
     gulp.watch('src/js/**/*.js', ['compress']);
+});
+
+/**
+ * Run tests using karma once and exit
+ */
+gulp.task('test', function (done) {
+    new Server({
+        configFile: __dirname + '/karma.conf.js',
+        singleRun: true
+    }, done).start();
 });

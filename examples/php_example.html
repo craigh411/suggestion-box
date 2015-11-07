@@ -15,11 +15,14 @@
 <script>
     $(document).ready(function () {
         try {
+
+
             $suggestion = $('#search').suggestionBox({
                 url: 'php/results.php',
-                fadeOut: false,
                 results: 5
             });
+
+
         } catch (e) {
             console.log(e);
         }

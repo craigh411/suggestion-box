@@ -1,0 +1,24 @@
+{
+  "results": [
+    {
+      "suggestion": "Suggestion 1",
+      "url": "suggestion1.html"
+    },
+    {
+      "suggestion": "Suggestion 2",
+      "url": "suggestion2.html"
+    },
+    {
+      "suggestion": "Suggestion 3",
+      "url": "suggestion3.html"
+    },
+    {
+      "suggestion": "Suggestion 4",
+      "url": "suggestion4.html"
+    },
+    {
+      "suggestion": "Suggestion 5",
+      "url": "suggestion5.html"
+    }
+  ]
+}
