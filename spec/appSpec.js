@@ -3,7 +3,6 @@ describe("Suggestion Box", function () {
     var $ = jQuery;
 
     beforeEach(function () {
-
         $('body').append('<input type="text" id="search" />');
     });
 
@@ -11,7 +10,6 @@ describe("Suggestion Box", function () {
         $('#search').suggestionBox({url: '#'});
         expect($('#suggestion-box').length).toEqual(1);
     });
-
 
     it('should turn off autocomplete', function () {
         expect($('#search').attr('autocomplete')).toEqual('off');
@@ -30,7 +28,7 @@ describe("Suggestion Box", function () {
 
     });
 
-    it('should set the suggestion-box top position level below the search box', function () {
+    it('should set the suggestion-box top position below the search box', function () {
         // generate random position
         var topPosition = Math.round(Math.random() * (1000));
 
@@ -51,7 +49,6 @@ describe("Suggestion Box", function () {
 
         expect($('#suggestion-box').position().top).toBe(expectedPosition);
     });
-
 
     it('should fade In the suggestion box', function () {
         var $suggestionBox = $('#suggestion-box');
@@ -106,15 +103,6 @@ describe("Suggestion Box", function () {
         var suggestions = getJSONFixture('suggestions.json');
         response = suggestionBox.showSuggestions(suggestions).response();
     });
-
-
-    // SHOULD BE REMOVED: A test for the test. Just makes sure the suggestions.json file exists. ;)
-    it('should get the suggestions fixture', function(){
-        jasmine.getJSONFixtures().fixturesPath='base/spec/support';
-        var data = getJSONFixture('suggestions.json');
-        expect(data).toBeDefined();
-    });
-
 
     it('should display a list of suggestions', function () {
         var $suggestionBox = $('#suggestion-box');
