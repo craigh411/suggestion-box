@@ -24,17 +24,23 @@ $font-family: inherit;
     > li {
       padding: 0;
       margin: 0;
+
+      a {
+        display: block;
+        width: 100%;
+        height: 100%;
+        color: inherit;
+        text-decoration: none;
+        padding: 10px;
+      }
     }
   }
 
-  a {
-    display: block;
-    width: 100%;
-    height: 100%;
-    color: inherit;
-    text-decoration: none;
-    padding: 10px;
+  .selected {
+    background-color: $hover-color;
   }
+
+
 
   #suggestion-header {
     margin-right: 10px;
@@ -46,7 +52,4 @@ $font-family: inherit;
 
   }
 
-  .selected {
-    background-color: $hover-color;
-  }
 }

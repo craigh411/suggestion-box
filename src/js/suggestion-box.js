@@ -1,6 +1,7 @@
 (function ($) {
 
     $.fn.suggestionBox = function (options) {
+
         var $searchBox = this;
 
         var settings = $.extend({
@@ -18,7 +19,6 @@
                 },
                 ajaxSuccess: function (data) {
                     showSuggestions(data);
-                    console.log(data);
                 },
                 paramName: 'search'
             },
@@ -34,10 +34,10 @@
         setSuggestionBoxPosition();
 
         // Constants for key values
-        const ENTER_KEY = 13;
-        const UP_ARROW_KEY = 38;
-        const DOWN_ARROW_KEY = 40;
-        const ESCAPE_KEY = 27;
+        var ENTER_KEY = 13;
+        var UP_ARROW_KEY = 38;
+        var DOWN_ARROW_KEY = 40;
+        var ESCAPE_KEY = 27;
 
         // Default values for selected list item
         var selectedLi = -1;
@@ -49,9 +49,11 @@
         var timer = null;
         // Did we get any suggestions?
         var matches = false;
+        // Is the search box active (does it have focus)
+        var active = false;
         // create a blank object for our request
         var request = {};
-        var response;
+        var jsonData;
 
         $suggestionBox.on({
             'mousemove': function (e) {
@@ -75,7 +77,6 @@
 
         /**
          * Moves the selection down to the next suggestion
-         * @param e
          */
         function moveDown() {
             var listSize = $suggestionBox.find('li').size();
@@ -91,7 +92,6 @@
 
         /**
          * Moves the selection up to the previous suggestions
-         * @param e
          */
         function moveUp() {
             if (selectedLi > 0) {
@@ -111,7 +111,7 @@
         /**
          * Redirects the user to the selected suggestion location
          */
-        function goTo() {
+        function goToSelection() {
             window.location = selectedHref;
         }
 
@@ -125,7 +125,7 @@
                 data: request,
                 dataType: 'json',
                 success: function (data) {
-                    response = data;
+                    jsonData = data;
                     settings.ajaxSuccess(data);
                 },
                 error: function (e) {
@@ -136,12 +136,14 @@
 
         $searchBox.on({
             'blur': function () {
+                active = false;
                 // Only close the menu if we are not clicking a link
                 if (!mouseHover) {
                     hideSuggestionBox();
                 }
             },
             'focus': function () {
+                active = true;
                 if ($(this).val()) {
                     showSuggestionBox();
                 }
@@ -169,7 +171,7 @@
                     }
                     if (e.which === ENTER_KEY && selectedHref !== '#') {
                         e.preventDefault();
-                        goTo();
+                        goToSelection();
                     }
                     if (e.which == ESCAPE_KEY) {
                         e.preventDefault();
@@ -246,7 +248,6 @@
             resetSelection();
         }
 
-
         /**
          * Displays the suggestion-box
          */
@@ -299,21 +300,23 @@
          */
         function showSuggestions(data) {
             resetSelection();
-            response = data;
+            jsonData = data;
 
             if (data.results) {
                 var $suggestions = '<div id="suggestion-header">' + settings.heading + '</div> ' +
                     '<ul id="suggestion-box-list">';
 
                 $.each(data.results, function (key, value) {
-                    if (value.suggestion) {
+                    if (value.suggestion && value.url) {
                         matches = true;
                         $suggestions += '<li><a href="' + value.url + '">' + value.suggestion + '</a></li>';
                     } else {
                         matches = false;
-                        $suggestionBox.css('display', 'none');
+                        hideSuggestionBox();
+                        return false;
                     }
 
+                    // break when maximum results have been found
                     if (key === (settings.results - 1)) {
                         return false;
                     }
@@ -321,10 +324,9 @@
 
                 $suggestions += '</ul>';
                 // Check for focus before showing suggestion box. User could have clicked outside before request finished.
-                if (document.activeElement.id == 'search') {
+                if (active) {
                     if (matches) {
                         $suggestionBox.html($suggestions);
-
                         setSuggestionBoxWidth();
                         showSuggestionBox();
                     }
@@ -362,7 +364,7 @@
                 return selectedLi;
             },
             response: function () {
-                return response;
+                return jsonData;
             },
             select: function (position) {
                 select(position);
@@ -412,6 +414,9 @@
             ajaxSuccess: function (ajaxSuccess) {
                 settings.ajaxSuccess = ajaxSuccess;
                 return this;
+            },
+            jsonResults: function(){
+              return jsonResults;
             },
             destroy: function () {
             }

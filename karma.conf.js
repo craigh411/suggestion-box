@@ -4,21 +4,35 @@
 module.exports = function (config) {
     config.set({
 
+
         // base path that will be used to resolve all patterns (eg. files, exclude)
         basePath: '',
 
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
+
         frameworks: ['jasmine'],
 
+        /*
+         ** UNCOMMENT FOR USE WITH detectBrowsers **
+         frameworks: ['jasmine','detectBrowsers'],
+         plugins: [
+         'karma-chrome-launcher',
+         'karma-firefox-launcher',
+         'karma-ie-launcher',
+         'karma-safari-launcher',
+         'karma-opera-launcher',
+         'karma-phantomjs-launcher',
+         'karma-detect-browsers',
+         'karma-jasmine'
+         ],*/
 
         // list of files / patterns to load in the browser
         files: [
             'spec/support/jquery.js',
             'spec/support/jasmine-jquery.js',
             'src/js/suggestion-box.js',
-            'spec/helpers/*.js',
 
             // tests
             'spec/appSpec.js',
@@ -27,7 +41,7 @@ module.exports = function (config) {
             {
                 pattern: 'spec/support/*.json',
                 watched: true,
-                served:  true,
+                served: true,
                 included: false
             }
         ],

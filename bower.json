@@ -1,0 +1,34 @@
+{
+  "name": "suggestion-box",
+  "version": "1.0.0-dev",
+  "homepage": "https://github.com/craigh411/suggestion-box",
+  "authors": [
+    "Craig Humphreys"
+  ],
+  "description": "Suggestion box for search",
+  "main": [
+    "dist/css/suggestion-box.min.css",
+    "dist/js/suggestion-box.min.js"
+  ],
+  "dependencies": {
+    "jquery": "~1.11.3"
+  },
+  "moduleType": [],
+  "keywords": [
+    "search",
+    "suggestions",
+    "ajax"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "spec",
+    "gulpfile.js",
+    "karma.conf.js",
+    "package.json",
+    "*.md",
+    "examples"
+  ]
+}
