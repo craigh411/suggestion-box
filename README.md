@@ -16,7 +16,7 @@ to you HTML, then:
  
  to your javascript.
  
- You will need to supply your JSON suggestions to the plugin, either by providing a `url` to a json file or to a server side script that outputs JSON or you can pass your JSON in directly:
+ You will need to supply your JSON suggestions to the plugin, either by providing a `url` to a json file or to a server side script that outputs JSON, or, you can pass your JSON in directly:
  
  ```
  var suggestionBox = $('#mySearch').suggestionBox();
@@ -28,7 +28,7 @@ to you HTML, then:
  suggestionBox.showSuggestions({JSON});
  ```
  
-Currently JSON is expected to provided in in the following format:
+Currently JSON is expected to be provided in in the following format:
 
 ```
 {
