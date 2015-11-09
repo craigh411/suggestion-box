@@ -6,6 +6,8 @@
   background: #fff;
   padding: 0;
   margin: 0 10px 0 0; }
+  #suggestion-box #no-suggestions {
+    padding: 10px; }
   #suggestion-box ul {
     list-style: none;
     width: 100%;

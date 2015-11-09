@@ -15,13 +15,21 @@
 
 <script>
     $(document).ready(function () {
-        try {
-            $suggestion = $('#search').suggestionBox({
-                url: 'suggestions.json'
-            });
-        } catch (e) {
-            console.log(e);
-        }
+
+        var c = console;
+
+        //var $suggestion = $('#search').suggestionBox();
+        // $('#search').focus();
+
+        $.ajax({
+            url: 'suggestions.json',
+            dataType: 'json',
+            success: function (data) {
+                $('#search').suggestionBox().showSuggestions(data);
+                //$suggestion.showSuggestions(data);
+                console.log('done');
+            }
+        });
     });
 
 </script>

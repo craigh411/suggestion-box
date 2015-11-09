@@ -14,14 +14,10 @@
 
 <script>
     $(document).ready(function () {
-        try {
-            $suggestion = $('#search').suggestionBox({
-                url: 'php/results.php',
-                results: 5
-            });
-        } catch (e) {
-            console.log(e);
-        }
+        $suggestion = $('#search').suggestionBox({
+            url: 'php/results.php',
+            results: 5
+        });
     });
 
 </script>

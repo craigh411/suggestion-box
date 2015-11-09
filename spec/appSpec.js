@@ -3,8 +3,9 @@ describe("Suggestion Box", function () {
     var $ = jQuery;
 
     beforeEach(function () {
-        $('body').remove('#search');
-        $('body').append('<input type="text" id="search" />');
+        var $body = $('body');
+        $body.remove('#search');
+        $body.append('<input type="text" id="search" />');
     });
 
     it("should inject the suggestion box in to the body of the web page", function () {
@@ -59,6 +60,7 @@ describe("Suggestion Box", function () {
         suggestionBox.show();
 
         expect($suggestionBox.fadeIn).toHaveBeenCalled();
+        suggestionBox.destroy();
     });
 
     it('should not fade In the suggestion box', function () {
@@ -70,6 +72,7 @@ describe("Suggestion Box", function () {
         suggestionBox.show();
 
         expect($suggestionBox.fadeIn).not.toHaveBeenCalled();
+        suggestionBox.destroy();
     });
 
 
@@ -82,6 +85,7 @@ describe("Suggestion Box", function () {
         suggestionBox.show().hide();
 
         expect($suggestionBox.fadeOut).toHaveBeenCalled();
+        suggestionBox.destroy();
     });
 
     it('should not fade out the suggestion box', function () {
@@ -94,24 +98,68 @@ describe("Suggestion Box", function () {
 
         expect($suggestionBox.fadeOut).not.toHaveBeenCalled();
         expect($suggestionBox.css('display')).toBe('none');
-    });
-
-
-    it('should set the response', function () {
-        var $search = $('#search');
-        suggestionBox = $search.suggestionBox();
-        jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
-        var suggestions = getJSONFixture('suggestions.json');
-        response = suggestionBox.showSuggestions(suggestions).response();
+        suggestionBox.destroy();
     });
 
     it('makes an ajax request to the given url', function () {
+        var $search = $('#search');
+        suggestionBox = $search.suggestionBox();
+
         spyOn($, 'ajax');
         suggestionBox.getSuggestions('suggestions.json');
         expect($.ajax.calls.mostRecent().args[0].url).toBe('suggestions.json');
+        suggestionBox.destroy();
     });
 
-    describe('when suggestion box is displayed', function () {
+    it('sets the heading', function () {
+        var $search = $('#search');
+        var suggestionBox = $search.suggestionBox({heading: 'foobar'});
+        jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
+        var suggestions = getJSONFixture('suggestions.json');
+        suggestionBox.showSuggestions(suggestions);
+        expect($('#suggestion-header').text()).toBe('foobar');
+        suggestionBox.destroy();
+    });
+
+    it('shows only 2 results', function () {
+        var $search = $('#search');
+        var suggestionBox = $search.suggestionBox({results: 2});
+        jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
+        var suggestions = getJSONFixture('suggestions.json');
+        suggestionBox.showSuggestions(suggestions);
+
+        expect($('#suggestion-box').find('li').size()).toBe(2);
+        suggestionBox.destroy();
+    });
+
+
+    it('should not display no suggestions message when suggestions are not available', function () {
+        var $search = $('#search');
+        suggestionBox = $search.suggestionBox({
+            showNoSuggestionsMessage: true,
+            noSuggestionsMessage: 'No Suggestions'
+        });
+
+
+        suggestionBox.showSuggestions(JSON.stringify({}));
+
+        expect($('#suggestion-box').css('display')).toBe('block');
+        expect($('#no-suggestions').text()).toBe('No Suggestions');
+        suggestionBox.destroy();
+
+    });
+
+
+    it('should not display when suggestions are not available', function () {
+        var $search = $('#search');
+        suggestionBox = $search.suggestionBox();
+        suggestionBox.showSuggestions(JSON.stringify({}));
+
+        expect($('#suggestion-box').css('display')).toBe('none');
+        suggestionBox.destroy();
+    });
+
+    describe('when displayed', function () {
         var $suggestionBox;
         var $search;
         var suggestionBox;
@@ -120,19 +168,24 @@ describe("Suggestion Box", function () {
             $('body').remove('#search');
             $('body').append('<input type="text" id="search" />');
 
-
             $suggestionBox = $('#suggestion-box');
             $search = $('#search');
             suggestionBox = $search.suggestionBox();
+
             jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
             var suggestions = getJSONFixture('suggestions.json');
             $search.focus();
             suggestionBox.showSuggestions(suggestions);
         });
 
+        afterEach(function () {
+            suggestionBox.destroy();
+        });
+
         it('should display a list of suggestions', function () {
             expect($suggestionBox.find('ul > li').length).toEqual(5);
             expect($suggestionBox.css('display')).toBe('block');
+
         });
 
         it('should select the first suggestion', function () {
@@ -161,6 +214,60 @@ describe("Suggestion Box", function () {
             expect($suggestionBox.find('li:eq(4)').hasClass('selected')).toBeTruthy();
         });
 
+        it('should return the selected suggestion text', function () {
+            suggestionBox.moveDown();
+            expect(suggestionBox.selectedSuggestion()).toBe('Suggestion 1');
+        });
+
+        it('should return the selected url', function () {
+            suggestionBox.moveDown();
+            expect(suggestionBox.selectedUrl()).toBe('suggestion1.html');
+        });
+
+        it('should select the suggestion at the given position', function () {
+            suggestionBox.select(2);
+            expect(suggestionBox.position()).toBe(2);
+        });
+
+        it('should apply the selected class to the selected suggestion', function () {
+            suggestionBox.select(1);
+            expect($suggestionBox.find('li:eq(1)').hasClass('selected')).toBeTruthy();
+        });
+
+        it('should apply the selected class ONLY to the selected suggestion', function () {
+            suggestionBox.select(1);
+            suggestionBox.select(2);
+            expect($suggestionBox.find('li:eq(2)').hasClass('selected')).toBeTruthy();
+            expect($suggestionBox.find('li:eq(1)').hasClass('selected')).toBeFalsy();
+        });
+
+        it('should return the position of the selected suggestion', function () {
+            suggestionBox.moveDown();
+            expect(suggestionBox.position()).toBe(0);
+            suggestionBox.moveDown();
+            expect(suggestionBox.position()).toBe(1);
+        });
+
+        it('should reset the selection', function () {
+            suggestionBox.select(2);
+            suggestionBox.reset();
+            expect(suggestionBox.selectedUrl()).toBe('#');
+            expect(suggestionBox.position()).toBe(-1);
+
+        });
+
+        it('should keep the suggestion box displayed upon reset', function () {
+            suggestionBox.select(2);
+            suggestionBox.reset();
+            expect($suggestionBox.css('display')).toBe('block');
+        });
+
+        it('should remove the selected class upon reset', function () {
+            suggestionBox.select(2);
+            suggestionBox.reset();
+            expect($suggestionBox.find('li:eq(2)').hasClass('selected')).toBeFalsy();
+        });
+
         it('should hide the suggestion box with the escape button', function () {
             var e = $.Event('keydown');
             e.which = 27;
@@ -170,8 +277,43 @@ describe("Suggestion Box", function () {
 
         it('resets the suggestion box on hide', function () {
             suggestionBox.hide();
-            expect(suggestionBox.selectedLink()).toBe('#');
+            expect(suggestionBox.selectedUrl()).toBe('#');
             expect(suggestionBox.position()).toBe(-1);
+        });
+
+        it('selects the suggestion mouse if over on mousemove', function () {
+            suggestionBox.select(3);
+            $suggestionBox.find('li:eq(0) a').mousemove();
+
+            expect($suggestionBox.find('li:eq(0)').hasClass('selected')).toBeTruthy();
+            expect($suggestionBox.find('li:eq(3)').hasClass('selected')).toBeFalsy();
+        });
+
+        it('should move down from the selected mouse position', function () {
+            $suggestionBox.find('li:eq(1) a').mousemove();
+            suggestionBox.moveDown();
+
+            expect(suggestionBox.position()).toBe(2);
+            expect($suggestionBox.find('li:eq(2)').hasClass('selected')).toBeTruthy();
+            expect($suggestionBox.find('li:eq(1)').hasClass('selected')).toBeFalsy();
+        });
+
+        it('should move up from the selected mouse position', function () {
+            $suggestionBox.find('li:eq(1) a').mousemove();
+            suggestionBox.moveUp();
+
+            expect(suggestionBox.position()).toBe(0);
+            expect($suggestionBox.find('li:eq(0)').hasClass('selected')).toBeTruthy();
+            expect($suggestionBox.find('li:eq(1)').hasClass('selected')).toBeFalsy();
+        });
+
+        it('should reset on mouseout', function () {
+            $suggestionBox.find('li:eq(1) a').mousemove();
+            $suggestionBox.find('li:eq(1) a').mouseout();
+
+            expect(suggestionBox.selectedUrl()).toBe('#');
+            expect(suggestionBox.position()).toBe(-1);
+            expect($suggestionBox.find('li:eq(1)').hasClass('selected')).toBeFalsy();
         });
     });
 });

@@ -14,12 +14,12 @@
                 fadeIn: true,
                 fadeOut: false,
                 menuWidth: 'auto',
+                showNoSuggestionsMessage: false,
+                noSuggestionsMessage: 'No Suggestions Found',
                 ajaxError: function (e) {
                     console.log(e);
                 },
-                ajaxSuccess: function (data) {
-                    showSuggestions(data);
-                },
+                ajaxSuccess: function (data) {},
                 paramName: 'search'
             },
             options);
@@ -55,12 +55,16 @@
         var request = {};
         var jsonData;
 
+        function getSelectionMouseIsOver(e) {
+            var $parentLi = $(e.target).parent('li');
+            return $parentLi.parent().children().index($parentLi);
+        }
+
         $suggestionBox.on({
             'mousemove': function (e) {
                 if (e.target.nodeName === 'A') {
-                    $(this).find('li').removeClass('selected');
-                    var $parentLi = $(e.target).parent('li');
-                    selectedLi = $parentLi.parent().children().index($parentLi);
+                    unselect(selectedLi);
+                    selectedLi = getSelectionMouseIsOver(e);
                     select(selectedLi);
                     mouseHover = true;
                 }
@@ -74,6 +78,86 @@
             }
         });
 
+        $searchBox.on({
+            'blur': function () {
+                active = false;
+                // Only close the menu if we are not clicking a link
+                if (!mouseHover) {
+                    hideSuggestionBox();
+                }
+            },
+            'focus': function () {
+                active = true;
+                if ($(this).val()) {
+                    showSuggestions(jsonData);
+                }
+            },
+            'keyup': function (e) {
+                if (settings.url) {
+                    // Ignore the navigation keys. We don't want to fire ajax calls when navigating
+                    if (e.which !== UP_ARROW_KEY && e.which !== DOWN_ARROW_KEY && e.which !== ESCAPE_KEY) {
+                        if (timer) {
+                            clearTimeout(timer);
+                        }
+                        // set the request to be sent sent as the data parameter
+                        request[settings.paramName] = $searchBox.val();
+                        timer = setTimeout(function () {
+                            getSuggestions(settings.url)
+                        }, settings.delay);
+                    }
+                }
+            },
+            'keydown': function (e) {
+                if ($suggestionBox.css('display') !== 'none') {
+                    if (e.which == DOWN_ARROW_KEY) {
+                        e.preventDefault();
+                        moveDown();
+                    }
+                    if (e.which == UP_ARROW_KEY) {
+                        e.preventDefault();
+                        moveUp();
+                    }
+                    if (e.which === ENTER_KEY && selectedHref !== '#') {
+                        e.preventDefault();
+                        goToSelection();
+                    }
+                    if (e.which == ESCAPE_KEY) {
+                        e.preventDefault();
+                        hideSuggestionBox();
+                    }
+                }
+            }
+        });
+
+        // Reset the position of the suggestion box if the window is re-sized
+        $(window).resize(function () {
+            setSuggestionBoxPosition();
+        });
+
+        /**
+         * Selects the suggestion at the given position
+         * @param position
+         */
+        function select(position) {
+            selectedHref = $suggestionBox.find("li:eq(" + position + ") a").attr('href');
+            $suggestionBox.find("li:eq(" + position + ")").addClass('selected');
+        }
+
+        /**
+         * Unselects the suggestion at the given position
+         * @param position
+         */
+        function unselect(position) {
+            $suggestionBox.find("li:eq(" + position + ")").removeClass('selected');
+        }
+
+        /**
+         * Resets any selected suggestions
+         */
+        function resetSelection() {
+            selectedHref = '#';
+            selectedLi = -1;
+        }
 
         /**
          * Moves the selection down to the next suggestion
@@ -126,90 +210,13 @@
                 dataType: 'json',
                 success: function (data) {
                     jsonData = data;
+                    showSuggestions(data);
                     settings.ajaxSuccess(data);
                 },
                 error: function (e) {
                     settings.ajaxError(e);
                 }
             });
-        }
-
-        $searchBox.on({
-            'blur': function () {
-                active = false;
-                // Only close the menu if we are not clicking a link
-                if (!mouseHover) {
-                    hideSuggestionBox();
-                }
-            },
-            'focus': function () {
-                active = true;
-                if ($(this).val()) {
-                    showSuggestionBox();
-                }
-            },
-            'keyup': function (e) {
-                // Ignore the navigation keys. We don't want to fire ajax calls when navigating
-                if (e.which !== UP_ARROW_KEY && e.which !== DOWN_ARROW_KEY && e.which !== ESCAPE_KEY) {
-                    if (timer) {
-                        clearTimeout(timer);
-                    }
-                    // set the request to be sent sent as the data parameter
-                    request[settings.paramName] = $searchBox.val();
-                    timer = setTimeout(getSuggestions(settings.url), settings.delay);
-                }
-            },
-            'keydown': function (e) {
-                if ($suggestionBox.css('display') !== 'none') {
-                    if (e.which == DOWN_ARROW_KEY) {
-                        e.preventDefault();
-                        moveDown();
-                    }
-                    if (e.which == UP_ARROW_KEY) {
-                        e.preventDefault();
-                        moveUp();
-                    }
-                    if (e.which === ENTER_KEY && selectedHref !== '#') {
-                        e.preventDefault();
-                        goToSelection();
-                    }
-                    if (e.which == ESCAPE_KEY) {
-                        e.preventDefault();
-                        hideSuggestionBox();
-                    }
-                }
-            }
-        });
-
-        // Reset the position of the suggestion box if the window is re-sized
-        $(window).resize(function () {
-            setSuggestionBoxPosition();
-        });
-
-
-        /**
-         * Selects the suggestion at the given position
-         * @param position
-         */
-        function select(position) {
-            selectedHref = $suggestionBox.find("li:eq(" + position + ") a").attr('href');
-            $suggestionBox.find("li:eq(" + position + ")").addClass('selected');
-        }
-
-        /**
-         * Unselects the suggestion at the given position
-         * @param position
-         */
-        function unselect(position) {
-            $suggestionBox.find("li:eq(" + position + ")").removeClass('selected');
-        }
-
-        /**
-         * Resets any selected suggestions
-         */
-        function resetSelection() {
-            selectedHref = '#';
-            selectedLi = -1;
         }
 
         /**
@@ -257,6 +264,7 @@
             } else {
                 $suggestionBox.css('display', 'block');
             }
+
         }
 
         /**
@@ -264,7 +272,6 @@
          */
         function setSuggestionBoxWidth() {
             var searchBoxWidth = getSearchBoxWidth();
-
             if (settings.menuWidth == 'auto') {
                 $suggestionBox.css({
                     'min-width': searchBoxWidth
@@ -301,6 +308,7 @@
         function showSuggestions(data) {
             resetSelection();
             jsonData = data;
+            matches = false;
 
             if (data.results) {
                 var $suggestions = '<div id="suggestion-header">' + settings.heading + '</div> ' +
@@ -311,8 +319,6 @@
                         matches = true;
                         $suggestions += '<li><a href="' + value.url + '">' + value.suggestion + '</a></li>';
                     } else {
-                        matches = false;
-                        hideSuggestionBox();
                         return false;
                     }
 
@@ -321,18 +327,24 @@
                         return false;
                     }
                 });
-
                 $suggestions += '</ul>';
-                // Check for focus before showing suggestion box. User could have clicked outside before request finished.
-                if (active) {
-                    if (matches) {
-                        $suggestionBox.html($suggestions);
-                        setSuggestionBoxWidth();
-                        showSuggestionBox();
-                    }
+            }
+
+            // Check for focus before showing suggestion box. User could have clicked outside before request finished.
+            if (active) {
+                if (matches) {
+                    $suggestionBox.html($suggestions);
+                    setSuggestionBoxWidth();
+                    showSuggestionBox();
+                } else if (settings.showNoSuggestionsMessage) {
+                    setSuggestionBoxWidth();
+                    showSuggestionBox();
+                    $suggestionBox.html('<div id="no-suggestions">' + settings.noSuggestionsMessage + '</div>');
                 } else {
                     hideSuggestionBox();
                 }
+            } else {
+                hideSuggestionBox();
             }
         }
 
@@ -343,6 +355,7 @@
                 return this;
             },
             showSuggestions: function (suggestions) {
+                $searchBox.focus();
                 showSuggestions(suggestions);
                 return this;
             },
@@ -354,24 +367,22 @@
                 moveDown();
                 return this;
             },
-            selectedLink: function () {
+            selectedUrl: function () {
                 return selectedHref;
             },
             selectedSuggestion: function () {
-                return;
+                return $suggestionBox.find('li:eq(' + selectedLi + ')').text();
             },
             position: function () {
                 return selectedLi;
             },
-            response: function () {
+            jsonData: function () {
                 return jsonData;
             },
             select: function (position) {
+                unselect(selectedLi);
+                selectedLi = position;
                 select(position);
-                return this;
-            },
-            unselect: function (position) {
-                unselect(position);
                 return this;
             },
             reset: function () {
@@ -384,6 +395,7 @@
                 return this;
             },
             show: function () {
+                $searchBox.focus();
                 showSuggestionBox();
                 return this;
             },
@@ -395,8 +407,8 @@
                 settings.fadeOut = fadeOut;
                 return this;
             },
-            delay: function (delay) {
-                settings.delay = delay;
+            delay: function (ms) {
+                settings.delay = ms;
                 return this;
             },
             heading: function (heading) {
@@ -415,11 +427,11 @@
                 settings.ajaxSuccess = ajaxSuccess;
                 return this;
             },
-            jsonResults: function(){
-              return jsonResults;
-            },
-            destroy: function () {
+            destroy: function (){
+                $searchBox.unbind(this);
+                $suggestionBox.remove();
             }
+
         };
     };
 }(jQuery));
