@@ -15,21 +15,7 @@
 
 <script>
     $(document).ready(function () {
-
-        var c = console;
-
-        //var $suggestion = $('#search').suggestionBox();
-        // $('#search').focus();
-
-        $.ajax({
-            url: 'suggestions.json',
-            dataType: 'json',
-            success: function (data) {
-                $('#search').suggestionBox().showSuggestions(data);
-                //$suggestion.showSuggestions(data);
-                console.log('done');
-            }
-        });
+        $('#search').suggestionBox({url: 'suggestions.json'});
     });
 
 </script>

@@ -19,7 +19,8 @@
                 ajaxError: function (e) {
                     console.log(e);
                 },
-                ajaxSuccess: function (data) {},
+                ajaxSuccess: function (data) {
+                },
                 paramName: 'search'
             },
             options);
@@ -307,6 +308,8 @@
          */
         function showSuggestions(data) {
             resetSelection();
+
+            data = (data instanceof Object) ? data : $.parseJSON(data);
             jsonData = data;
             matches = false;
 
@@ -377,7 +380,7 @@
                 return selectedLi;
             },
             jsonData: function () {
-                return jsonData;
+                return JSON.stringify(jsonData);
             },
             select: function (position) {
                 unselect(selectedLi);
@@ -397,6 +400,10 @@
             show: function () {
                 $searchBox.focus();
                 showSuggestionBox();
+                return this;
+            },
+            url: function (url) {
+                settings.url = url;
                 return this;
             },
             fadeIn: function (fadeIn) {
@@ -427,11 +434,10 @@
                 settings.ajaxSuccess = ajaxSuccess;
                 return this;
             },
-            destroy: function (){
+            destroy: function () {
                 $searchBox.unbind(this);
                 $suggestionBox.remove();
             }
-
         };
     };
 }(jQuery));

@@ -133,13 +133,12 @@ describe("Suggestion Box", function () {
     });
 
 
-    it('should not display no suggestions message when suggestions are not available', function () {
+    it('should display no suggestions message when suggestions are not available', function () {
         var $search = $('#search');
         suggestionBox = $search.suggestionBox({
             showNoSuggestionsMessage: true,
             noSuggestionsMessage: 'No Suggestions'
         });
-
 
         suggestionBox.showSuggestions(JSON.stringify({}));
 
@@ -165,8 +164,9 @@ describe("Suggestion Box", function () {
         var suggestionBox;
 
         beforeEach(function () {
-            $('body').remove('#search');
-            $('body').append('<input type="text" id="search" />');
+            var $body = $('body');
+            $body.remove('#search');
+            $body.append('<input type="text" id="search" />');
 
             $suggestionBox = $('#suggestion-box');
             $search = $('#search');
