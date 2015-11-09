@@ -23,18 +23,24 @@ Once setup, the plugin will send an ajax request to the given url after a config
 
 ## Usage
 
-Simply add
+Make sure you have included `jQuery` in your project: https://code.jquery.com. Then simply download and add the `css` & `js` files from the `dist` folder and add the following code to your page:
+
+```
+<link rel="stylesheet" href="path/to/css/suggestion-box.min.css"/>
+<script src="path/to/js/suggestion-box.min.js"></script>
+```
+
+You then need to add the following to your HTML:
 
 `<input type="text" id="mySearch" />`
 
-to you HTML, then:
+And then:
 
 `$('#mySearch').suggestionBox({url : 'path/to/json'});`
  
 to your javascript.
  
 Where`url` is the location of a json file or to a server side script that outputs JSON:
-
  
 ## JSON Format
  
