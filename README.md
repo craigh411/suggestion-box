@@ -22,13 +22,15 @@ to you HTML, then:
  var suggestionBox = $('#mySearch').suggestionBox();
  
   // get JSON from url
- suggestionBox.getSuggestions(`url`);
+ suggestionBox.getSuggestions('url');
  
  // Pass in json directly
  suggestionBox.showSuggestions({JSON});
  ```
  
-Currently JSON is expected to be provided in in the following format:
+ ## JSON Format
+ 
+JSON needs to be provided in in the following format:
 
 ```
 {
@@ -44,6 +46,8 @@ Currently JSON is expected to be provided in in the following format:
   ]
 }
 ```
+
+Where suggestion is the text of the suggestion box and url is where the suggestion will take the user on click or enter.
 
 ### Available Options
 
@@ -67,12 +71,19 @@ leftOffset    | The number of pixels you would like to move the suggestion boxs'
 paramName     | The paramater name you would like to use in your query string for requests | search
 ajaxError     | A function to define what should happen on ajax error, by default this performs a console.log() which will be overidden if supplied | function(data){...}
 ajaxSuccess   | A function to define custom work to perform on ajax success. This will not override the default functionality | function(data){}
-
+showNoSuggestionsMessage | Shows the noSuggestionsMessage when no suggestions can be found | false
+noSuggestionsMessage | The message to be shown when no suggestions have been found and showNoSuggestionsMessage is true | No Suggestions Found
 
 
 
 ### Available Methods
 
+The following methods can be used on the suggestion box e.g.:
+
+```
+var suggestionBox = $('#search').suggestionBox();
+suggestionBox.getSuggestions('path/to.json');
+```
 
 Method  | Description  | Chainable
 ------------- | -------------|------------
