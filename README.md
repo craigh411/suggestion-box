@@ -59,11 +59,22 @@ JSON needs to be provided in in the following format:
 Where suggestion is the text of the suggestion box and url is where the suggestion will take the user on click or enter.
 
 
+
 ### Search Paramaters
 
-You will most likely want to send the users search input to a server side script that searches a database or other storage system for relavant suggestions. By default the paramater will added will be `search` e.g.
+You will most likely want to send the users search input to a server side script that searches a database or other storage system for relavant suggestions. By default the paramater sent will be `search` e.g.
 
 `http://www.example.com/your_script?search={SEARCH_INPUT}`
+
+Although you may change this to a value of your choosing using the paramName option e.g.:
+
+```
+$('#mySearch').suggestionBox({
+  url : 'path/to/script',
+  paramName: 'user_input'
+});
+```
+
 
 
 ### Available Options
