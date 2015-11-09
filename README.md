@@ -2,7 +2,24 @@
 
 jQuery suggestion box plugin for search suggestions. 
 
+
 **IMPORTANT: This is still in development and is currently not stable.**
+
+### Features:
+
+- Highly configurable & flexible
+- Suggestions provided by your own server side script or JSON file.
+- Selection highlighting
+- Keyboard controls
+- Intuative & seamless mouse/keyboard control swap overs.
+- Easy custom styling using css stylesheets
+
+
+## How it works
+
+While the suggestion-box is flexible, the most common usecase would be to give a URL to a server side script that outputs JSON results in the correct format (see below).
+
+Once setup, the plugin will send an ajax request to the given url after a configurable delay period (400ms by default) once the user stops typing, showing the suggestions below the search box.
 
 ## Usage
 
@@ -12,23 +29,14 @@ Simply add
 
 to you HTML, then:
 
- `$('#mySearch').suggestionBox({url : 'path/to/json'});`
+`$('#mySearch').suggestionBox({url : 'path/to/json'});`
  
- to your javascript.
+to your javascript.
  
- You will need to supply your JSON suggestions to the plugin, either by providing a `url` to a json file or to a server side script that outputs JSON, or, you can pass your JSON in directly:
+Where`url` is the location of a json file or to a server side script that outputs JSON:
+
  
- ```
- var suggestionBox = $('#mySearch').suggestionBox();
- 
-  // get JSON from url
- suggestionBox.getSuggestions('url');
- 
- // Pass in json directly
- suggestionBox.showSuggestions({JSON});
- ```
- 
- ## JSON Format
+## JSON Format
  
 JSON needs to be provided in in the following format:
 
@@ -47,7 +55,16 @@ JSON needs to be provided in in the following format:
 }
 ```
 
+
 Where suggestion is the text of the suggestion box and url is where the suggestion will take the user on click or enter.
+
+
+### Search Paramaters
+
+You will most likely want to send the users search input to a server side script that searches a database or other storage system for relavant suggestions. By default the paramater will added will be `search` e.g.
+
+`http://www.example.com/your_script?search={SEARCH_INPUT}`
+
 
 ### Available Options
 
