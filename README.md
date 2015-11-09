@@ -81,7 +81,6 @@ showSuggestions(suggestions) | Displays the suggestion box with the given sugges
 moveUp() | Moves the selected suggestion up by 1 | Yes
 moveDown() | Moves the selected suggestion down by 1 | Yes
 select(position) | Selects the suggestion at the given position | Yes
-unselect(position) | Unselects the suggestion at the current position | Yes
 reset() | Resets selection to starting position. Note: this does not reset the json data | Yes
 hide() | Hides the suggestion box | Yes
 show() | Displays the suggestion box | Yes
