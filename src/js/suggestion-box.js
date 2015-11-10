@@ -56,7 +56,7 @@
         var active = false;
         // create a blank object for our request
         var request = {};
-        var jsonData;
+        var jsonData = {};
         var sort;
 
         function getSelectionMouseIsOver(e) {
@@ -97,9 +97,10 @@
                 }
             },
             'keyup': function (e) {
-                if (settings.url) {
-                    // Ignore the navigation keys. We don't want to fire ajax calls when navigating
-                    if (e.which !== UP_ARROW_KEY && e.which !== DOWN_ARROW_KEY && e.which !== ESCAPE_KEY) {
+                // Ignore the navigation keys. We don't want to fire ajax calls when navigating
+                if (e.which !== UP_ARROW_KEY && e.which !== DOWN_ARROW_KEY && e.which !== ESCAPE_KEY) {
+                    if (settings.url) {
+
                         if (timer) {
                             clearTimeout(timer);
                         }
@@ -108,9 +109,9 @@
                         timer = setTimeout(function () {
                             getSuggestions(settings.url)
                         }, settings.delay);
+                    } else if (settings.filter) {
+                        showSuggestions();
                     }
-                } else if (settings.filter) {
-                    showSuggestions();
                 }
             },
             'keydown': function (e) {
@@ -386,7 +387,7 @@
         function filterResults(value) {
             var data;
 
-            filterPattern = settings.filterPattern.replace("{INPUT}",value);
+            filterPattern = settings.filterPattern.replace("{INPUT}", value);
             if (!value) {
                 return {};
             }
