@@ -4,6 +4,8 @@ jQuery suggestion box plugin for search suggestions.
 
 Automatically makes suggestions based on user input.
 
+![alt text](screenshot.png "Suggestion box in action")
+
 **IMPORTANT: This plugin is still in development and is currently not stable.**
 
 ### Features:
@@ -32,7 +34,6 @@ Then you need to add the following to your HTML:
 **Note:** `id` can be whatever you want, `mySearch` is only being used as an example.
 
 
-
 ### Loading suggestions from your own server side scripts
 
 If you would like to get suggestions from your own server side script, you simply need to point to it using the `url` option.
@@ -53,7 +54,7 @@ Because retrieving your server side scripts requires an ajax call, `suggestion-b
 
 ## Pre-loading suggestions via JSON
 
-If you would prefer to pre-load yourr suggestions you can do this using the `loadSuggestions` or add `addSuggestions` functions:
+If you would prefer to pre-load your suggestions you can do this using the `loadSuggestions` or add `addSuggestions` functions:
 
 
  `$('#mySearch').suggestionBox({filter: true}).loadSuggestions('path/to/my.json');`
