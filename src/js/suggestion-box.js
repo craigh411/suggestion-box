@@ -22,7 +22,8 @@
                 },
                 ajaxSuccess: function (data) {
                 },
-                paramName: 'search'
+                paramName: 'search',
+                filterPattern: "({INPUT})"
             },
             options);
 
@@ -56,6 +57,7 @@
         // create a blank object for our request
         var request = {};
         var jsonData;
+        var sort;
 
         function getSelectionMouseIsOver(e) {
             var $parentLi = $(e.target).parent('li');
@@ -384,17 +386,25 @@
         function filterResults(value) {
             var data;
 
+            filterPattern = settings.filterPattern.replace("{INPUT}",value);
             if (!value) {
                 return {};
             }
             if (jsonData) {
                 if (jsonData.results) {
-                    var regex = new RegExp("(" + value + ")", "i");
+
+                    var regex = new RegExp(filterPattern, "i");
+
                     data = $.grep(jsonData.results, function (name) {
                         return regex.test(name.suggestion);
                     });
                 }
             }
+
+            if (sort) {
+                data.sort(sort);
+            }
+
             var json = JSON.stringify({"results": data});
 
             return $.parseJSON(json);
@@ -408,12 +418,18 @@
             },
             showSuggestions: function (suggestions) {
                 $searchBox.focus();
-                setJsonData(suggestions);
+                if (suggestions) {
+                    setJsonData(suggestions);
+                }
                 showSuggestions();
                 return this;
             },
             addSuggestions: function (json) {
                 setJsonData(json);
+                return this;
+            },
+            applyFilter: function (filter) {
+                settings.filter = filter;
                 return this;
             },
             loadSuggestions: function (url) {
@@ -495,6 +511,11 @@
             destroy: function () {
                 $searchBox.unbind(this);
                 $suggestionBox.remove();
+                return null;
+            },
+            sort: function (sortFunc) {
+                sort = sortFunc;
+                return this;
             }
         };
     };

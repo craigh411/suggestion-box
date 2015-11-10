@@ -8,6 +8,10 @@ describe("Suggestion Box", function () {
         $body.append('<input type="text" id="search" />');
     });
 
+    afterEach(function(){
+        $("suggestion-box").remove();
+    });
+
     it("should inject the suggestion box in to the body of the web page", function () {
         $('#search').suggestionBox({url: '#'});
         expect($('#suggestion-box').length).toEqual(1);
@@ -345,6 +349,20 @@ describe("Suggestion Box", function () {
         $search.val('Suggestion 1');
         suggestionBox.showSuggestions();
         expect($suggestionBox.find('li').size()).toBe(1);
+        suggestionBox.destroy();
+    });
+
+    it('should filter results by given regex pattern', function(){
+        $suggestionBox = $('#suggestion-box');
+        $search = $('#search');
+        jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
+        var suggestions = getJSONFixture('suggestions.json');
+
+        suggestionBox = $search.suggestionBox({filter: true, filterPattern: "^{INPUT}$"}).addSuggestions(suggestions);
+        $search.val('suggestion');
+        suggestionBox.showSuggestions();
+        expect($suggestionBox.find('li').size()).toBe(0);
+
         suggestionBox.destroy();
     });
 
