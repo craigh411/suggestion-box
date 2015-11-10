@@ -2,33 +2,49 @@
 
 jQuery suggestion box plugin for search suggestions. 
 
+
 **IMPORTANT: This is still in development and is currently not stable.**
+
+### Features:
+
+- Highly configurable & flexible
+- Suggestions provided by your own server side script or JSON file.
+- Selection highlighting
+- Keyboard controls
+- Intuative & seamless mouse/keyboard control swap overs.
+- Easy custom styling using css stylesheets
+
+
+## How it works
+
+While the suggestion-box is flexible, the most common usecase would be to give a URL to a server side script that outputs JSON results in the correct format (see below).
+
+Once setup, the plugin will send an ajax request to the given url after a configurable delay period (400ms by default) once the user stops typing, showing the suggestions below the search box.
 
 ## Usage
 
-Simply add
+Make sure you have included `jQuery` in your project: https://code.jquery.com. Then simply download and add the `css` & `js` files from the `dist` folder and add the following code to your page:
+
+```
+<link rel="stylesheet" href="path/to/css/suggestion-box.min.css"/>
+<script src="path/to/js/suggestion-box.min.js"></script>
+```
+
+You then need to add the following to your HTML:
 
 `<input type="text" id="mySearch" />`
 
-to you HTML, then:
+And then:
 
- `$('#mySearch').suggestionBox({url : 'path/to/json'});`
+`$('#mySearch').suggestionBox({url : 'path/to/json'});`
  
- to your javascript.
+to your javascript.
  
- You will need to supply your JSON suggestions to the plugin, either by providing a `url` to a json file or to a server side script that outputs JSON, or, you can pass your JSON in directly:
+Where`url` is the location of a json file or to a server side script that outputs JSON:
  
- ```
- var suggestionBox = $('#mySearch').suggestionBox();
+## JSON Format
  
-  // get JSON from url
- suggestionBox.getSuggestions(`url`);
- 
- // Pass in json directly
- suggestionBox.showSuggestions({JSON});
- ```
- 
-Currently JSON is expected to be provided in in the following format:
+JSON needs to be provided in in the following format:
 
 ```
 {
@@ -44,6 +60,28 @@ Currently JSON is expected to be provided in in the following format:
   ]
 }
 ```
+
+
+Where suggestion is the text of the suggestion box and url is where the suggestion will take the user on click or enter.
+
+
+
+### Search Paramaters
+
+You will most likely want to send the users search input to a server side script that searches a database or other storage system for relavant suggestions. By default the paramater sent will be `search` e.g.
+
+`http://www.example.com/your_script?search={SEARCH_INPUT}`
+
+Although you may change this to a value of your choosing using the paramName option e.g.:
+
+```
+$('#mySearch').suggestionBox({
+  url : 'path/to/script',
+  paramName: 'user_input'
+});
+```
+
+
 
 ### Available Options
 
@@ -67,12 +105,19 @@ leftOffset    | The number of pixels you would like to move the suggestion boxs'
 paramName     | The paramater name you would like to use in your query string for requests | search
 ajaxError     | A function to define what should happen on ajax error, by default this performs a console.log() which will be overidden if supplied | function(data){...}
 ajaxSuccess   | A function to define custom work to perform on ajax success. This will not override the default functionality | function(data){}
-
+showNoSuggestionsMessage | Shows the noSuggestionsMessage when no suggestions can be found | false
+noSuggestionsMessage | The message to be shown when no suggestions have been found and showNoSuggestionsMessage is true | No Suggestions Found
 
 
 
 ### Available Methods
 
+The following methods can be used on the suggestion box e.g.:
+
+```
+var suggestionBox = $('#search').suggestionBox();
+suggestionBox.getSuggestions('path/to.json');
+```
 
 Method  | Description  | Chainable
 ------------- | -------------|------------
@@ -98,3 +143,58 @@ jsonData() | Returns the JSON object used to populate the suggestion box | No
 destroy() | Destroys the suggestion box | No
 
 
+### Styling the Suggestion Box
+
+#### CSS
+By default the stylesheet in miniturised, if you want to adjust any styles you can take a look at the non-miniturised css in `src/css` to help you see how styles have been applied.
+
+#### SCSS/SASS
+
+If you prefer you can download the scss from the `src/scss` which makes it easier to change any colours, but you will need to compile it to css.
+
+
+## Creating your own builds
+
+If you want to build your own version of `suggestion-box` or want to contribute, you will need to `clone` the repo.
+
+#### Source files
+
+The source files can be found in the `src` folder, which you are free to edit as you wish.
+
+#### Installing Dependencies
+
+Make sure you have `nodeJS` installed on your system: https://nodejs.org/
+
+then run:
+
+`npm install`
+
+from the root directory.
+
+### Gulp
+
+`Suggestion-box` is built with gulp, so you can simply run `gulp` from the command line in the project root to create new builds from the `src`. You should not edit files in `src/css` directly as those are compiled from the `scss`, so will be overwritten when you run `gulp`.
+
+The following gulp commands can be run:
+
+`gulp` - Builds from `src/js` and `src/scss`
+
+`gulp watch` - Watches for changes and automatcally create builds when files are saved
+
+`gulp sass` - Builds the styles from .scss files in `src/scss`.
+
+`gulp compress` - Builds the `js` distributables `src/js`
+
+`gulp sass:watch` - Watch for changes on the `src/sass` files
+
+`gulp js:watch` -  Watch for changes on the `src/js` files
+
+`gulp test` - Run the tests
+
+### Running tests
+
+If you want to run the tests, then you can either run `gulp test` or `npm test` from the command line in the root.
+
+You can also run `karma start` which will watch for any changes to the test files and run tests as they are changed.
+
+<b>Note: </b> By default tests are run using `PhantomJS`. If you want to run them against other browsers you can add them to `browsers` section in `karma.conf.js`. All launchers have been included as devDependencies.
