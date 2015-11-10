@@ -2,24 +2,19 @@
 
 jQuery suggestion box plugin for search suggestions. 
 
+Automatically makes suggestions based on user input.
 
-**IMPORTANT: This is still in development and is currently not stable.**
+**IMPORTANT: This plugin is still in development and is currently not stable.**
 
 ### Features:
 
 - Highly configurable & flexible
-- Suggestions provided by your own server side script or JSON file.
+- Suggestions can be provided by your own server side script, JSON file or direct input.
+- Native filtering support
 - Selection highlighting
 - Keyboard controls
 - Intuative & seamless mouse/keyboard control swap overs.
 - Easy custom styling using css stylesheets
-
-
-## How it works
-
-While the suggestion-box is flexible, the most common usecase would be to give a URL to a server side script that outputs JSON results in the correct format (see below).
-
-Once setup, the plugin will send an ajax request to the given url after a configurable delay period (400ms by default) once the user stops typing, showing the suggestions below the search box.
 
 ## Usage
 
@@ -30,18 +25,68 @@ Make sure you have included `jQuery` in your project: https://code.jquery.com. T
 <script src="path/to/js/suggestion-box.min.js"></script>
 ```
 
-You then need to add the following to your HTML:
+Then you need to add the following to your HTML:
 
 `<input type="text" id="mySearch" />`
 
-And then:
+**Note:** `id` can be whatever you want, `mySearch` is only being used as an example.
 
-`$('#mySearch').suggestionBox({url : 'path/to/json'});`
+
+
+### Loading suggestions from your own server side scripts
+
+If you would like to get suggestions from your own server side script, you simply need to point to it using the `url` option.
+
+`$('#mySearch').suggestionBox({url : 'path/to/script'});`
  
-to your javascript.
+Make sure you are outputting the JSON in the correct format (see below). 
+
+`Suggestion-box` automatically sends a `search` paramater in the `querystring` of the call to your script to allow you to retrieve the user input. You may change this paramater name if you wish using the `paramName` option.
  
-Where`url` is the location of a json file or to a server side script that outputs JSON:
+ `$('#mySearch').suggestionBox({url : 'path/to/script', paramName: 'input'});`
  
+#### Setting The Delay
+ 
+Because retrieving your server side scripts requires an ajax call, `suggestion-box` will only get suggestions when the user is deemed to have stopped typing. By default this is when there hasn't been a keypress for 400ms. If you wish to change this you can set the `delay` option yourself.
+ 
+`$('#mySearch').suggestionBox({url : 'path/to/script', input: 1000}); // Make request after 1 second`
+
+## Pre-loading suggestions via JSON
+
+If you would prefer to pre-load yourr suggestions you can do this using the `loadSuggestions` or add `addSuggestions` functions:
+
+
+ `$('#mySearch').suggestionBox({filter: true}).loadSuggestions('path/to/my.json');`
+ 
+ or
+ 
+ ```
+$('#mySearch').suggestionBox({filter: true}).addSuggestions(JSON.stringify(
+    {
+    "results": [
+      {
+        "suggestion": "Suggestion 1",
+        "url": "suggestion1.html",
+      },
+      {
+        "suggestion": "Suggestion 2",
+        "url": "suggestion2.html"
+      }
+    ]
+  }
+));
+ ```
+
+
+### Filtering
+
+You should note the use of the `filter` option in the above examples; you need to set this to `true` if you want to filter your suggestions automatically.
+
+When set to true filtering is performed on each keypress so is more responsive than using a server side script. However, if you have a large data set to sift through you should do this from the server side to avoid potential performance issues.  
+
+**Important:** If you do not set the `filter` option to true then no suggestions will be shown until you explicitly call the `showSuggestions()` method.
+
+  
 ## JSON Format
  
 JSON needs to be provided in in the following format:
@@ -51,7 +96,14 @@ JSON needs to be provided in in the following format:
   "results": [
     {
       "suggestion": "Suggestion 1",
-      "url": "suggestion1.html"
+      "url": "suggestion1.html",
+      "attr" : [
+        {
+        "class" : "suggestion",
+        "id" : "suggestion1",
+        "anotherAttribute" : "foo"
+        }
+      ]
     },
     {
       "suggestion": "Suggestion 2",
@@ -62,7 +114,17 @@ JSON needs to be provided in in the following format:
 ```
 
 
-Where suggestion is the text of the suggestion box and url is where the suggestion will take the user on click or enter.
+Where suggestion is the text of the suggestion box and url is the link location.
+
+You may also add the optional "attr" option which allows you to add any attributes you want to the anchor tag (`<a>`)
+
+e.g suggestion 1 above, would create the following HTML:
+
+`<a href="suggestion1.html" class="suggestion" id="suggestion1" anotherAttribute="foo" >Suggestion 1</a>`
+
+
+
+
 
 
 
