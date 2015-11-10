@@ -6,6 +6,16 @@
     },
     {
       "suggestion": "Suggestion 2",
+      "attr": [
+        {
+          "name": "class",
+          "value": "suggestion"
+        },
+        {
+          "name": "id",
+          "value": "suggestion2"
+        }
+      ],
       "url": "suggestion2.html"
     },
     {

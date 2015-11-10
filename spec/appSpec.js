@@ -316,5 +316,37 @@ describe("Suggestion Box", function () {
             expect($suggestionBox.find('li:eq(1)').hasClass('selected')).toBeFalsy();
         });
     });
+
+    // filtering
+    it('should add json', function(){
+        var json = JSON.stringify({"results": [{"suggestion": "Suggestion 1", "url": "suggestion1.html"}]});
+        suggestionBox.addSuggestions(json);
+        expect(suggestionBox.jsonData()).toBe(json);
+        suggestionBox.destroy();
+    });
+
+    it('should make an ajax call to a json file', function(){
+        spyOn($, 'ajax');
+        suggestionBox.loadSuggestions('suggestions.json');
+        expect($.ajax.calls.mostRecent().args[0].url).toBe('suggestions.json');
+        suggestionBox.destroy();
+    });
+
+
+    it('should filter results', function(){
+        $suggestionBox = $('#suggestion-box');
+        $search = $('#search');
+        jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
+        var suggestions = getJSONFixture('suggestions.json');
+
+        suggestionBox = $search.suggestionBox({filter: true}).addSuggestions(suggestions);
+
+        $search.focus();
+        $search.val('Suggestion 1');
+        suggestionBox.showSuggestions();
+        expect($suggestionBox.find('li').size()).toBe(1);
+        suggestionBox.destroy();
+    });
+
 });
 

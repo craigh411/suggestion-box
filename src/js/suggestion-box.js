@@ -16,6 +16,7 @@
                 menuWidth: 'auto',
                 showNoSuggestionsMessage: false,
                 noSuggestionsMessage: 'No Suggestions Found',
+                filter: false,
                 ajaxError: function (e) {
                     console.log(e);
                 },
@@ -106,6 +107,8 @@
                             getSuggestions(settings.url)
                         }, settings.delay);
                     }
+                } else if (settings.filter) {
+                    showSuggestions();
                 }
             },
             'keydown': function (e) {
@@ -210,8 +213,8 @@
                 data: request,
                 dataType: 'json',
                 success: function (data) {
-                    jsonData = data;
-                    showSuggestions(data);
+                    setJsonData(data);
+                    showSuggestions();
                     settings.ajaxSuccess(data);
                 },
                 error: function (e) {
@@ -265,7 +268,6 @@
             } else {
                 $suggestionBox.css('display', 'block');
             }
-
         }
 
         /**
@@ -306,31 +308,38 @@
          * Shows the suggestion-box suggestions if they are available based on the data passed in
          * @param data
          */
-        function showSuggestions(data) {
+        function showSuggestions() {
             resetSelection();
 
-            data = (data instanceof Object) ? data : $.parseJSON(data);
-            jsonData = data;
             matches = false;
+            var data = (settings.filter) ? filterResults($searchBox.val()) : jsonData;
 
-            if (data.results) {
-                var $suggestions = '<div id="suggestion-header">' + settings.heading + '</div> ' +
-                    '<ul id="suggestion-box-list">';
+            if (data) {
+                if (data.results) {
+                    var $suggestions = '<div id="suggestion-header">' + settings.heading + '</div> ' +
+                        '<ul id="suggestion-box-list">';
 
-                $.each(data.results, function (key, value) {
-                    if (value.suggestion && value.url) {
-                        matches = true;
-                        $suggestions += '<li><a href="' + value.url + '">' + value.suggestion + '</a></li>';
-                    } else {
-                        return false;
-                    }
+                    $.each(data.results, function (key, value) {
+                        if (value.suggestion && value.url) {
+                            matches = true;
+                            var attr = "";
+                            if (value.attr) {
+                                $.each(value.attr, function (key, value) {
+                                    attr += value.name + '="' + value.value + '" ';
+                                });
+                            }
+                            $suggestions += '<li><a href="' + value.url + '" ' + attr + '>' + value.suggestion + '</a></li>';
+                        } else {
+                            return false;
+                        }
 
-                    // break when maximum results have been found
-                    if (key === (settings.results - 1)) {
-                        return false;
-                    }
-                });
-                $suggestions += '</ul>';
+                        // break when maximum results have been found
+                        if (key === (settings.results - 1)) {
+                            return false;
+                        }
+                    });
+                    $suggestions += '</ul>';
+                }
             }
 
             // Check for focus before showing suggestion box. User could have clicked outside before request finished.
@@ -351,6 +360,46 @@
             }
         }
 
+        function setJsonData(json) {
+            if (json) {
+                jsonData = (json instanceof Object) ? json : $.parseJSON(json);
+            } else {
+                jsonData = {};
+            }
+        }
+
+        function loadJson(url) {
+            $.ajax({
+                url: url,
+                dataType: 'json',
+                success: function (data) {
+                    setJsonData(data);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+
+        function filterResults(value) {
+            var data;
+
+            if (!value) {
+                return {};
+            }
+            if (jsonData) {
+                if (jsonData.results) {
+                    var regex = new RegExp("(" + value + ")", "i");
+                    data = $.grep(jsonData.results, function (name) {
+                        return regex.test(name.suggestion);
+                    });
+                }
+            }
+            var json = JSON.stringify({"results": data});
+
+            return $.parseJSON(json);
+        }
+
         // returned methods
         return {
             getSuggestions: function (url) {
@@ -359,7 +408,16 @@
             },
             showSuggestions: function (suggestions) {
                 $searchBox.focus();
-                showSuggestions(suggestions);
+                setJsonData(suggestions);
+                showSuggestions();
+                return this;
+            },
+            addSuggestions: function (json) {
+                setJsonData(json);
+                return this;
+            },
+            loadSuggestions: function (url) {
+                loadJson(url);
                 return this;
             },
             moveUp: function () {
