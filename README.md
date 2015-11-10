@@ -139,7 +139,6 @@ JSON needs to be provided in in the following format:
     {
       "suggestion": "Suggestion 2",
       "url": "suggestion2.html",
-      
     }
   ]
 }
@@ -153,16 +152,20 @@ Each `JSON` file must be a list of `results` and each suggestion is defined with
 
 You may also add an optional `"attr"` element which allows you to add any attributes you want to the anchor tag (`<a>`)
 
-so, the following `attr` element:
+so, the following suggestion with the `attr` element:
 
 ```json
-      "attr" : [
-        {
+  {
+    "suggestion": "Suggestion 1",
+    "url": "suggestion1.html",
+    "attr" : [
+      {
         "class" : "suggestion",
         "id" : "suggestion1",
         "anotherAttribute" : "foo"
-        }
-      ]
+      }
+    ]
+  }
 ```
 would produce:
 
