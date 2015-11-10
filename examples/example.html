@@ -24,12 +24,15 @@
 <div style="width:80%;margin:auto;margin-top:20px;">
     <div class="form-group">
         <label for="search">Search Guitars: </label>
-        <input type="text" id="search" class="form-control"></p>
+        <input type="text" id="search" class="form-control">
     </div>
-    <script>
-        $(document).ready(function () {
-            var suggestionBox = $('#search').suggestionBox({'filter': true}).loadSuggestions('suggestions.json');
-        });
-    </script>
+</div>
+<script>
+    $(document).ready(function () {
+        var suggestionBox = $('#search').suggestionBox({
+            'filter': true
+        }).loadSuggestions('suggestions.json');
+    });
+</script>
 </body>
 </html>

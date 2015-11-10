@@ -17,10 +17,6 @@
       "url": "suggestion3.html"
     },
     {
-      "suggestion": "Fender Jaguar",
-      "url": "suggestion3.html"
-    },
-    {
       "suggestion": "Fender Jazzmaster",
       "url": "suggestion3.html"
     },
@@ -31,18 +27,6 @@
     {
       "suggestion": "Gibson SG",
       "url": "suggestion5.html"
-    },
-    {
-      "suggestion": "Another Suggestion",
-      "url": "suggestion6.html"
-    },
-    {
-      "suggestion": "And Another Suggestion",
-      "url": "suggestion6.html"
-    },
-    {
-      "suggestion": "More Suggestions",
-      "url": "suggestion7.html"
     }
   ]
 }
