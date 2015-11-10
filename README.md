@@ -19,18 +19,22 @@ Automatically makes suggestions based on user input.
 - Intuative & seamless mouse/keyboard control swap overs.
 - Easy custom styling using css stylesheets
 
-## Usage
+## Setup
 
-Make sure you have included `jQuery` in your project: https://code.jquery.com. Then simply download and add the `css` & `js` files from the `dist` folder and add the following code to your page:
+Make sure you have included `jQuery` in your project: https://code.jquery.com. Then simplycopy the `css` & `js` files from the `dist` folder and add the following code to your page:
 
-```
+```html
 <link rel="stylesheet" href="path/to/css/suggestion-box.min.css"/>
 <script src="path/to/js/suggestion-box.min.js"></script>
 ```
 
-Then you need to add the following to your HTML:
+## Usage
 
-`<input type="text" id="mySearch" />`
+First you need to add a text input to your page such as:
+
+```html
+<input type="text" id="mySearch" />
+```
 
 **Note:** `id` can be whatever you want, `mySearch` is only being used as an example.
 
@@ -39,30 +43,39 @@ Then you need to add the following to your HTML:
 
 If you would like to get suggestions from your own server side script, you simply need to point to it using the `url` option.
 
-`$('#mySearch').suggestionBox({url : 'path/to/script'});`
+```javascript
+$('#mySearch').suggestionBox({url : 'path/to/script'});
+```
  
 Make sure you are outputting the JSON in the correct format (see below). 
 
-`Suggestion-box` automatically sends a `search` paramater in the `querystring` of the call to your script to allow you to retrieve the user input. You may change this paramater name if you wish using the `paramName` option.
+#### Getting user input
+
+`Suggestion-box` automatically sends a paramater called ``search`` in the `querystring` of the ajax call which allows you to get the user input from your scripts. You may change this paramater name if you wish using the `paramName` option:
  
- `$('#mySearch').suggestionBox({url : 'path/to/script', paramName: 'input'});`
+ ```javascript
+ $('#mySearch').suggestionBox({url : 'path/to/script', paramName: 'input'});
+ ```
  
 #### Setting The Delay
  
-Because retrieving your server side scripts requires an ajax call, `suggestion-box` will only get suggestions when the user is deemed to have stopped typing. By default this is when there hasn't been a keypress for 400ms. If you wish to change this you can set the `delay` option yourself.
- 
-`$('#mySearch').suggestionBox({url : 'path/to/script', input: 1000}); // Make request after 1 second`
+Because retrieving your server side script requires an ajax call, `suggestion-box` will only get suggestions when the user  has stopped typing for a specified period. By default this is when there hasn't been a keypress for 400ms. If you wish to change this you can set the `delay` option yourself.
 
-## Pre-loading suggestions via JSON
+```javascript 
+$('#mySearch').suggestionBox({url : 'path/to/script', input: 1000}); // Make request after 1 second
+```
 
-If you would prefer to pre-load your suggestions you can do this using the `loadSuggestions` or add `addSuggestions` functions:
+### Pre-loading suggestions via JSON
 
+If you would prefer to pre-load your suggestions you can do this using the `loadSuggestions` or `addSuggestions` functions:
 
- `$('#mySearch').suggestionBox({filter: true}).loadSuggestions('path/to/my.json');`
+```javascript
+ $('#mySearch').suggestionBox({filter: true}).loadSuggestions('path/to/my.json');
+```
  
  or
  
- ```
+ ```javascript
 $('#mySearch').suggestionBox({filter: true}).addSuggestions(JSON.stringify(
     {
     "results": [
@@ -79,35 +92,37 @@ $('#mySearch').suggestionBox({filter: true}).addSuggestions(JSON.stringify(
 ));
  ```
 
+You should check the JSON Format section below to see how you should format your JSON.
 
-### Filtering
+#### Filtering
 
-You should note the use of the `filter` option in the above examples; you need to set this to `true` if you want to filter your suggestions automatically.
+You can set your loaded JSON to filter automatcally setting the `filter` option to `true`. Suggestion-box will then automatcally filter your loaded JSON and present suggestions based on the user input.
 
-By default filtering will match any occurance of the input string within your suggestion data. If you want to refine this you can pass in regex pattern using the filterPattern option. If you want to capture the input for your pattern match simply place `{INPUT}` in your regex and it will be automatcally replaced with the user input:
-
+```javascript
+$('#mySearch').suggestionBox({filter: true}).loadSuggestions('path/to/my.json');
 ```
-// Match suggestions starting with the user input
- `$('#mySearch').suggestionBox({filter: true, filterPattern: "^{INPUT}"}).loadSuggestions('path/to/my.json');`
-
-```
-
-**Note:** When set to true filtering is performed on each keypress so is more responsive than using a server side script. However, if you have a large data set to sift through you should do this from the server side to avoid potential performance issues.  
-
-
-#### Sorting
-
-It is possible to sort your filtered results by passing a function to the `sort()` method. Sort uses javascripts `sort()` function, so the function you supply will perform exactly the same task.
-
 
 **Important:** If you do not set the `filter` option to true then no suggestions will be shown until you explicitly call the `showSuggestions()` method.
+
+##### Custom Filters
+
+By default filtering will match any occurance of the input string within your suggestion data. If you want to refine this you can pass in regex pattern using the `filterPattern` option. If you want to capture the user input for your pattern match simply place `{INPUT}` in your regex and it will be automatcally replaced with the user input:
+
+```javascript
+// Match suggestions starting with the user input
+ $('#mySearch').suggestionBox({filter: true, filterPattern: "^{INPUT}"}).loadSuggestions('path/to/my.json');
+```
+
+##### Sorting
+
+It is possible to sort your filtered results by passing a function to the `sort()` method. Sort uses javascripts `sort()` function, so the function you supply will perform exactly the same task.
 
   
 ## JSON Format
  
 JSON needs to be provided in in the following format:
 
-```
+```json
 {
   "results": [
     {
@@ -123,21 +138,35 @@ JSON needs to be provided in in the following format:
     },
     {
       "suggestion": "Suggestion 2",
-      "url": "suggestion2.html"
+      "url": "suggestion2.html",
+      
     }
   ]
 }
 ```
 
+#### Required Values
 
-Where `suggestion` is the text of the suggestion box and `url` is the link location.
+Each `JSON` file must be a list of `results` and each suggestion is defined with  a `suggestion` element and a `url` element where `suggestion` is the text of the suggestion in the suggestion list and the `url` is the link location.
 
-You may also add an optional `"attr"` option which allows you to add any attributes you want to the anchor tag (`<a>`)
+#### Optional Values
 
-e.g suggestion 1 above, would create the following HTML:
+You may also add an optional `"attr"` element which allows you to add any attributes you want to the anchor tag (`<a>`)
+
+so, the following `attr` element:
+
+```json
+      "attr" : [
+        {
+        "class" : "suggestion",
+        "id" : "suggestion1",
+        "anotherAttribute" : "foo"
+        }
+      ]
+```
+would produce:
 
 `<a href="suggestion1.html" class="suggestion" id="suggestion1" anotherAttribute="foo" >Suggestion 1</a>`
-
 
 
 ### Available Options
@@ -146,7 +175,10 @@ The following options can be passed to the suggestion box
 
 e.g. 
 
-`$('#search').suggestionBox({optionName : value})`:
+```javascript
+$('#search').suggestionBox({optionName : value}):
+```
+
 
 Option Name   | Description  | Default
 ------------- | -------------|------------
@@ -171,10 +203,11 @@ filterPattern | A regex expression to apply using the filter, use `{INPUT}` to i
 
 The following methods can be used on the suggestion box e.g.:
 
+```javascript
+var suggestioBox = $('#search').suggestionBox():
+suggestionBox.dstroy();
 ```
-var suggestionBox = $('#search').suggestionBox();
-suggestionBox.getSuggestions('path/to.json');
-```
+
 
 Method  | Description  | Chainable
 ------------- | -------------|------------
