@@ -7,16 +7,15 @@ Automatically makes suggestions based on user input.
 *Screenshot*
 ![alt text](https://raw.githubusercontent.com/craigh411/suggestion-box/master/screenshot.png "Suggestion box in action")
 
-**IMPORTANT: This plugin is still in development and is currently not stable.**
-
 ### Features:
 
 - Highly configurable & flexible
-- Suggestions can be provided by your own server side script, JSON file or direct input.
+- Suggestions can be provided directly, by your own server side script or from a JSON file.
 - Native filtering support
 - Selection highlighting
 - Keyboard controls
 - Intuative & seamless mouse/keyboard control swap overs.
+- Supports copy & paste
 - Easy custom styling using css stylesheets
 
 ## Setup
@@ -27,6 +26,10 @@ Make sure you have included `jQuery` in your project: https://code.jquery.com. T
 <link rel="stylesheet" href="path/to/css/suggestion-box.min.css"/>
 <script src="path/to/js/suggestion-box.min.js"></script>
 ```
+
+Suggestion box is also availble via `bower`, simply use:
+
+`bower install suggestion-box`
 
 ## Usage
 
@@ -51,7 +54,7 @@ Make sure you are outputting the JSON in the correct format (see below).
 
 #### Getting user input
 
-`Suggestion-box` automatically sends a parameter called ``search`` in the `querystring` of the ajax call which allows you to get the user input from your scripts. You may change this parameter name if you wish using the `paramName` option:
+`Suggestion-box` automatically sends a parameter called `'search'` in the `querystring` of the ajax call which allows you to get the user input from your scripts. You may change this parameter name if you wish using the `paramName` option:
  
  ```javascript
  $('#mySearch').suggestionBox({url : 'path/to/script', paramName: 'input'});
@@ -62,7 +65,8 @@ Make sure you are outputting the JSON in the correct format (see below).
 Because retrieving your server side script requires an ajax call, `suggestion-box` will only get suggestions when the user  has stopped typing for a specified period. By default this is when there hasn't been a keypress for 400ms. If you wish to change this you can set the `delay` option yourself.
 
 ```javascript 
-$('#mySearch').suggestionBox({url : 'path/to/script', input: 1000}); // Make request after 1 second
+ // Make request after 1/2 second with no user input
+$('#mySearch').suggestionBox({url : 'path/to/script', input: 500});
 ```
 
 ### Pre-loading suggestions via JSON
@@ -96,13 +100,13 @@ You should check the JSON Format section below to see how you should format your
 
 #### Filtering
 
-You can set your loaded JSON to filter automatcally setting the `filter` option to `true`. Suggestion-box will then automatcally filter your loaded JSON and present suggestions based on the user input.
+You can set your loaded JSON to filter automatically by setting the `filter` option to `true`. `Suggestion-box` will then filter your loaded JSON and present suggestions based on the user input.
 
 ```javascript
 $('#mySearch').suggestionBox({filter: true}).loadSuggestions('path/to/my.json');
 ```
 
-**Important:** If you do not set the `filter` option to true then no suggestions will be shown until you explicitly call the `showSuggestions()` method.
+**Important:** If you do not set the `filter` option to `true` then no suggestions will be shown until you explicitly call the `show()` method to show your suggestions.
 
 ##### Custom Filters
 
@@ -113,9 +117,17 @@ By default filtering will match any occurance of the input string within your su
  $('#mySearch').suggestionBox({filter: true, filterPattern: "^{INPUT}"}).loadSuggestions('path/to/my.json');
 ```
 
+You can also use the `filterPattern()` method if you prefer.
+
+```javascript
+// Match suggestions starting with the user input
+ $('#mySearch').suggestionBox({filter: true).loadSuggestions('path/to/my.json').filterPattern("^{INPUT}");
+```
+
+
 ##### Sorting
 
-It is possible to sort your filtered results by passing a function to the `sort()` method. Sort uses javascripts `sort()` function, so the function you supply will perform exactly the same task.
+It is possible to sort your filtered results by passing a function to the `sort()` method or `sort` option. Sort uses javascripts `sort()` function, so the function you supply will perform exactly the same task.
 
   
 ## JSON Format
@@ -144,11 +156,24 @@ JSON needs to be provided in in the following format:
 }
 ```
 
-#### Required Values
+#### Required JSON Values
 
 Each `JSON` file must be a list of `results` and each suggestion is defined with  a `suggestion` element and a `url` element where `suggestion` is the text of the suggestion in the suggestion list and the `url` is the link location.
 
-#### Optional Values
+So, at a minimum your JSON should be something like:
+
+```json
+{
+  "results": [
+    {
+      "suggestion": "A Suggestion",
+      "url": "suggestion.html",
+    }
+  ]
+}
+``` 
+    
+#### Optional JSON Values
 
 You may also add an optional `"attr"` element which allows you to add any attributes you want to the anchor tag (`<a>`)
 
@@ -189,7 +214,7 @@ heading       | The heading displayed in the suggestion box | Suggestions
 results       | The maximum number of results to display in the suggestion box | 10
 fadeIn        | Whether to apply a fade in effect to the suggestion box | true
 fadeOut       | Whether to apply a fade out effect to the suggestion box | false
-menuWidth     | How you would like the suggestion box width to be calculated, either: 'auto' - Browser automatically calculates the width based on content or 'constraint' - Constrain the suggestion box width to the search box width | auto
+menuWidth     | How you would like the suggestion box width to be calculated. This can either be `'auto'` which will calculate the width based on the content or `'constrain'` which will set the width to the size of the search box and constrain the content to it.  | auto
 delay         | The number of milliseconds to wait until to consider the user to have stopped typing. An ajax call to                  the given suggestion url will be made after this time. | 400
 topOffset     | The number of pixels you would like to move the suggestion boxes' top position | 0
 leftOffset    | The number of pixels you would like to move the suggestion boxes' left position | 0
@@ -209,17 +234,19 @@ sort | A sort function to sort filtered results, this is passed directly into ja
 The following methods can be used on the suggestion box e.g.:
 
 ```javascript
-var suggestioBox = $('#search').suggestionBox():
-suggestionBox.dstroy();
+var suggestionBox = $('#search').suggestionBox().loadSuggestions('suggestions.json').show():
 ```
 
-**Note:** Chainable methods return `this`  so can be chained together.` Non-chainable methods return a value, so cannot be chained.
+**Note:** Chainable methods return `this` so can be chained together.` Non-chainable methods return a value, so cannot be chained.
+
 
 Method  | Description  | Chainable
 ------------- | -------------|------------
 getSuggestions(url) | Gets the suggestion from the given url and displays them | Yes
 addSuggestions(suggestions) | Sets the JSON suggestions but doesn't display them | Yes
 loadSuggestions(url) | Loads the JSON suggestions from the given url but doesn't display them | Yes
+show() | Displays the suggestion box if there are suggestions or the no suggestions message if `showNoSuggestionsMessage` option is set to true | Yes
+hide() | Hides the suggestion box | Yes
 getJson() | Returns the JSON object used to populate the suggestion box | No
 url() | Sets the value of the url option | Yes
 filter(bool) | Sets the value of the filter option  | Yes
@@ -229,8 +256,6 @@ moveUp() | Moves the selected suggestion up by 1 | Yes
 moveDown() | Moves the selected suggestion down by 1 | Yes
 select(position) | Selects the suggestion at the given position | Yes
 reset() | Resets selection to starting position. Note: this does not reset the json data | Yes
-hide() | Hides the suggestion box | Yes
-show() | Displays the suggestion box if there are suggestions or no suggestions message if showNoSuggestions option is true | Yes
 fadeIn(bool) | Sets the value of the fadeIn option | Yes
 fadeOut(bool) | Sets the value of the fadeOut option | Yes
 delay(ms) | Sets the value of the delay option | Yes
@@ -243,16 +268,14 @@ selectedSuggestion() | Returns the selected suggestion text | No
 position() | Returns the zero based list position of the selected suggestion | No
 destroy() | Destroys the suggestion box | No
 
-
 ### Styling the Suggestion Box
 
 #### CSS
-By default the stylesheet in miniturised, if you want to adjust any styles you can take a look at the non-miniturised css in `src/css` to help you see how styles have been applied.
+By default the stylesheet in miniturised, if you want to adjust any styles you can take a look at the non-miniturised css in `src/css` to help you see how styles have been applied and how you may override them in your own `stylesheets`
 
-#### SCSS/SASS
+#### SCSS
 
-If you prefer you can download the scss from the `src/scss` which makes it easier to change any colours, but you will need to compile it to css.
-
+The styles for the siggestion-box were built using `scss `which is available in the `src/scss` folder.
 
 ## Roll your own
 
