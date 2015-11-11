@@ -55,19 +55,13 @@
         var matches = false;
         // Is the search box active (does it have focus)
         var active = false;
-        // paste data
-        var pasteData = null;
         // create a blank object for our request
         var request = {};
         var jsonData = {};
 
-        function getSelectionMouseIsOver(e) {
-            var $parentLi = $(e.target).parent('li');
-            return $parentLi.parent().children().index($parentLi);
-        }
 
         $suggestionBox.on({
-            'mousemove': function (e) {
+            mousemove: function (e) {
                 if (e.target.nodeName === 'A') {
                     unselect(selectedLi);
                     selectedLi = getSelectionMouseIsOver(e);
@@ -75,7 +69,7 @@
                     mouseHover = true;
                 }
             },
-            'mouseout': function (e) {
+            mouseout: function (e) {
                 if (e.target.nodeName === 'A') {
                     mouseHover = false;
                     unselect(selectedLi);
@@ -85,20 +79,20 @@
         });
 
         $searchBox.on({
-            'blur': function () {
+            blur: function () {
                 active = false;
                 // Only close the menu if we are not clicking a link
                 if (!mouseHover) {
                     hideSuggestionBox();
                 }
             },
-            'focus': function () {
+            focus: function () {
                 active = true;
                 if ($(this).val()) {
                     showSuggestions(jsonData);
                 }
             },
-            'keyup': function (e) {
+            keyup: function (e) {
                 // Ignore the navigation keys. We don't want to fire ajax calls when navigating
                 if (e.which !== UP_ARROW_KEY && e.which !== DOWN_ARROW_KEY && e.which !== ESCAPE_KEY) {
                     if (settings.url) {
@@ -115,7 +109,7 @@
                     }
                 }
             },
-            'keydown': function (e) {
+            keydown: function (e) {
                 if ($suggestionBox.css('display') !== 'none') {
                     if (e.which == DOWN_ARROW_KEY) {
                         e.preventDefault();
@@ -137,7 +131,7 @@
             },
             paste: function () {
                 // Simulate keyup after 200ms otherwise the value of the search box will not be available
-                setTimeout(function(){
+                setTimeout(function () {
                     $searchBox.keyup();
                 }, 200);
             }
@@ -231,6 +225,16 @@
                     settings.ajaxError(e);
                 }
             });
+        }
+
+        /**
+         * Returns the index of the list item the mouse is currently hovering over
+         * @param e
+         * @returns {Number}
+         */
+        function getSelectionMouseIsOver(e) {
+            var $parentLi = $(e.target).parent('li');
+            return $parentLi.parent().children().index($parentLi);
         }
 
         /**
@@ -369,6 +373,10 @@
             }
         }
 
+        /**
+         * Sets the current JSON data ready for display
+         * @param json
+         */
         function setJsonData(json) {
             if (json) {
                 jsonData = (json instanceof Object) ? json : $.parseJSON(json);
@@ -377,6 +385,10 @@
             }
         }
 
+        /**
+         * Loads JSON from the given url
+         * @param url
+         */
         function loadJson(url) {
             $.ajax({
                 url: url,
@@ -390,6 +402,11 @@
             });
         }
 
+        /**
+         * Filters the JSON based on the user input
+         * @param value
+         * @returns {Object}
+         */
         function filterResults(value) {
             var data;
 
