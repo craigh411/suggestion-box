@@ -182,7 +182,6 @@ e.g.
 $('#search').suggestionBox({optionName : value}):
 ```
 
-
 Option Name   | Description  | Default
 ------------- | -------------|------------
 url           | The url of the JSON or server side script where you would like to make an ajax call to get the                        suggestions | null
@@ -195,12 +194,14 @@ delay         | The number of milliseconds to wait until to consider the user to
 topOffset     | The number of pixels you would like to move the suggestion boxes' top position | 0
 leftOffset    | The number of pixels you would like to move the suggestion boxes' left position | 0
 paramName     | The paramater name you would like to use in your query string for requests | search
-ajaxError     | A function to define what should happen on ajax error, by default this performs a console.log() which will be overidden if supplied | function(data){...}
+ajaxError     | A function to define what should happen on ajax error, by default this performs a console.log() which will be overridden if supplied | function(data){...}
 ajaxSuccess   | A function to define custom work to perform on ajax success. This will not override the default functionality | function(data){}
 showNoSuggestionsMessage | Shows the noSuggestionsMessage when no suggestions can be found | false
 noSuggestionsMessage | The message to be shown when no suggestions have been found and showNoSuggestionsMessage is true | No Suggestions Found
-filter | If you would like to apply the filter to the suggestion box when typing | false
-filterPattern | A regex expression to apply using the filter, use `{INPUT}` to inject the user input in to the pattern  | ({INPUT})
+filter | Whether to automatically apply the filterPattern to the suggestions as the user types | false
+filterPattern | A regex expression to apply using the filter. Use `{INPUT}` to inject the user input in to the pattern  | ({INPUT})
+sort | A sort function to sort filtered results, this is passed directly into javascripts' native `sort` function if supplied (only works when filter is on) | null
+
 
 ### Available Methods
 
@@ -211,6 +212,7 @@ var suggestioBox = $('#search').suggestionBox():
 suggestionBox.dstroy();
 ```
 
+**Note:** Chainable methods return `this`  so can be chained together.` Non-chainable methods return a value, so cannot be chained.
 
 Method  | Description  | Chainable
 ------------- | -------------|------------
@@ -218,8 +220,11 @@ getSuggestions(url) | Gets the suggestion from the given url and displays them |
 showSuggestions() | Displays the suggestion box with the current suggestions | Yes
 addSuggestions(suggestions) | Sets the JSON suggestions but doesn't display them | Yes
 loadSuggestions(url) | Loads the JSON suggestions from the given url but doesn't display them | Yes
-applyFilter(bool) | Whether to apply the filter to the suggestions | Yes
-sort | A function to sort the filtered results using javasciprt `sort()` method (only works when filter is on) | Yes
+getJson() | Returns the JSON object used to populate the suggestion box | No
+url() | Sets the value of the url option | Yes
+filter(bool) | Sets the value of the filter option  | Yes
+filterPattern(pattern) | sets the value of the filterPattern option | Yes
+sort(sortFunction) | Sets the value of the sort option | Yes
 moveUp() | Moves the selected suggestion up by 1 | Yes
 moveDown() | Moves the selected suggestion down by 1 | Yes
 select(position) | Selects the suggestion at the given position | Yes
@@ -236,7 +241,6 @@ ajaxSuccess(success) | Sets the ajaxSuccess option | Yes
 selectedUrl() | Returns the url of the selected suggestion | No
 selectedSuggestion() | Returns the selected suggestion text | No 
 position() | Returns the zero based list position of the selected suggestion | No
-jsonData() | Returns the JSON object used to populate the suggestion box | No
 destroy() | Destroys the suggestion box | No
 
 

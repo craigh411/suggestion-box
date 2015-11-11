@@ -144,6 +144,7 @@ describe("Suggestion Box", function () {
             noSuggestionsMessage: 'No Suggestions'
         });
 
+        $search.val('foo');
         suggestionBox.showSuggestions(JSON.stringify({}));
 
         expect($('#suggestion-box').css('display')).toBe('block');
@@ -325,7 +326,7 @@ describe("Suggestion Box", function () {
     it('should add json', function(){
         var json = JSON.stringify({"results": [{"suggestion": "Suggestion 1", "url": "suggestion1.html"}]});
         suggestionBox.addSuggestions(json);
-        expect(suggestionBox.jsonData()).toBe(json);
+        expect(suggestionBox.getJson()).toBe(json);
         suggestionBox.destroy();
     });
 

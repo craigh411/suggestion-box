@@ -17,19 +17,20 @@
                 showNoSuggestionsMessage: false,
                 noSuggestionsMessage: 'No Suggestions Found',
                 filter: false,
+                filterPattern: "({INPUT})",
                 ajaxError: function (e) {
                     console.log(e);
                 },
                 ajaxSuccess: function (data) {
                 },
-                paramName: 'search',
-                filterPattern: "({INPUT})"
+                paramName: 'search'
             },
             options);
 
 
         // Inject the suggestion box into the body of the web page
         $('body').append('<div id="suggestion-box"></div>');
+
         // Turn off autocomplete
         $searchBox.attr('autocomplete', 'off');
 
@@ -54,10 +55,11 @@
         var matches = false;
         // Is the search box active (does it have focus)
         var active = false;
+        // paste data
+        var pasteData = null;
         // create a blank object for our request
         var request = {};
         var jsonData = {};
-        var sort;
 
         function getSelectionMouseIsOver(e) {
             var $parentLi = $(e.target).parent('li');
@@ -100,7 +102,6 @@
                 // Ignore the navigation keys. We don't want to fire ajax calls when navigating
                 if (e.which !== UP_ARROW_KEY && e.which !== DOWN_ARROW_KEY && e.which !== ESCAPE_KEY) {
                     if (settings.url) {
-
                         if (timer) {
                             clearTimeout(timer);
                         }
@@ -133,6 +134,12 @@
                         hideSuggestionBox();
                     }
                 }
+            },
+            paste: function () {
+                // Simulate keyup after 200ms otherwise the value of the search box will not be available
+                setTimeout(function(){
+                    $searchBox.keyup();
+                }, 200);
             }
         });
 
@@ -296,12 +303,12 @@
         function getSearchBoxWidth() {
             return (
                 $searchBox.width() +
-                getCssValue($searchBox, 'border-left') +
-                getCssValue($searchBox, 'border-right') +
+                getCssValue($searchBox, 'border-left-width') +
+                getCssValue($searchBox, 'border-right-width') +
                 getCssValue($searchBox, 'padding-left') +
                 getCssValue($searchBox, 'padding-right') -
-                getCssValue($suggestionBox, 'border-left') -
-                getCssValue($suggestionBox, 'border-right') -
+                getCssValue($suggestionBox, 'border-left-width') -
+                getCssValue($suggestionBox, 'border-right-width') -
                 getCssValue($suggestionBox, 'padding-left') -
                 getCssValue($suggestionBox, 'padding-right')
             );
@@ -309,14 +316,13 @@
 
         /**
          * Shows the suggestion-box suggestions if they are available based on the data passed in
-         * @param data
          */
         function showSuggestions() {
             resetSelection();
 
             matches = false;
-            var data = (settings.filter) ? filterResults($searchBox.val()) : jsonData;
 
+            var data = (settings.filter) ? filterResults($searchBox.val()) : jsonData;
             if (data) {
                 if (data.results) {
                     var $suggestions = '<div id="suggestion-header">' + settings.heading + '</div> ' +
@@ -351,7 +357,7 @@
                     $suggestionBox.html($suggestions);
                     setSuggestionBoxWidth();
                     showSuggestionBox();
-                } else if (settings.showNoSuggestionsMessage) {
+                } else if (settings.showNoSuggestionsMessage && $searchBox.val().length > 0) {
                     setSuggestionBoxWidth();
                     showSuggestionBox();
                     $suggestionBox.html('<div id="no-suggestions">' + settings.noSuggestionsMessage + '</div>');
@@ -402,8 +408,8 @@
                 }
             }
 
-            if (sort) {
-                data.sort(sort);
+            if (settings.sort) {
+                data.sort(settings.sort);
             }
 
             var json = JSON.stringify({"results": data});
@@ -429,13 +435,12 @@
                 setJsonData(json);
                 return this;
             },
-            applyFilter: function (filter) {
-                settings.filter = filter;
-                return this;
-            },
             loadSuggestions: function (url) {
                 loadJson(url);
                 return this;
+            },
+            getJson: function () {
+                return JSON.stringify(jsonData);
             },
             moveUp: function () {
                 moveUp();
@@ -453,9 +458,6 @@
             },
             position: function () {
                 return selectedLi;
-            },
-            jsonData: function () {
-                return JSON.stringify(jsonData);
             },
             select: function (position) {
                 unselect(selectedLi);
@@ -509,14 +511,22 @@
                 settings.ajaxSuccess = ajaxSuccess;
                 return this;
             },
+            filter: function (filter) {
+                settings.filter = filter;
+                return this;
+            },
+            filterPattern: function (pattern) {
+                settings.filterPattern = pattern;
+                return this;
+            },
+            sort: function (sortFunc) {
+                settings.sort = sortFunc;
+                return this;
+            },
             destroy: function () {
                 $searchBox.unbind(this);
                 $suggestionBox.remove();
                 return null;
-            },
-            sort: function (sortFunc) {
-                sort = sortFunc;
-                return this;
             }
         };
     };
