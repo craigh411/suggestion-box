@@ -8,6 +8,7 @@
                 // default settings.
                 topOffset: 0,
                 leftOffset: 0,
+                widthAdjustment: 0,
                 delay: 400, // in ms
                 heading: 'Suggestions',
                 results: 10,
@@ -288,7 +289,7 @@
          * Sets the width of the suggestion box
          */
         function setSuggestionBoxWidth() {
-            var searchBoxWidth = getSearchBoxWidth();
+            var searchBoxWidth = getSearchBoxWidth() + settings.widthAdjustment;
             if (settings.menuWidth == 'auto') {
                 $suggestionBox.css({
                     'min-width': searchBoxWidth
@@ -310,11 +311,7 @@
                 getCssValue($searchBox, 'border-left-width') +
                 getCssValue($searchBox, 'border-right-width') +
                 getCssValue($searchBox, 'padding-left') +
-                getCssValue($searchBox, 'padding-right') -
-                getCssValue($suggestionBox, 'border-left-width') -
-                getCssValue($suggestionBox, 'border-right-width') -
-                getCssValue($suggestionBox, 'padding-left') -
-                getCssValue($suggestionBox, 'padding-right')
+                getCssValue($searchBox, 'padding-right')
             );
         }
 
@@ -440,14 +437,6 @@
                 getSuggestions(url);
                 return this;
             },
-            showSuggestions: function (suggestions) {
-                $searchBox.focus();
-                if (suggestions) {
-                    setJsonData(suggestions);
-                }
-                showSuggestions();
-                return this;
-            },
             addSuggestions: function (json) {
                 setJsonData(json);
                 return this;
@@ -487,13 +476,13 @@
                 resetSelection();
                 return this;
             },
-            hide: function () {
-                hideSuggestionBox();
-                return this;
-            },
             show: function () {
                 $searchBox.focus();
-                showSuggestionBox();
+                showSuggestions();
+                return this;
+            },
+            hide: function () {
+                hideSuggestionBox();
                 return this;
             },
             url: function (url) {

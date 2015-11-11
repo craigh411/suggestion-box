@@ -8,7 +8,7 @@ describe("Suggestion Box", function () {
         $body.append('<input type="text" id="search" />');
     });
 
-    afterEach(function(){
+    afterEach(function () {
         $("suggestion-box").remove();
     });
 
@@ -56,12 +56,41 @@ describe("Suggestion Box", function () {
         expect($('#suggestion-box').position().top).toBe(expectedPosition);
     });
 
+    it('should set the suggestion box width to the size of the search box', function () {
+        var width = Math.round(Math.random() * (1000));
+
+        var $search = $('#search');
+        $search.css({
+            width: width
+        });
+
+        width += (
+            parseInt($search.css('border-left-width').replace('px', '')) +
+            parseInt($search.css('border-right-width').replace('px', '')) +
+            parseInt($search.css('padding-left').replace('px', '')) +
+            parseInt($search.css('padding-right').replace('px', ''))
+        );
+
+        suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#"}
+            ]
+        })).show();
+
+        expect($('#suggestion-box').width()).toBe(width);
+    });
+
+
     it('should fade In the suggestion box', function () {
         var $suggestionBox = $('#suggestion-box');
         var $search = $('#search');
         spyOn($.fn, 'fadeIn');
-        suggestionBox = $search.suggestionBox();
-        suggestionBox.show();
+
+        suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#"}
+            ]
+        })).show();
 
         expect($suggestionBox.fadeIn).toHaveBeenCalled();
         suggestionBox.destroy();
@@ -72,8 +101,11 @@ describe("Suggestion Box", function () {
         var $search = $('#search');
         spyOn($.fn, 'fadeIn');
 
-        suggestionBox = $search.suggestionBox({fadeIn: false});
-        suggestionBox.show();
+        suggestionBox = $search.suggestionBox({fadeIn: false}).addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#"}
+            ]
+        })).show();
 
         expect($suggestionBox.fadeIn).not.toHaveBeenCalled();
         suggestionBox.destroy();
@@ -85,8 +117,11 @@ describe("Suggestion Box", function () {
         var $search = $('#search');
         spyOn($.fn, 'fadeOut');
 
-        suggestionBox = $search.suggestionBox({fadeOut: true});
-        suggestionBox.show().hide();
+        suggestionBox = $search.suggestionBox({fadeOut: true}).addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#"}
+            ]
+        })).show().hide();
 
         expect($suggestionBox.fadeOut).toHaveBeenCalled();
         suggestionBox.destroy();
@@ -97,8 +132,11 @@ describe("Suggestion Box", function () {
         var $search = $('#search');
         spyOn($.fn, 'fadeOut');
 
-        suggestionBox = $search.suggestionBox();
-        suggestionBox.show().hide();
+        suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#"}
+            ]
+        })).show().hide();
 
         expect($suggestionBox.fadeOut).not.toHaveBeenCalled();
         expect($suggestionBox.css('display')).toBe('none');
@@ -120,7 +158,8 @@ describe("Suggestion Box", function () {
         var suggestionBox = $search.suggestionBox({heading: 'foobar'});
         jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
         var suggestions = getJSONFixture('suggestions.json');
-        suggestionBox.showSuggestions(suggestions);
+        $search.suggestionBox({heading: 'foobar'}).addSuggestions(suggestions).show();
+
         expect($('#suggestion-header').text()).toBe('foobar');
         suggestionBox.destroy();
     });
@@ -130,7 +169,7 @@ describe("Suggestion Box", function () {
         var suggestionBox = $search.suggestionBox({results: 2});
         jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
         var suggestions = getJSONFixture('suggestions.json');
-        suggestionBox.showSuggestions(suggestions);
+        $search.suggestionBox({results: 2}).addSuggestions(suggestions).show();
 
         expect($('#suggestion-box').find('li').size()).toBe(2);
         suggestionBox.destroy();
@@ -145,7 +184,8 @@ describe("Suggestion Box", function () {
         });
 
         $search.val('foo');
-        suggestionBox.showSuggestions(JSON.stringify({}));
+        suggestionBox.addSuggestions(JSON.stringify({})).show();
+
 
         expect($('#suggestion-box').css('display')).toBe('block');
         expect($('#no-suggestions').text()).toBe('No Suggestions');
@@ -157,10 +197,20 @@ describe("Suggestion Box", function () {
     it('should not display when suggestions are not available', function () {
         var $search = $('#search');
         suggestionBox = $search.suggestionBox();
-        suggestionBox.showSuggestions(JSON.stringify({}));
+        suggestionBox.show(JSON.stringify({}));
 
         expect($('#suggestion-box').css('display')).toBe('none');
         suggestionBox.destroy();
+    });
+
+    it('should show a no suggestions message when suggestions are not available but showNoSuggestionsMessage is true', function () {
+        var $search = $('#search');
+        suggestionBox = $search.suggestionBox({showNoSuggestionsMessage: true});
+        suggestionBox.show(JSON.stringify({}));
+
+        expect($('#suggestion-box').css('display')).toBe('block');
+        suggestionBox.destroy();
+
     });
 
     describe('when displayed', function () {
@@ -180,7 +230,7 @@ describe("Suggestion Box", function () {
             jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
             var suggestions = getJSONFixture('suggestions.json');
             $search.focus();
-            suggestionBox.showSuggestions(suggestions);
+            suggestionBox.addSuggestions(suggestions).show();
         });
 
         afterEach(function () {
@@ -323,14 +373,14 @@ describe("Suggestion Box", function () {
     });
 
     // filtering
-    it('should add json', function(){
+    it('should add json', function () {
         var json = JSON.stringify({"results": [{"suggestion": "Suggestion 1", "url": "suggestion1.html"}]});
         suggestionBox.addSuggestions(json);
         expect(suggestionBox.getJson()).toBe(json);
         suggestionBox.destroy();
     });
 
-    it('should make an ajax call to a json file', function(){
+    it('should make an ajax call to a json file', function () {
         spyOn($, 'ajax');
         suggestionBox.loadSuggestions('suggestions.json');
         expect($.ajax.calls.mostRecent().args[0].url).toBe('suggestions.json');
@@ -338,7 +388,7 @@ describe("Suggestion Box", function () {
     });
 
 
-    it('should filter results', function(){
+    it('should filter results', function () {
         $suggestionBox = $('#suggestion-box');
         $search = $('#search');
         jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
@@ -348,12 +398,12 @@ describe("Suggestion Box", function () {
 
         $search.focus();
         $search.val('Suggestion 1');
-        suggestionBox.showSuggestions();
+        suggestionBox.show();
         expect($suggestionBox.find('li').size()).toBe(1);
         suggestionBox.destroy();
     });
 
-    it('should filter results by given regex pattern', function(){
+    it('should filter results by given regex pattern', function () {
         $suggestionBox = $('#suggestion-box');
         $search = $('#search');
         jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
@@ -361,7 +411,7 @@ describe("Suggestion Box", function () {
 
         suggestionBox = $search.suggestionBox({filter: true, filterPattern: "^{INPUT}$"}).addSuggestions(suggestions);
         $search.val('suggestion');
-        suggestionBox.showSuggestions();
+        suggestionBox.show();
         expect($suggestionBox.find('li').size()).toBe(0);
 
         suggestionBox.destroy();

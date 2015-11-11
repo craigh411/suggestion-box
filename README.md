@@ -51,7 +51,7 @@ Make sure you are outputting the JSON in the correct format (see below).
 
 #### Getting user input
 
-`Suggestion-box` automatically sends a paramater called ``search`` in the `querystring` of the ajax call which allows you to get the user input from your scripts. You may change this paramater name if you wish using the `paramName` option:
+`Suggestion-box` automatically sends a parameter called ``search`` in the `querystring` of the ajax call which allows you to get the user input from your scripts. You may change this parameter name if you wish using the `paramName` option:
  
  ```javascript
  $('#mySearch').suggestionBox({url : 'path/to/script', paramName: 'input'});
@@ -193,7 +193,8 @@ menuWidth     | How you would like the suggestion box width to be calculated, ei
 delay         | The number of milliseconds to wait until to consider the user to have stopped typing. An ajax call to                  the given suggestion url will be made after this time. | 400
 topOffset     | The number of pixels you would like to move the suggestion boxes' top position | 0
 leftOffset    | The number of pixels you would like to move the suggestion boxes' left position | 0
-paramName     | The paramater name you would like to use in your query string for requests | search
+widthAdjustment  | The number of pixels you would like to adjust the suggestion box width by. | 0
+paramName     | The parameter name you would like to use in your query string for requests | search
 ajaxError     | A function to define what should happen on ajax error, by default this performs a console.log() which will be overridden if supplied | function(data){...}
 ajaxSuccess   | A function to define custom work to perform on ajax success. This will not override the default functionality | function(data){}
 showNoSuggestionsMessage | Shows the noSuggestionsMessage when no suggestions can be found | false
@@ -217,7 +218,6 @@ suggestionBox.dstroy();
 Method  | Description  | Chainable
 ------------- | -------------|------------
 getSuggestions(url) | Gets the suggestion from the given url and displays them | Yes
-showSuggestions() | Displays the suggestion box with the current suggestions | Yes
 addSuggestions(suggestions) | Sets the JSON suggestions but doesn't display them | Yes
 loadSuggestions(url) | Loads the JSON suggestions from the given url but doesn't display them | Yes
 getJson() | Returns the JSON object used to populate the suggestion box | No
@@ -230,7 +230,7 @@ moveDown() | Moves the selected suggestion down by 1 | Yes
 select(position) | Selects the suggestion at the given position | Yes
 reset() | Resets selection to starting position. Note: this does not reset the json data | Yes
 hide() | Hides the suggestion box | Yes
-show() | Displays the suggestion box | Yes
+show() | Displays the suggestion box if there are suggestions or no suggestions message if showNoSuggestions option is true | Yes
 fadeIn(bool) | Sets the value of the fadeIn option | Yes
 fadeOut(bool) | Sets the value of the fadeOut option | Yes
 delay(ms) | Sets the value of the delay option | Yes
