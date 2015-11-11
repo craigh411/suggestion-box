@@ -27,6 +27,8 @@ Make sure you have included `jQuery` in your project: https://code.jquery.com. T
 <script src="path/to/js/suggestion-box.min.js"></script>
 ```
 
+#### Bower
+
 Suggestion box is also availble via `bower`, simply use:
 
 `bower install suggestion-box`
