@@ -1,6 +1,6 @@
 {
   "name": "suggestion-box",
-  "version": "v1.0.2",
+  "version": "v1.0.3",
   "description": "Suggestion box for search",
   "main": "gulpfile.js",
   "dependencies": {},

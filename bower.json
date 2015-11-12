@@ -1,6 +1,6 @@
 {
   "name": "suggestion-box",
-  "version": "v1.0.2",
+  "version": "v1.0.3",
   "homepage": "https://github.com/craigh411/suggestion-box",
   "authors": [
     "Craig Humphreys"
@@ -11,7 +11,8 @@
     "dist/js/suggestion-box.min.js"
   ],
   "dependencies": {
-    "jquery": "~1.11.3"
+    "jquery": "~1.11.3",
+    "suggestion-box": "~1.0.2"
   },
   "moduleType": [],
   "keywords": [
