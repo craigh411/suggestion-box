@@ -60,6 +60,9 @@
         var request = {};
         var jsonData = {};
 
+        // The value of the input when ajax was called
+        var ajaxCalledVal;
+
 
         $suggestionBox.on({
             mousemove: function (e) {
@@ -94,19 +97,24 @@
                 }
             },
             keyup: function (e) {
+
                 // Ignore the navigation keys. We don't want to fire ajax calls when navigating
                 if (e.which !== UP_ARROW_KEY && e.which !== DOWN_ARROW_KEY && e.which !== ESCAPE_KEY) {
                     if (settings.url) {
+                        resetSelection();
+
                         if (timer) {
                             clearTimeout(timer);
                         }
+                    }
+
+                    if (settings.url) {
                         // set the request to be sent sent as the data parameter
                         request[settings.paramName] = $searchBox.val();
                         timer = setTimeout(function () {
                             getSuggestions(settings.url)
                         }, settings.delay);
                     }
-
                     if (settings.filter) {
                         showSuggestions();
                     }
@@ -168,6 +176,8 @@
         function resetSelection() {
             selectedHref = '#';
             selectedLi = -1;
+            // remove all selected on reset
+            $suggestionBox.find('li').removeClass('selected');
         }
 
         /**
@@ -215,13 +225,30 @@
          * @param url
          */
         function getSuggestions(url) {
+            ajaxCalledVal = $searchBox.val();
             $.ajax({
                 url: url,
                 data: request,
                 dataType: 'json',
                 success: function (data) {
+
+                    var selectionHasChanged = true;
+                    var currentLi = selectedLi;
+
+                    if (jsonData.results && data.results) {
+                        selectionHasChanged = (JSON.stringify(jsonData.results[selectedLi]) !== JSON.stringify(data.results[selectedLi]))
+                    }
+
                     setJsonData(data);
                     showSuggestions();
+
+                    // Keep selection if no new information has been entered since ajax was called and the selection is the same.
+                    // This prevents the flick back effect when menu has the same data but the ajax hasn't finished.
+                    if (currentLi > -1 && ($searchBox.val() === ajaxCalledVal) && !selectionHasChanged) {
+                        selectedLi = currentLi;
+                        select(selectedLi);
+                    }
+
                     settings.ajaxSuccess(data);
                 },
                 error: function (e) {
