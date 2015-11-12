@@ -79,6 +79,11 @@
                     unselect(selectedLi);
                     resetSelection();
                 }
+            },
+            click: function (e) {
+                if (e.target.nodeName === 'A') {
+                    $suggestionBox.css('display', 'none');
+                }
             }
         });
 
@@ -217,6 +222,7 @@
          * Redirects the user to the selected suggestion location
          */
         function goToSelection() {
+            $suggestionBox.css('display', 'none');
             window.location = selectedHref;
         }
 
