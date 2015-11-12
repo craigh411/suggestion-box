@@ -104,7 +104,7 @@
             keyup: function (e) {
 
                 // Ignore the navigation keys. We don't want to fire ajax calls when navigating
-                if (e.which !== UP_ARROW_KEY && e.which !== DOWN_ARROW_KEY && e.which !== ESCAPE_KEY) {
+                if (e.which !== UP_ARROW_KEY && e.which !== DOWN_ARROW_KEY && e.which !== ESCAPE_KEY && e.which !== ENTER_KEY) {
                     if (settings.url) {
                         resetSelection();
 
