@@ -105,7 +105,9 @@
                         timer = setTimeout(function () {
                             getSuggestions(settings.url)
                         }, settings.delay);
-                    } else if (settings.filter) {
+                    }
+
+                    if (settings.filter) {
                         showSuggestions();
                     }
                 }
@@ -315,6 +317,34 @@
             );
         }
 
+        function createSuggestionsList(data) {
+            var $suggestions = '<div id="suggestion-header">' + settings.heading + '</div> ' +
+                '<ul id="suggestion-box-list">';
+
+            $.each(data.results, function (key, value) {
+                if (value.suggestion && value.url) {
+                    matches = true;
+                    var attr = "";
+                    if (value.attr) {
+                        $.each(value.attr, function (key, value) {
+                            attr += value.name + '="' + value.value + '" ';
+                        });
+                    }
+                    $suggestions += '<li><a href="' + value.url + '" ' + attr + '>' + value.suggestion + '</a></li>';
+                } else {
+                    return false;
+                }
+
+                // break when maximum results have been found
+                if (key === (settings.results - 1)) {
+                    return false;
+                }
+            });
+            $suggestions += '</ul>';
+
+            return $suggestions;
+        }
+
         /**
          * Shows the suggestion-box suggestions if they are available based on the data passed in
          */
@@ -326,29 +356,7 @@
             var data = (settings.filter) ? filterResults($searchBox.val()) : jsonData;
             if (data) {
                 if (data.results) {
-                    var $suggestions = '<div id="suggestion-header">' + settings.heading + '</div> ' +
-                        '<ul id="suggestion-box-list">';
-
-                    $.each(data.results, function (key, value) {
-                        if (value.suggestion && value.url) {
-                            matches = true;
-                            var attr = "";
-                            if (value.attr) {
-                                $.each(value.attr, function (key, value) {
-                                    attr += value.name + '="' + value.value + '" ';
-                                });
-                            }
-                            $suggestions += '<li><a href="' + value.url + '" ' + attr + '>' + value.suggestion + '</a></li>';
-                        } else {
-                            return false;
-                        }
-
-                        // break when maximum results have been found
-                        if (key === (settings.results - 1)) {
-                            return false;
-                        }
-                    });
-                    $suggestions += '</ul>';
+                    var $suggestions = createSuggestionsList(data);
                 }
             }
 
