@@ -33,12 +33,14 @@
 
 
         // Inject the suggestion box into the body of the web page
-        $('body').append('<div id="suggestion-box"></div>');
+        var randId = 'suggestion-box-' + Math.floor(Math.random() * 10000000);
+        // Inject the suggestion box into the body of the web page
+        $('body').append('<div id="' + randId + '" class="suggestion-box"></div>');
 
         // Turn off autocomplete
         $searchBox.attr('autocomplete', 'off');
 
-        var $suggestionBox = $('#suggestion-box');
+        var $suggestionBox = $('#'+randId);
         setSuggestionBoxPosition();
 
         // Constants for key values
@@ -354,8 +356,8 @@
         }
 
         function createSuggestionsList(data) {
-            var $suggestions = '<div id="suggestion-header">' + settings.heading + '</div> ' +
-                '<ul id="suggestion-box-list">';
+            var $suggestions = '<div class="suggestion-header">' + settings.heading + '</div> ' +
+                '<ul class="suggestion-box-list">';
 
             $.each(data.results, function (key, value) {
                 if (value.suggestion && value.url) {
@@ -579,6 +581,9 @@
             enterKeyAction: function (action) {
                 settings.enterKeyAction = action;
                 return this;
+            },
+            getId: function () {
+                return randId;
             },
             destroy: function () {
                 $searchBox.unbind(this);
