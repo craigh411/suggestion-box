@@ -11,8 +11,7 @@
     "dist/js/suggestion-box.min.js"
   ],
   "dependencies": {
-    "jquery": "~1.11.3",
-    "suggestion-box": "~1.0.2"
+    "jquery": "~1.11.3"
   },
   "moduleType": [],
   "keywords": [
