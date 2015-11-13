@@ -166,7 +166,7 @@ describe("Suggestion Box", function () {
 
     it('shows only 2 results', function () {
         var $search = $('#search');
-        var suggestionBox = $search.suggestionBox({results: 2});
+        //var suggestionBox = $search.suggestionBox({results: 2});
         jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
         var suggestions = getJSONFixture('suggestions.json');
         $search.suggestionBox({results: 2}).addSuggestions(suggestions).show();
@@ -211,6 +211,117 @@ describe("Suggestion Box", function () {
         expect($('#suggestion-box').css('display')).toBe('block');
         suggestionBox.destroy();
 
+    });
+
+    it('should close hide the menu when the enter button is pressed on a selection', function () {
+        var $search = $('#search');
+
+        suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#"}
+            ]
+        })).show();
+
+        $search.focus();
+        suggestionBox.select(0);
+        var e = $.Event('keydown');
+        e.which = 13;
+        $search.trigger(e);
+
+        expect($('#suggestion-box').css('display')).toBe('none');
+        suggestionBox.destroy();
+    });
+
+    it('should add an attribute to the anchor tag', function () {
+        var $search = $('#search');
+
+        suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#", "attr": [{"class": "foo"}]}
+            ]
+        })).show();
+
+        expect($('#suggestion-box').find('.foo').length).toBe(1);
+        suggestionBox.destroy();
+    });
+
+    it('should adds multiple attributes to the anchor tag', function () {
+        var $search = $('#search');
+
+        suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#", "attr": [{"class": "foo", "id": "bar"}]}
+            ]
+        })).show();
+
+        $suggestionBox = $('#suggestion-box');
+        expect($suggestionBox.find('.foo').length).toBe(1);
+        expect($suggestionBox.find('#bar').length).toBe(1);
+        suggestionBox.destroy();
+    });
+
+    it('override the enter key function', function(){
+        var $search = $('#search');
+        spyOn(console, 'log');
+
+        suggestionBox = $search.suggestionBox({enterKeyAction: function(){console.log('foo')}}).addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#"}
+            ]
+        })).show();
+
+
+        $search.focus();
+        suggestionBox.select(0);
+        var e = $.Event('keydown');
+        e.which = 13;
+        $search.trigger(e);
+
+        expect(console.log).toHaveBeenCalled();
+        suggestionBox.destroy();
+
+    });
+
+    it('overrides the enter key function with the enterKeyAction fucntion', function(){
+        var $search = $('#search');
+        spyOn(console, 'log');
+
+        suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#"}
+            ]
+        })).enterKeyAction(function(){console.log('foo')}).show();
+
+
+        $search.focus();
+        suggestionBox.select(0);
+        var e = $.Event('keydown');
+        e.which = 13;
+        $search.trigger(e);
+
+        expect(console.log).toHaveBeenCalled();
+        suggestionBox.destroy();
+
+    });
+
+    it('should not prevent enter key default when nothing is selected', function(){
+        var $search = $('#search');
+        spyOn(console, 'log');
+
+        suggestionBox = $search.suggestionBox({enterKeyAction: function(){console.log('foo')}}).addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#"}
+            ]
+        })).show();
+
+
+        $search.focus();
+        var e = $.Event('keydown');
+        e.which = 13;
+        $search.trigger(e);
+
+        expect(console.log).not.toHaveBeenCalled();
+        suggestionBox.destroy();
     });
 
     describe('when displayed', function () {

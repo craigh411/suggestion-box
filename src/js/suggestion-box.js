@@ -24,6 +24,9 @@
                 },
                 ajaxSuccess: function (data) {
                 },
+                enterKeyAction: function () {
+                    goToSelection();
+                },
                 paramName: 'search'
             },
             options);
@@ -135,9 +138,9 @@
                         e.preventDefault();
                         moveUp();
                     }
-                    if (e.which === ENTER_KEY && selectedHref !== '#') {
+                    if (e.which === ENTER_KEY && selectedLi > -1) {
                         e.preventDefault();
-                        goToSelection();
+                        settings.enterKeyAction();
                     }
                     if (e.which == ESCAPE_KEY) {
                         e.preventDefault();
@@ -360,7 +363,10 @@
                     var attr = "";
                     if (value.attr) {
                         $.each(value.attr, function (key, value) {
-                            attr += value.name + '="' + value.value + '" ';
+                            var keys = Object.keys(value);
+                            for (var i = 0; i < keys.length; i++) {
+                                attr += keys[i] + '="' + value[keys[i]] + '" '
+                            }
                         });
                     }
                     $suggestions += '<li><a href="' + value.url + '" ' + attr + '>' + value.suggestion + '</a></li>';
@@ -568,6 +574,10 @@
             },
             sort: function (sortFunc) {
                 settings.sort = sortFunc;
+                return this;
+            },
+            enterKeyAction: function (action) {
+                settings.enterKeyAction = action;
                 return this;
             },
             destroy: function () {
