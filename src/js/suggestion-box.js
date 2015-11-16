@@ -27,7 +27,8 @@
                 onClick: function (e) {
                     goToSelection();
                 },
-                paramName: 'search'
+                paramName: 'search',
+                customValues: []
             },
             options);
 
@@ -75,9 +76,13 @@
             $searchBox.val('');
         }
 
+        function isSuggestion(e) {
+            return $(e.target).parents('a').length > 0 || e.target.nodeName === 'A';
+        }
+
         $suggestionBox.on({
             mousemove: function (e) {
-                if (e.target.nodeName === 'A') {
+                if (isSuggestion(e)) {
                     unselect(selectedLi);
                     selectedLi = getSelectionMouseIsOver(e);
                     select(selectedLi);
@@ -85,14 +90,14 @@
                 }
             },
             mouseout: function (e) {
-                if (e.target.nodeName === 'A') {
+                if (isSuggestion(e)) {
                     mouseHover = false;
                     unselect(selectedLi);
                     resetSelection();
                 }
             },
             click: function (e) {
-                if (e.target.nodeName === 'A') {
+                if (isSuggestion(e)) {
                     e.preventDefault();
                     doClick(e);
                 }
@@ -280,7 +285,7 @@
          * @returns {Number}
          */
         function getSelectionMouseIsOver(e) {
-            var $parentLi = $(e.target).parent('li');
+            var $parentLi = $(e.target).parents('li');
             return $parentLi.parent().children().index($parentLi);
         }
 
@@ -377,7 +382,17 @@
                             }
                         });
                     }
-                    $suggestions += '<li><a href="' + value.url + '" ' + attr + '>' + value.suggestion + '</a></li>';
+                    $suggestions += '<li><a href="' + value.url + '" ' + attr + '>' + value.suggestion;
+
+                    for (var i = 0; i < settings.customValues.length; i++) {
+                        var custom = value[settings.customValues[i]];
+                        if (custom) {
+                            $suggestions += value[settings.customValues[i]];
+                        }
+
+                    }
+
+                    $suggestions += '</a></li>';
                 } else {
                     return false;
                 }
@@ -471,7 +486,9 @@
         function filterResults(value) {
             var data;
 
+            value = value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
             filterPattern = settings.filterPattern.replace("{INPUT}", value);
+
             if (!value) {
                 return {};
             }
@@ -602,11 +619,7 @@
             },
             reservedKey: function (e) {
                 var key = e.which;
-                if (key === ENTER_KEY || key === ESCAPE_KEY || key === UP_ARROW_KEY || key === DOWN_ARROW_KEY) {
-                    return true;
-                }
-
-                return false;
+                return key === ENTER_KEY || key === ESCAPE_KEY || key === UP_ARROW_KEY || key === DOWN_ARROW_KEY
             },
             destroy: function () {
                 $searchBox.unbind(this);
