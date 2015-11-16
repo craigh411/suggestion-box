@@ -24,7 +24,7 @@
                 },
                 ajaxSuccess: function (data) {
                 },
-                enterKeyAction: function () {
+                onClick: function (e) {
                     goToSelection();
                 },
                 paramName: 'search'
@@ -40,7 +40,7 @@
         // Turn off autocomplete
         $searchBox.attr('autocomplete', 'off');
 
-        var $suggestionBox = $('#'+randId);
+        var $suggestionBox = $('#' + randId);
         setSuggestionBoxPosition();
 
         // Constants for key values
@@ -69,6 +69,12 @@
         var ajaxCalledVal;
 
 
+        function doClick(e) {
+            settings.onClick(e);
+            $suggestionBox.css('display', 'none');
+            $searchBox.val('');
+        }
+
         $suggestionBox.on({
             mousemove: function (e) {
                 if (e.target.nodeName === 'A') {
@@ -87,7 +93,8 @@
             },
             click: function (e) {
                 if (e.target.nodeName === 'A') {
-                    $suggestionBox.css('display', 'none');
+                    e.preventDefault();
+                    doClick(e);
                 }
             }
         });
@@ -142,7 +149,7 @@
                     }
                     if (e.which === ENTER_KEY && selectedLi > -1) {
                         e.preventDefault();
-                        settings.enterKeyAction();
+                        $suggestionBox.find('.selected a').click();
                     }
                     if (e.which == ESCAPE_KEY) {
                         e.preventDefault();
@@ -227,7 +234,6 @@
          * Redirects the user to the selected suggestion location
          */
         function goToSelection() {
-            $suggestionBox.css('display', 'none');
             window.location = selectedHref;
         }
 
@@ -389,12 +395,13 @@
         /**
          * Shows the suggestion-box suggestions if they are available based on the data passed in
          */
-        function showSuggestions() {
+        function showSuggestions(forceShow) {
             resetSelection();
 
             matches = false;
 
             var data = (settings.filter) ? filterResults($searchBox.val()) : jsonData;
+
             if (data) {
                 if (data.results) {
                     var $suggestions = createSuggestionsList(data);
@@ -402,15 +409,23 @@
             }
 
             // Check for focus before showing suggestion box. User could have clicked outside before request finished.
-            if (active) {
+            if (active || forceShow) {
                 if (matches) {
                     $suggestionBox.html($suggestions);
                     setSuggestionBoxWidth();
                     showSuggestionBox();
+                } else if (forceShow) {
+                    if (settings.showNoSuggestionsMessage) {
+                        $suggestionBox.html('<div class="no-suggestions">' + settings.noSuggestionsMessage + '</div>');
+                    }
+                    setSuggestionBoxWidth();
+                    showSuggestionBox();
+
                 } else if (settings.showNoSuggestionsMessage && $searchBox.val().length > 0) {
                     setSuggestionBoxWidth();
                     showSuggestionBox();
-                    $suggestionBox.html('<div id="no-suggestions">' + settings.noSuggestionsMessage + '</div>');
+
+                    $suggestionBox.html('<div class="no-suggestions">' + settings.noSuggestionsMessage + '</div>');
                 } else {
                     hideSuggestionBox();
                 }
@@ -525,9 +540,9 @@
                 resetSelection();
                 return this;
             },
-            show: function () {
-                $searchBox.focus();
-                showSuggestions();
+            show: function (force) {
+                force = (force) ? force : false;
+                showSuggestions(force);
                 return this;
             },
             hide: function () {
@@ -578,12 +593,20 @@
                 settings.sort = sortFunc;
                 return this;
             },
-            enterKeyAction: function (action) {
-                settings.enterKeyAction = action;
+            onClick: function (action) {
+                settings.onClick = action;
                 return this;
             },
-            getId: function () {
-                return randId;
+            getId: function (withHash) {
+                return (withHash) ? '#' + randId : randId;
+            },
+            reservedKey: function (e) {
+                var key = e.which;
+                if (key === ENTER_KEY || key === ESCAPE_KEY || key === UP_ARROW_KEY || key === DOWN_ARROW_KEY) {
+                    return true;
+                }
+
+                return false;
             },
             destroy: function () {
                 $searchBox.unbind(this);

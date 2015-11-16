@@ -5,7 +5,7 @@ $header-color: #999;
 $text-color: #000;
 $font-family: inherit;
 
-#suggestion-box {
+.suggestion-box {
   color: $text-color;
   display: none;
   font-family: $font-family;
@@ -14,7 +14,7 @@ $font-family: inherit;
   padding: 0;
   margin: 0 10px 0 0;
 
-  #no-suggestions {
+  .no-suggestions {
     padding: 10px;
   }
 
@@ -43,16 +43,12 @@ $font-family: inherit;
     background-color: $hover-color;
   }
 
-
-
-  #suggestion-header {
+  .suggestion-header {
     margin-right: 10px;
     margin-top: 5px;
     font-weight: bold;
     font-size: 0.8em;
     color: $header-color;
     float: right;
-
   }
-
 }
