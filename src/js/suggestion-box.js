@@ -486,6 +486,7 @@
         function filterResults(value) {
             var data;
 
+            // escape regex chars
             value = value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
             filterPattern = settings.filterPattern.replace("{INPUT}", value);
 
