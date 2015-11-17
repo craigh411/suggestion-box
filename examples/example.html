@@ -29,20 +29,12 @@
 </div>
 <script>
     $(document).ready(function () {
-
-        var suggestionBox = $('#search').suggestionBox().addSuggestions(JSON.stringify({
-            "results": [
-                {"suggestion": "suggestion", "url": "#"}
-            ]
-        })).show(true);
-
-
-/*        $('#search').suggestionBox({
+        $('#search').suggestionBox({
             filter: true,
             widthAdjustment: -8,
             leftOffset: 4,
             topOffset: 0
-        }).loadSuggestions('suggestions.json');*/
+        }).loadSuggestions('suggestions.json');
     });
 </script>
 </body>
