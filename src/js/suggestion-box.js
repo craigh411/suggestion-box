@@ -43,6 +43,9 @@
             var $suggestionBox = null;
             var randId = null;
 
+            /**
+             * Initialise the plugin
+             */
             (function init() {
                 // Inject the suggestion box into the body of the web page
                 randId = 'suggestion-box-' + Math.floor(Math.random() * 10000000);
@@ -95,14 +98,6 @@
                 bottomRight: $searchBox.css('border-bottom-right-radius')
             };
 
-            function doClick(e) {
-                settings.onClick(e);
-            }
-
-            function isSuggestion(e) {
-                return $(e.target).parents('a').length > 0 || e.target.nodeName === 'A';
-            }
-
 
             $suggestionBox.on({
                 mousemove: function (e) {
@@ -120,9 +115,9 @@
                         unselect(selectedLi);
                         resetSelection();
                     } else if ($(':focus').attr('id') !== $searchBox.attr('id')) {
+                        // We're out of the suggestion box so re-focus on search
                         $searchBox.focus();
                     }
-
                     mouseHover = false;
                 },
                 click: function (e) {
@@ -147,24 +142,22 @@
                     }
                 },
                 keyup: function (e) {
-
                     // Ignore the navigation keys. We don't want to fire ajax calls when navigating
                     if (e.which !== UP_ARROW_KEY && e.which !== DOWN_ARROW_KEY && e.which !== ESCAPE_KEY && e.which !== ENTER_KEY) {
                         if (settings.url) {
                             resetSelection();
-
                             if (timer) {
                                 clearTimeout(timer);
                             }
-                        }
 
-                        if (settings.url) {
                             // set the request to be sent sent as the data parameter
                             request[settings.paramName] = $searchBox.val();
                             timer = setTimeout(function () {
                                 getSuggestions(settings.url)
                             }, settings.delay);
                         }
+
+                        // If filter set to true, call showSuggestions() - it will filter the results for us
                         if (settings.filter) {
                             showSuggestions();
                         }
@@ -204,6 +197,23 @@
             });
 
             /**
+             * Performs the click action, this can be called for any event you want to recreate a click action for.
+             * @param e
+             */
+            function doClick(e) {
+                settings.onClick(e);
+            }
+
+            /**
+             * Is the given event made on a suggestion?
+             * @param e
+             * @returns {boolean}
+             */
+            function isSuggestion(e) {
+                return $(e.target).parents('a').length > 0 || e.target.nodeName === 'A';
+            }
+
+            /**
              * Selects the suggestion at the given position
              * @param position
              */
@@ -235,11 +245,15 @@
             }
 
 
+            /**
+             * Scrolls the suggestion box to the given position
+             * @param to
+             */
             function doScroll(to) {
                 autoScrolled = true;
 
-                if(to > -1) {
-                     var pos = $suggestionBox.find('li:eq(' + to + ')').position().top -
+                if (to > -1) {
+                    var pos = $suggestionBox.find('li:eq(' + to + ')').position().top -
                         $suggestionBox.find('li:eq(0)').position().top;
                 }
 
@@ -438,6 +452,43 @@
                 );
             }
 
+            /**
+             * Builds the attributes from the JSON
+             * @param value
+             * @param attr
+             * @returns {*}
+             */
+            function createAttributes(value, attr) {
+                $.each(value.attr, function (key, value) {
+                    var keys = Object.keys(value);
+                    for (var i = 0; i < keys.length; i++) {
+                        attr += keys[i] + '="' + value[keys[i]] + '" '
+                    }
+                });
+                return attr;
+            }
+
+            /**
+             * Adds any given custom values from the JSON file
+             * @param value
+             * @param $suggestions
+             * @returns {*}
+             */
+            function createCustomValues(value, $suggestions) {
+                for (var i = 0; i < settings.customValues.length; i++) {
+                    var custom = value[settings.customValues[i]];
+                    if (custom) {
+                        $suggestions += value[settings.customValues[i]];
+                    }
+                }
+                return $suggestions;
+            }
+
+            /**
+             * Builds the suggestions list from the JSON
+             * @param data
+             * @returns {string}
+             */
             function createSuggestionsList(data) {
                 var $suggestions = '<div class="suggestion-header">' + settings.heading + '</div> ' +
                     '<ul class="suggestion-box-list">';
@@ -447,23 +498,10 @@
                         matches = true;
                         var attr = "";
                         if (value.attr) {
-                            $.each(value.attr, function (key, value) {
-                                var keys = Object.keys(value);
-                                for (var i = 0; i < keys.length; i++) {
-                                    attr += keys[i] + '="' + value[keys[i]] + '" '
-                                }
-                            });
+                            attr = createAttributes(value, attr);
                         }
                         $suggestions += '<li><a href="' + value.url + '" ' + attr + '>' + value.suggestion;
-
-                        for (var i = 0; i < settings.customValues.length; i++) {
-                            var custom = value[settings.customValues[i]];
-                            if (custom) {
-                                $suggestions += value[settings.customValues[i]];
-                            }
-
-                        }
-
+                        $suggestions = createCustomValues(value, $suggestions);
                         $suggestions += '</a></li>';
                     } else {
                         return false;
@@ -477,6 +515,10 @@
                 $suggestions += '</ul>';
 
                 return $suggestions;
+            }
+
+            function getNoSuggestionMarkup() {
+                $suggestionBox.html('<div class="no-suggestions">' + settings.noSuggestionsMessage + '</div>');
             }
 
             /**
@@ -498,26 +540,28 @@
                 // Check for focus before showing suggestion box. User could have clicked outside before request finished.
                 if (active || forceShow) {
                     if (matches) {
+                        // we have some suggestions, so show them
                         $suggestionBox.html($suggestions);
                         setSuggestionBoxWidth();
                         showSuggestionBox();
                     } else if (forceShow) {
+                        // We don't have any suggestions, but we are forcing display, show it regardless.
                         if (settings.showNoSuggestionsMessage) {
-                            $suggestionBox.html('<div class="no-suggestions">' + settings.noSuggestionsMessage + '</div>');
+                            getNoSuggestionMarkup();
                         }
                         setSuggestionBoxWidth();
                         showSuggestionBox();
-
                     } else if (settings.showNoSuggestionsMessage && $searchBox.val().length > 0) {
+                        // We don't have any suggestions for input and want to display no suggestion message
                         setSuggestionBoxWidth();
                         showSuggestionBox();
-
-                        $suggestionBox.html('<div class="no-suggestions">' + settings.noSuggestionsMessage + '</div>');
+                        getNoSuggestionMarkup();
                     } else {
-
+                        // Nope,no matches, hide the suggestion box
                         hideSuggestionBox();
                     }
                 } else {
+                    // The search box no longer has focus, hide the suggestion box
                     hideSuggestionBox();
                 }
             }
@@ -568,19 +612,19 @@
                 filterPattern = settings.filterPattern.replace("{INPUT}", value);
 
                 if (!value) {
+                    // we weren't passed anything to filter against, return empty object
                     return {};
                 }
                 if (jsonData) {
                     if (jsonData.results) {
-
+                        // We have JSON data and user input, so apply the filter
                         var regex = new RegExp(filterPattern, "i");
-
                         data = $.grep(jsonData.results, function (name) {
                             return regex.test(name.suggestion);
                         });
                     }
                 }
-
+                // Sort the results, if sort function passed
                 if (settings.sort) {
                     data.sort(settings.sort);
                 }
@@ -627,7 +671,7 @@
                 select: function (position) {
                     unselect(selectedLi);
                     selectedLi = position;
-                    select(position);
+                    select(position, settings.scrollable);
                     return this;
                 },
                 reset: function () {

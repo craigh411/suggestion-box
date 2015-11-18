@@ -88,7 +88,7 @@ describe("Suggestion Box", function () {
             parseInt($search.css('padding-right').replace('px', ''))
         );
 
-        var suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
+        var suggestionBox = $search.suggestionBox({menuWidth: 'constrain'}).addSuggestions(JSON.stringify({
             "results": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
@@ -222,7 +222,7 @@ describe("Suggestion Box", function () {
     it('should not display when suggestions are not available', function () {
         var $search = $('#search');
 
-        var suggestionBox = $search.suggestionBox().addSuggestions({"results" : [] }).show();
+        var suggestionBox = $search.suggestionBox().addSuggestions({"results": []}).show();
 
         var id = suggestionBox.getId(true);
 
@@ -479,7 +479,7 @@ describe("Suggestion Box", function () {
             expect(suggestionBox.position()).toBe(-1);
         });
 
-        it('selects the suggestion mouse if over on mousemove', function () {
+        it('selects the suggestion if mouse over when the mouse moves', function () {
             suggestionBox.select(3);
             $suggestionBox.find('li:eq(0) a').mousemove();
 
@@ -537,7 +537,7 @@ describe("Suggestion Box", function () {
         var suggestions = getJSONFixture('suggestions.json');
 
         var suggestionBox = $search.suggestionBox({filter: true}).addSuggestions(suggestions);
-        var $suggestionBox =  $(suggestionBox.getId(true));
+        var $suggestionBox = $(suggestionBox.getId(true));
 
         $search.focus();
         $search.val('Suggestion 1');
@@ -548,12 +548,13 @@ describe("Suggestion Box", function () {
     });
 
     it('should filter results by given regex pattern', function () {
-        $suggestionBox = $('#suggestion-box');
+
         $search = $('#search');
         jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
         var suggestions = getJSONFixture('suggestions.json');
 
         suggestionBox = $search.suggestionBox({filter: true, filterPattern: "^{INPUT}$"}).addSuggestions(suggestions);
+        $suggestionBox = $(suggestionBox.getId(true));
         $search.val('suggestion');
         suggestionBox.show();
         expect($suggestionBox.find('li').size()).toBe(0);
@@ -561,5 +562,138 @@ describe("Suggestion Box", function () {
         suggestionBox.destroy();
     });
 
+    it('should sanitize regex characters when filtering', function () {
+
+        $search = $('#search');
+        jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
+        var suggestions = getJSONFixture('suggestions.json');
+
+        suggestionBox = $search.suggestionBox({filter: true, filterPattern: "^{INPUT}$"}).addSuggestions(suggestions);
+        $suggestionBox = $(suggestionBox.getId(true));
+
+        // regex for everything
+        $search.val('.');
+        suggestionBox.show();
+        expect($suggestionBox.find('li').size()).toBe(0);
+
+        suggestionBox.destroy();
+    });
+
+    it('should remove bottom border radius when suggestions are shown and add them back when hidden', function () {
+        $search = $('#search');
+
+        $search.css({
+            'border-bottom-right-radius': 5,
+            'border-bottom-left-radius': 5
+        });
+
+        jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
+        var suggestions = getJSONFixture('suggestions.json');
+
+        suggestionBox = $search.suggestionBox().addSuggestions(suggestions);
+        suggestionBox.show(true);
+
+        expect($search.css('border-bottom-right-radius')).toBe('0px');
+        expect($search.css('border-bottom-left-radius')).toBe('0px');
+        suggestionBox.hide();
+        expect($search.css('border-bottom-right-radius')).toBe('5px');
+        expect($search.css('border-bottom-left-radius')).toBe('5px');
+    });
+
+
+    it('should not change the border-radius when suggestions are shown', function () {
+        $search = $('#search');
+
+        $search.css({
+            'border-bottom-right-radius': 5,
+            'border-bottom-left-radius': 5
+        });
+
+        jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
+        var suggestions = getJSONFixture('suggestions.json');
+
+        suggestionBox = $search.suggestionBox({adjustBorderRadius: false}).addSuggestions(suggestions);
+        suggestionBox.show(true);
+
+        expect($search.css('border-bottom-right-radius')).toBe('5px');
+        expect($search.css('border-bottom-left-radius')).toBe('5px');
+    });
+
+    it('should add scrollbars to the suggestion box', function () {
+        $search = $('#search');
+        jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
+        var suggestions = getJSONFixture('suggestions.json');
+
+        suggestionBox = $search.suggestionBox({height: 10, scrollable: true}).addSuggestions(suggestions);
+        $search.val('s');
+        suggestionBox.show(true);
+
+        $suggestionBox = $(suggestionBox.getId(true));
+
+        expect(
+            $suggestionBox.css('overflow') === 'auto' &&
+            $suggestionBox.get(0).scrollHeight > $suggestionBox.innerHeight()
+        ).toBeTruthy();
+    });
+
+    it('should scroll with the arrow keys', function () {
+        $search = $('#search');
+        jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
+        var suggestions = getJSONFixture('suggestions.json');
+
+        suggestionBox = $search.suggestionBox({height: 10, scrollable: true}).addSuggestions(suggestions);
+        $search.val('s');
+        suggestionBox.show(true);
+
+        $suggestionBox = $(suggestionBox.getId(true));
+        var e = $.Event('keydown');
+        e.which = 40;
+        $search.trigger(e);
+        $search.trigger(e);
+
+        expect($suggestionBox.scrollTop() > 0).toBeTruthy();
+
+        e.which = 38;
+        $search.trigger(e);
+        $search.trigger(e);
+
+        expect($suggestionBox.scrollTop() === 0).toBeTruthy();
+    });
+
+    it('should scroll to position when set', function () {
+        $search = $('#search');
+        jasmine.getJSONFixtures().fixturesPath = 'base/spec/support';
+        var suggestions = getJSONFixture('suggestions.json');
+
+        suggestionBox = $search.suggestionBox({height: 10, scrollable: true}).addSuggestions(suggestions);
+        $search.val('s');
+        suggestionBox.show(true);
+        suggestionBox.select(1);
+
+        $suggestionBox = $(suggestionBox.getId(true));
+        expect($suggestionBox.scrollTop() > 0).toBeTruthy();
+    });
+
+    it('should add a custom value to each suggestion', function () {
+        var suggestionBox = $search.suggestionBox({customValues: ['custom']}).addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#", "custom": " foo"}
+            ]
+        })).show(true);
+
+        $suggestionBox = $(suggestionBox.getId(true));
+        expect(suggestionBox.selectedSuggestion()).toBe("suggestion foo");
+    });
+
+    it('should add multiple custom values to each suggestion', function () {
+        var suggestionBox = $search.suggestionBox({customValues: ['custom1', 'custom2']}).addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#", "custom1": " foo", "custom2": "bar"}
+            ]
+        })).show(true);
+
+        $suggestionBox = $(suggestionBox.getId(true));
+        expect(suggestionBox.selectedSuggestion()).toBe("suggestion foobar");
+    });
 });
 
