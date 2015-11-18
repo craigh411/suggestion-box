@@ -1,4 +1,4 @@
-# suggestion-box
+# suggestion-box 2.0
 
 jQuery suggestion box plugin for search suggestions. 
 
@@ -247,7 +247,8 @@ Method  | Description  | Chainable
 getSuggestions(url) | Gets the suggestion from the given url and displays them | Yes
 addSuggestions(suggestions) | Sets the JSON suggestions but doesn't display them | Yes
 loadSuggestions(url) | Loads the JSON suggestions from the given url but doesn't display them | Yes
-show() | Displays the suggestion box if there are suggestions or the no suggestions message if `showNoSuggestionsMessage` option is set to true | Yes
+getId(withHash) | Returns the id of the suggestion-box, pass in true to return with the hash prepended | No
+show(force) | Displays the suggestion box if there are suggestions or the no suggestions message if `showNoSuggestionsMessage` option is set to true. Pass the force paramater as true to force the box to show regardless | Yes
 hide() | Hides the suggestion box | Yes
 getJson() | Returns the JSON object used to populate the suggestion box | No
 url() | Sets the value of the url option | Yes
@@ -265,9 +266,15 @@ heading(heading) | Sets the value of the heading option | Yes
 results(results) | Sets the value of the results option | Yes
 ajaxError(error) | Sets the ajaxError option | Yes
 ajaxSuccess(success) | Sets the ajaxSuccess option | Yes
+onClick(function) | Overrides the default click event with your own custom click event, also applies to enter key | Yes
+onShow(function) | Action to perform when the suggestion box is displayed | Yes
+onHide(function) | Action to perform when the suggestion box is hidden | Yes
 selectedUrl() | Returns the url of the selected suggestion | No
 selectedSuggestion() | Returns the selected suggestion text | No 
 position() | Returns the zero based list position of the selected suggestion | No
+reservedKey(event) | Returns true if the given key event is a navigation key | No
+scrollable(scrollable) | Set to true if you want to include scrollbars when the height has been set. | Yes
+height(height) | Sets the height of the suggestion box (expects integer). See scrollable option above to add scrollbars. | Yes
 destroy() | Destroys the suggestion box | No
 
 ### Styling the Suggestion Box
