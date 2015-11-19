@@ -247,34 +247,20 @@ Method  | Description  | Chainable
 getSuggestions(url) | Gets the suggestion from the given url and displays them | Yes
 addSuggestions(suggestions) | Sets the JSON suggestions but doesn't display them | Yes
 loadSuggestions(url) | Loads the JSON suggestions from the given url but doesn't display them | Yes
+set(option, value) | Sets the value of the given option | Yes
 getId(withHash) | Returns the id of the suggestion-box, pass in true to return with the hash prepended | No
 show(force) | Displays the suggestion box if there are suggestions or the no suggestions message if `showNoSuggestionsMessage` option is set to true. Pass the force paramater as true to force the box to show regardless | Yes
 hide() | Hides the suggestion box | Yes
 getJson() | Returns the JSON object used to populate the suggestion box | No
-url() | Sets the value of the url option | Yes
-filter(bool) | Sets the value of the filter option  | Yes
-filterPattern(pattern) | sets the value of the filterPattern option | Yes
-sort(sortFunction) | Sets the value of the sort option | Yes
 moveUp() | Moves the selected suggestion up by 1 | Yes
 moveDown() | Moves the selected suggestion down by 1 | Yes
 select(position) | Selects the suggestion at the given position | Yes
 reset() | Resets selection to starting position. Note: this does not reset the json data | Yes
-fadeIn(bool) | Sets the value of the fadeIn option | Yes
-fadeOut(bool) | Sets the value of the fadeOut option | Yes
-delay(ms) | Sets the value of the delay option | Yes
-heading(heading) | Sets the value of the heading option | Yes
-results(results) | Sets the value of the results option | Yes
-ajaxError(error) | Sets the ajaxError option | Yes
-ajaxSuccess(success) | Sets the ajaxSuccess option | Yes
-onClick(function) | Overrides the default click event with your own custom click event, also applies to enter key | Yes
-onShow(function) | Action to perform when the suggestion box is displayed | Yes
-onHide(function) | Action to perform when the suggestion box is hidden | Yes
 selectedUrl() | Returns the url of the selected suggestion | No
 selectedSuggestion() | Returns the selected suggestion text | No 
 position() | Returns the zero based list position of the selected suggestion | No
 reservedKey(event) | Returns true if the given key event is a navigation key | No
-scrollable(scrollable) | Set to true if you want to include scrollbars when the height has been set. | Yes
-height(height) | Sets the height of the suggestion box (expects integer). See scrollable option above to add scrollbars. | Yes
+getContext() | Returns the original contect to allow chaining of jQuery plugins | No
 destroy() | Destroys the suggestion box | No
 
 ### Styling the Suggestion Box
