@@ -2,7 +2,20 @@
 
         $.fn.suggestionBox = function (options) {
 
-            var $searchBox = this;
+            var args = $.makeArray(arguments);
+            var suggestionBox = $.data(this, 'suggestionBox');
+
+            if (suggestionBox) {
+                suggestionBox.set(args[0], args[1]);
+            } else {
+                suggestionBox = new SuggestionBox(options, this);
+                $.data(this, 'suggestionBox', suggestionBox);
+            }
+            return suggestionBox;
+        };
+
+        function SuggestionBox(options, context) {
+            var self = context;
 
             var settings = $.extend({
                     // default settings.
@@ -25,46 +38,20 @@
                     },
                     ajaxSuccess: function (data) {
                     },
-                    onClick: function (e) {
+                    onClick: function () {
                         goToSelection();
                         hideSuggestionBox();
-                        $searchBox.val('');
+                        self.val('');
                     },
                     onShow: function () {
                     },
                     onHide: function () {
                     },
                     paramName: 'search',
-                    customValues: [],
+                    customData: [],
                     scrollable: false
                 },
                 options);
-
-            var $suggestionBox = null;
-            var randId = null;
-
-            /**
-             * Initialise the plugin
-             */
-            (function init() {
-                // Inject the suggestion box into the body of the web page
-                randId = 'suggestion-box-' + Math.floor(Math.random() * 10000000);
-                // Inject the suggestion box into the body of the web page
-                $('body').append('<div id="' + randId + '" class="suggestion-box"></div>');
-
-                $suggestionBox = $('#' + randId);
-                setSuggestionBoxPosition();
-
-                if (settings.height) {
-                    $suggestionBox.css('max-height', settings.height);
-                }
-                if (settings.scrollable) {
-                    $suggestionBox.css('overflow', 'auto');
-                }
-
-                // Turn off autocomplete
-                $searchBox.attr('autocomplete', 'off');
-            })();
 
 
             // Constants for key values
@@ -90,13 +77,46 @@
             // create a blank object for our request
             var request = {};
             var jsonData = {};
-
             // The value of the input when ajax was called
             var ajaxCalledVal;
-            var searchBoxBorderRadius = {
-                bottomLeft: $searchBox.css('border-bottom-left-radius'),
-                bottomRight: $searchBox.css('border-bottom-right-radius')
-            };
+
+            var searchBoxBorderRadius,
+                $suggestionBox = null,
+                randId;
+
+            /**
+             * Initialise the plugin
+             */
+            (function _init() {
+                // Inject the suggestion box into the body of the web page
+                randId = 'suggestion-box-' + Math.floor(Math.random() * 10000000);
+                // Inject the suggestion box into the body of the web page
+                $('body').append('<div id="' + randId + '" class="suggestion-box"></div>');
+
+                searchBoxBorderRadius = {
+                    bottomLeft: self.css('border-bottom-left-radius'),
+                    bottomRight: self.css('border-bottom-right-radius')
+                };
+
+                $suggestionBox = $('#' + randId);
+
+                // Turn off autocomplete
+                self.attr('autocomplete', 'off');
+
+                _setup();
+            })();
+
+            function _setup() {
+                setSuggestionBoxPosition();
+
+                if (settings.height) {
+                    $suggestionBox.css('max-height', settings.height);
+                }
+                if (settings.scrollable) {
+                    $suggestionBox.css('overflow', 'auto');
+                }
+
+            }
 
 
             $suggestionBox.on({
@@ -114,9 +134,9 @@
                     if (isSuggestion(e) && !autoScrolled) {
                         unselect(selectedLi);
                         resetSelection();
-                    } else if ($(':focus').attr('id') !== $searchBox.attr('id')) {
+                    } else if ($(':focus').attr('id') !== self.attr('id')) {
                         // We're out of the suggestion box so re-focus on search
-                        $searchBox.focus();
+                        self.focus();
                     }
                     mouseHover = false;
                 },
@@ -128,7 +148,7 @@
                 }
             });
 
-            $searchBox.on({
+            self.on({
                 blur: function () {
                     active = false;
                     if (!mouseHover) {
@@ -151,7 +171,7 @@
                             }
 
                             // set the request to be sent sent as the data parameter
-                            request[settings.paramName] = $searchBox.val();
+                            request[settings.paramName] = self.val();
                             timer = setTimeout(function () {
                                 getSuggestions(settings.url)
                             }, settings.delay);
@@ -186,7 +206,7 @@
                 paste: function () {
                     // Simulate keyup after 200ms otherwise the value of the search box will not be available
                     setTimeout(function () {
-                        $searchBox.keyup();
+                        self.keyup();
                     }, 200);
                 }
             });
@@ -316,7 +336,7 @@
              * @param url
              */
             function getSuggestions(url) {
-                ajaxCalledVal = $searchBox.val();
+                ajaxCalledVal = self.val();
                 $.ajax({
                     url: url,
                     data: request,
@@ -335,7 +355,7 @@
 
                         // Keep selection if no new information has been entered since ajax was called and the selection is the same.
                         // This prevents the flick back effect when menu has the same data but the ajax hasn't finished.
-                        if (currentLi > -1 && ($searchBox.val() === ajaxCalledVal) && !selectionHasChanged) {
+                        if (currentLi > -1 && (self.val() === ajaxCalledVal) && !selectionHasChanged) {
                             selectedLi = currentLi;
                             select(selectedLi);
                         }
@@ -362,14 +382,15 @@
              * Sets the position of the suggestion box
              */
             function setSuggestionBoxPosition() {
-                var borders = getCssValue($searchBox, 'border-bottom-width') + getCssValue($searchBox, 'border-top-width');
-                var padding = getCssValue($searchBox, 'padding-bottom') + getCssValue($searchBox, 'padding-top');
+                var borders = getCssValue(self, 'border-bottom-width') + getCssValue(self, 'border-top-width');
+                var padding = getCssValue(self, 'padding-bottom') + getCssValue(self, 'padding-top');
 
                 $suggestionBox.css({
                     'position': 'absolute',
-                    'left': ($searchBox.offset().left) + settings.leftOffset,
-                    'top': ($searchBox.offset().top) + ($searchBox.height() + borders + padding + settings.topOffset)
+                    'left': (self.offset().left) + settings.leftOffset,
+                    'top': (self.offset().top) + (self.height() + borders + padding + settings.topOffset)
                 });
+
             }
 
             /**
@@ -396,8 +417,8 @@
                 resetSelection();
 
                 if (settings.adjustBorderRadius) {
-                    $searchBox.css('border-bottom-left-radius', searchBoxBorderRadius.bottomLeft);
-                    $searchBox.css('border-bottom-right-radius', searchBoxBorderRadius.bottomRight);
+                    self.css('border-bottom-left-radius', searchBoxBorderRadius.bottomLeft);
+                    self.css('border-bottom-right-radius', searchBoxBorderRadius.bottomRight);
                 }
 
                 settings.onHide()
@@ -414,8 +435,8 @@
                 }
 
                 if (settings.adjustBorderRadius) {
-                    $searchBox.css('border-bottom-left-radius', 0);
-                    $searchBox.css('border-bottom-right-radius', 0);
+                    self.css('border-bottom-left-radius', 0);
+                    self.css('border-bottom-right-radius', 0);
                 }
 
                 settings.onShow();
@@ -444,11 +465,11 @@
              */
             function getSearchBoxWidth() {
                 return (
-                    $searchBox.width() +
-                    getCssValue($searchBox, 'border-left-width') +
-                    getCssValue($searchBox, 'border-right-width') +
-                    getCssValue($searchBox, 'padding-left') +
-                    getCssValue($searchBox, 'padding-right')
+                    self.width() +
+                    getCssValue(self, 'border-left-width') +
+                    getCssValue(self, 'border-right-width') +
+                    getCssValue(self, 'padding-left') +
+                    getCssValue(self, 'padding-right')
                 );
             }
 
@@ -475,12 +496,13 @@
              * @returns {*}
              */
             function createCustomValues(value, $suggestions) {
-                for (var i = 0; i < settings.customValues.length; i++) {
-                    var custom = value[settings.customValues[i]];
+                for (var i = 0; i < settings.customData.length; i++) {
+                    var custom = value[settings.customData[i]];
                     if (custom) {
-                        $suggestions += value[settings.customValues[i]];
+                        $suggestions += value[settings.customData[i]];
                     }
                 }
+
                 return $suggestions;
             }
 
@@ -490,6 +512,7 @@
              * @returns {string}
              */
             function createSuggestionsList(data) {
+
                 var $suggestions = '<div class="suggestion-header">' + settings.heading + '</div> ' +
                     '<ul class="suggestion-box-list">';
 
@@ -501,7 +524,10 @@
                             attr = createAttributes(value, attr);
                         }
                         $suggestions += '<li><a href="' + value.url + '" ' + attr + '>' + value.suggestion;
-                        $suggestions = createCustomValues(value, $suggestions);
+
+                        if (settings.customData.length > 0) {
+                            $suggestions = createCustomValues(value, $suggestions);
+                        }
                         $suggestions += '</a></li>';
                     } else {
                         return false;
@@ -529,7 +555,7 @@
 
                 matches = false;
 
-                var data = (settings.filter) ? filterResults($searchBox.val()) : jsonData;
+                var data = (settings.filter) ? filterResults(self.val()) : jsonData;
 
                 if (data) {
                     if (data.results) {
@@ -551,7 +577,7 @@
                         }
                         setSuggestionBoxWidth();
                         showSuggestionBox();
-                    } else if (settings.showNoSuggestionsMessage && $searchBox.val().length > 0) {
+                    } else if (settings.showNoSuggestionsMessage && self.val().length > 0) {
                         // We don't have any suggestions for input and want to display no suggestion message
                         setSuggestionBoxWidth();
                         showSuggestionBox();
@@ -688,54 +714,6 @@
                     hideSuggestionBox();
                     return this;
                 },
-                url: function (url) {
-                    settings.url = url;
-                    return this;
-                },
-                fadeIn: function (fadeIn) {
-                    settings.fadeIn = fadeIn;
-                    return this;
-                },
-                fadeOut: function (fadeOut) {
-                    settings.fadeOut = fadeOut;
-                    return this;
-                },
-                delay: function (ms) {
-                    settings.delay = ms;
-                    return this;
-                },
-                heading: function (heading) {
-                    settings.heading = heading;
-                    return this;
-                },
-                results: function (results) {
-                    settings.results = results;
-                    return this;
-                },
-                ajaxError: function (ajaxError) {
-                    settings.ajaxError = ajaxError;
-                    return this;
-                },
-                ajaxSuccess: function (ajaxSuccess) {
-                    settings.ajaxSuccess = ajaxSuccess;
-                    return this;
-                },
-                filter: function (filter) {
-                    settings.filter = filter;
-                    return this;
-                },
-                filterPattern: function (pattern) {
-                    settings.filterPattern = pattern;
-                    return this;
-                },
-                sort: function (sortFunc) {
-                    settings.sort = sortFunc;
-                    return this;
-                },
-                onClick: function (action) {
-                    settings.onClick = action;
-                    return this;
-                },
                 getId: function (withHash) {
                     return (withHash) ? '#' + randId : randId;
                 },
@@ -743,12 +721,19 @@
                     var key = e.which;
                     return key === ENTER_KEY || key === ESCAPE_KEY || key === UP_ARROW_KEY || key === DOWN_ARROW_KEY
                 },
+                getContext: function () {
+                    return self;
+                },
                 destroy: function () {
-                    $searchBox.unbind(this);
+                    self.unbind(this);
                     $suggestionBox.remove();
                     return null;
+                },
+                set: function (option, value) {
+                    settings[option] = value;
+                    _setup();
                 }
             };
-        };
+        }
     }(jQuery)
 );

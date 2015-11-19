@@ -307,18 +307,20 @@ describe("Suggestion Box", function () {
 
     });
 
-    it('overrides the enter key function with the enterKeyAction fucntion', function () {
+    it('overrides the enter key function with the onClick event', function () {
         var $search = $('#search');
         spyOn(console, 'log');
 
-        suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
+        suggestionBox = $search.suggestionBox({
+            onClick: function () {
+                console.log('foo');
+            }
+        }).addSuggestions(JSON.stringify({
             "results": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
-        })).onClick(function () {
-            console.log('foo')
-        }).show(true);
 
+        })).show(true);
 
         $search.focus();
         suggestionBox.select(0);
@@ -675,18 +677,21 @@ describe("Suggestion Box", function () {
     });
 
     it('should add a custom value to each suggestion', function () {
-        var suggestionBox = $search.suggestionBox({customValues: ['custom']}).addSuggestions(JSON.stringify({
+        var $search = $('#search');
+        var suggestionBox = $search.suggestionBox({customData: ['custom']}).addSuggestions(JSON.stringify({
             "results": [
                 {"suggestion": "suggestion", "url": "#", "custom": " foo"}
             ]
         })).show(true);
+
 
         $suggestionBox = $(suggestionBox.getId(true));
         expect(suggestionBox.selectedSuggestion()).toBe("suggestion foo");
     });
 
     it('should add multiple custom values to each suggestion', function () {
-        var suggestionBox = $search.suggestionBox({customValues: ['custom1', 'custom2']}).addSuggestions(JSON.stringify({
+        var $search = $('#search');
+        var suggestionBox = $search.suggestionBox({customData: ['custom1', 'custom2']}).addSuggestions(JSON.stringify({
             "results": [
                 {"suggestion": "suggestion", "url": "#", "custom1": " foo", "custom2": "bar"}
             ]
