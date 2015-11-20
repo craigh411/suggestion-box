@@ -4,12 +4,13 @@ describe("Suggestion Box", function () {
 
     beforeEach(function () {
         var $body = $('body');
-        $body.remove('#search');
+
         $body.append('<input type="text" id="search" />');
     });
 
     afterEach(function () {
         $(".suggestion-box").remove();
+        $('#search').remove();
     });
 
     it("should inject the suggestion box in to the body of the web page", function () {
@@ -31,7 +32,9 @@ describe("Suggestion Box", function () {
     });
 
     it('should turn off autocomplete', function () {
-        expect($('#search').attr('autocomplete')).toEqual('off');
+        var $search = $('#search');
+        $search.suggestionBox();
+        expect($search.attr('autocomplete')).toEqual('off');
     });
 
     it('should set the suggestion-box left position level with the search box', function () {
@@ -699,6 +702,27 @@ describe("Suggestion Box", function () {
 
         $suggestionBox = $(suggestionBox.getId(true));
         expect(suggestionBox.selectedSuggestion()).toBe("suggestion foobar");
+    });
+
+    it('should get the bound dom element', function(){
+        var $search = $('#search');
+        var suggestionBox = $search.suggestionBox().getDomElement();
+
+        expect(suggestionBox instanceof HTMLElement).toBeTruthy();
+    });
+
+    it('should clear the suggestions list', function(){
+        var $search = $('#search');
+        var suggestionBox = $search.suggestionBox({customData: ['custom1', 'custom2']}).addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#"}
+            ]
+        }));
+
+        expect(suggestionBox.getJson()).not.toBe('{}');
+        suggestionBox.clearSuggestions();
+        expect(suggestionBox.getJson()).toBe('{}');
+
     });
 });
 

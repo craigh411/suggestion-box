@@ -2,14 +2,17 @@
 
         $.fn.suggestionBox = function (options) {
 
+            // Get the bound dom element, we don't want to use id's as MVVM frameworks don't use them (i.e. AngularJS, KnockoutJS etc)
+            var domElement = $(this).get()[0];
+
             var args = $.makeArray(arguments);
-            var suggestionBox = $.data(this, 'suggestionBox');
+            var suggestionBox = $.data(domElement, 'suggestionBox');
 
             if (suggestionBox) {
                 suggestionBox.set(args[0], args[1]);
             } else {
                 suggestionBox = new SuggestionBox(options, this);
-                $.data(this, 'suggestionBox', suggestionBox);
+                $.data(domElement, 'suggestionBox', suggestionBox);
             }
             return suggestionBox;
         };
@@ -103,10 +106,10 @@
                 // Turn off autocomplete
                 self.attr('autocomplete', 'off');
 
-                _setup();
+                setup();
             })();
 
-            function _setup() {
+            function setup() {
                 setSuggestionBoxPosition();
 
                 if (settings.height) {
@@ -184,11 +187,13 @@
                     }
                 },
                 keydown: function (e) {
+
+                    if (e.which == DOWN_ARROW_KEY) {
+                        e.preventDefault();
+                        moveDown(true);
+                    }
+
                     if ($suggestionBox.css('display') !== 'none') {
-                        if (e.which == DOWN_ARROW_KEY) {
-                            e.preventDefault();
-                            moveDown(true);
-                        }
                         if (e.which == UP_ARROW_KEY) {
                             e.preventDefault();
                             moveUp(true);
@@ -288,7 +293,9 @@
             function moveDown(scroll) {
                 var listSize = $suggestionBox.find('li').size();
 
-                if (selectedLi === (listSize - 1)) {
+                if ($suggestionBox.css('display') === 'none') {
+                    showSuggestions();
+                } else if (selectedLi === (listSize - 1)) {
                     unselect(selectedLi);
                     resetSelection();
                 } else {
@@ -565,7 +572,7 @@
 
                 // Check for focus before showing suggestion box. User could have clicked outside before request finished.
                 if (active || forceShow) {
-                    if (matches) {
+                    if (matches && (self.val().length > 0 || forceShow)) {
                         // we have some suggestions, so show them
                         $suggestionBox.html($suggestions);
                         setSuggestionBoxWidth();
@@ -639,7 +646,7 @@
 
                 if (!value) {
                     // we weren't passed anything to filter against, return empty object
-                    return {};
+                    return jsonData;
                 }
                 if (jsonData) {
                     if (jsonData.results) {
@@ -724,14 +731,21 @@
                 getContext: function () {
                     return self;
                 },
+                getDomElement: function () {
+                    return self.get()[0];
+                },
                 destroy: function () {
                     self.unbind(this);
                     $suggestionBox.remove();
                     return null;
-                },
+                }
+                ,
                 set: function (option, value) {
                     settings[option] = value;
-                    _setup();
+                    setup();
+                },
+                clearSuggestions: function () {
+                    setJsonData(JSON.stringify({}));
                 }
             };
         }

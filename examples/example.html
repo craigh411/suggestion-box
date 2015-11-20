@@ -26,27 +26,13 @@
         <label for="search">Search Guitars: </label>
         <input type="text" id="search" class="form-control">
     </div>
-
-    <div class="form-group">
-        <label for="search">Search Guitars: </label>
-        <input type="text" id="search2" class="form-control">
-    </div>
-
 </div>
 <script>
     $(document).ready(function () {
         var $search = $('#search');
-        var $search2 = $('#search2');
-
         $search.suggestionBox({
             filter: true
         }).loadSuggestions('suggestions.json');
-
-        $search2.suggestionBox({
-            filter: true
-        }).loadSuggestions('suggestions.json');
-
-        $search2.suggestionBox('topOffset',10);
     });
 </script>
 </body>
