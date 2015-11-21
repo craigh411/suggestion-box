@@ -27,12 +27,12 @@ Automatically makes suggestions based on user input.
 
 - Highly configurable & flexible
 - Suggestions can be provided directly, by your own server side script or from a JSON file.
-- Native filtering support
+- Inbuilt filtering support
 - Selection highlighting
-- Keyboard controls
-- Intuative & seamless mouse/keyboard control swap overs.
+- Keyboard controls.
 - Supports copy & paste
 - Easy custom styling using css stylesheets
+- Licenced under MIT
 
 ## Setup
 
