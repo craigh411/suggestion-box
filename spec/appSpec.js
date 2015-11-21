@@ -704,16 +704,16 @@ describe("Suggestion Box", function () {
         expect(suggestionBox.selectedSuggestion()).toBe("suggestion foobar");
     });
 
-    it('should get the bound dom element', function(){
+    it('should get the bound dom element', function () {
         var $search = $('#search');
         var suggestionBox = $search.suggestionBox().getDomElement();
 
         expect(suggestionBox instanceof HTMLElement).toBeTruthy();
     });
 
-    it('should clear the suggestions list', function(){
+    it('should clear the suggestions list', function () {
         var $search = $('#search');
-        var suggestionBox = $search.suggestionBox({customData: ['custom1', 'custom2']}).addSuggestions(JSON.stringify({
+        var suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
             "results": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
@@ -724,5 +724,29 @@ describe("Suggestion Box", function () {
         expect(suggestionBox.getJson()).toBe('{}');
 
     });
+
+    it('adds an image to the suggestion list', function () {
+        var $search = $('#search');
+        var suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#", "image": "foo.jpg"}
+            ]
+        })).show(true);
+
+        expect($(suggestionBox.getId(true)).find('img').length > 0).toBeTruthy();
+    })
+
+    it('highlights the pattern match', function () {
+        var $search = $('#search');
+        $search.val('s');
+        var suggestionBox = $search.suggestionBox({highlightMatch: true}).addSuggestions(JSON.stringify({
+            "results": [
+                {"suggestion": "suggestion", "url": "#", "image": "foo.jpg"}
+            ]
+        })).show(true);
+
+        expect($(suggestionBox.getId(true)).find('b').length > 0).toBeTruthy();
+    })
+
 });
 

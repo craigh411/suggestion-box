@@ -33,8 +33,9 @@
                     menuWidth: 'auto',
                     showNoSuggestionsMessage: false,
                     noSuggestionsMessage: 'No Suggestions Found',
-                    filter: false,
+                    filter: true,
                     filterPattern: "({INPUT})",
+                    highlightMatch: false,
                     adjustBorderRadius: true,
                     ajaxError: function (e) {
                         console.log(e);
@@ -520,6 +521,8 @@
              */
             function createSuggestionsList(data) {
 
+                var filterPattern = settings.filterPattern.replace("{INPUT}", self.val());
+
                 var $suggestions = '<div class="suggestion-header">' + settings.heading + '</div> ' +
                     '<ul class="suggestion-box-list">';
 
@@ -530,7 +533,12 @@
                         if (value.attr) {
                             attr = createAttributes(value, attr);
                         }
-                        $suggestions += '<li><a href="' + value.url + '" ' + attr + '>' + value.suggestion;
+                        $suggestions += '<li><a href="' + value.url + '" ' + attr + '>';
+                        if(value.image){
+                            $suggestions += '<img src="'+value.image+'" />';
+                        }
+
+                        $suggestions += (settings.highlightMatch) ? (value.suggestion).replace(new RegExp(filterPattern,'gi'),'<b>$&</b>') : value.suggestion;
 
                         if (settings.customData.length > 0) {
                             $suggestions = createCustomValues(value, $suggestions);
@@ -732,7 +740,7 @@
                     return self;
                 },
                 getDomElement: function () {
-                    return self.get()[0];
+                    return $(self).get()[0];
                 },
                 destroy: function () {
                     self.unbind(this);
@@ -744,7 +752,7 @@
                     settings[option] = value;
                     setup();
                 },
-                clearSuggestions: function () {
+                clearSuggestions: function(){
                     setJsonData(JSON.stringify({}));
                 }
             };
