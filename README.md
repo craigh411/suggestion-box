@@ -5,7 +5,23 @@ jQuery suggestion box plugin for search suggestions.
 Automatically makes suggestions based on user input.
 
 *Screenshot*
-![alt text](https://raw.githubusercontent.com/craigh411/suggestion-box/master/screenshot.png "Suggestion box in action")
+![alt text](https://raw.githubusercontent.com/craigh411/suggestion-box/2.0/screenshot.png "Suggestion box in action")
+
+
+### What's new in 2.0
+
+- Support for images
+- Support for multiple suggestion boxes on a single page
+- Support for custom information
+- Support for highlighting pattern matches
+- Support for scrollbars
+- Better support for overriding default click events
+- Improved keyboard controls
+- Options now settable via set method or directly on jQuery object.
+- Border radius is removed on text input when suggestion box shows for better appearence 
+- New functions added and redundent function removed.
+- More consistent functionality.
+
 
 ### Features:
 
