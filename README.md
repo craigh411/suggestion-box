@@ -22,6 +22,7 @@ Automatically makes suggestions based on user input.
 - New functions added and redundent function removed.
 - More consistent functionality.
 
+**Note:** While much of the functionaility is fully implemented and tested, 2.0 is not a stable release and is liable to change. If you choose to use the current version of 2.0 in your projects you should make sure ensure your copy will not be overwritten by update, so future releases do not break your code.
 
 ### Features:
 
