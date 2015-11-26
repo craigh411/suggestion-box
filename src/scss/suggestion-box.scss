@@ -10,6 +10,7 @@ $font-family: inherit;
   display: none;
   font-family: $font-family;
   border: 1px solid $border-color;
+  border-top: 0;
   background: $background-color;
   padding: 0;
   margin: 0 10px 0 0;

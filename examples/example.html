@@ -30,7 +30,7 @@
 <script>
     $(document).ready(function () {
         var $search = $('#search');
-        $search.suggestionBox({
+        var suggestionBox = $search.suggestionBox({
             highlightMatch: true
         }).loadSuggestions('suggestions.json');
     });

@@ -25,7 +25,7 @@ if (!empty($search)) {
     }
 
     if (count($suggestions)) {
-        $results = ['results' => $suggestions];
+        $results = ['suggestions' => $suggestions];
     }
 }
 

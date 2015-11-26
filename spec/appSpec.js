@@ -92,7 +92,7 @@ describe("Suggestion Box", function () {
         );
 
         var suggestionBox = $search.suggestionBox({menuWidth: 'constrain'}).addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
         })).show(true);
@@ -108,7 +108,7 @@ describe("Suggestion Box", function () {
         spyOn($.fn, 'fadeIn');
 
         var suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
         })).show(true);
@@ -124,7 +124,7 @@ describe("Suggestion Box", function () {
         spyOn($.fn, 'fadeIn');
 
         suggestionBox = $search.suggestionBox({fadeIn: false}).addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
         })).show(true);
@@ -141,7 +141,7 @@ describe("Suggestion Box", function () {
         spyOn($.fn, 'fadeOut');
 
         suggestionBox = $search.suggestionBox({fadeOut: true}).addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
         })).show(true).hide();
@@ -156,7 +156,7 @@ describe("Suggestion Box", function () {
         spyOn($.fn, 'fadeOut');
 
         suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
         })).show(true).hide();
@@ -225,7 +225,7 @@ describe("Suggestion Box", function () {
     it('should not display when suggestions are not available', function () {
         var $search = $('#search');
 
-        var suggestionBox = $search.suggestionBox().addSuggestions({"results": []}).show();
+        var suggestionBox = $search.suggestionBox().addSuggestions({"suggestions": []}).show();
 
         var id = suggestionBox.getId(true);
 
@@ -238,7 +238,7 @@ describe("Suggestion Box", function () {
         var $search = $('#search');
 
         suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
         })).show();
@@ -258,7 +258,7 @@ describe("Suggestion Box", function () {
         var $search = $('#search');
 
         suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#", "attr": [{"class": "foo"}]}
             ]
         })).show(true);
@@ -272,7 +272,7 @@ describe("Suggestion Box", function () {
         var $search = $('#search');
 
         suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#", "attr": [{"class": "foo", "id": "bar"}]}
             ]
         })).show(true);
@@ -293,7 +293,7 @@ describe("Suggestion Box", function () {
                 console.log('foo')
             }
         }).addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
         })).show(true);
@@ -319,7 +319,7 @@ describe("Suggestion Box", function () {
                 console.log('foo');
             }
         }).addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
 
@@ -345,7 +345,7 @@ describe("Suggestion Box", function () {
                 console.log('foo')
             }
         }).addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
         })).show(true);
@@ -453,7 +453,7 @@ describe("Suggestion Box", function () {
 
         it('should reset the selection', function () {
             suggestionBox.select(2);
-            suggestionBox.reset();
+            suggestionBox.resetSelection();
             expect(suggestionBox.selectedUrl()).toBe('#');
             expect(suggestionBox.position()).toBe(-1);
 
@@ -461,13 +461,13 @@ describe("Suggestion Box", function () {
 
         it('should keep the suggestion box displayed upon reset', function () {
             suggestionBox.select(2);
-            suggestionBox.reset();
+            suggestionBox.resetSelection();
             expect($suggestionBox.css('display')).toBe('block');
         });
 
         it('should remove the selected class upon reset', function () {
             suggestionBox.select(2);
-            suggestionBox.reset();
+            suggestionBox.resetSelection();
             expect($suggestionBox.find('li:eq(2)').hasClass('selected')).toBeFalsy();
         });
 
@@ -522,7 +522,7 @@ describe("Suggestion Box", function () {
 
     // filtering
     it('should add json', function () {
-        var json = JSON.stringify({"results": [{"suggestion": "Suggestion 1", "url": "suggestion1.html"}]});
+        var json = JSON.stringify({"suggestions": [{"suggestion": "Suggestion 1", "url": "suggestion1.html"}]});
         suggestionBox.addSuggestions(json);
         expect(suggestionBox.getJson()).toBe(json);
         suggestionBox.destroy();
@@ -682,7 +682,7 @@ describe("Suggestion Box", function () {
     it('should add a custom value to each suggestion', function () {
         var $search = $('#search');
         var suggestionBox = $search.suggestionBox({customData: ['custom']}).addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#", "custom": " foo"}
             ]
         })).show(true);
@@ -695,7 +695,7 @@ describe("Suggestion Box", function () {
     it('should add multiple custom values to each suggestion', function () {
         var $search = $('#search');
         var suggestionBox = $search.suggestionBox({customData: ['custom1', 'custom2']}).addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#", "custom1": " foo", "custom2": "bar"}
             ]
         })).show(true);
@@ -704,17 +704,17 @@ describe("Suggestion Box", function () {
         expect(suggestionBox.selectedSuggestion()).toBe("suggestion foobar");
     });
 
-    it('should get the bound dom element', function () {
+    it('should get the jQuery object', function () {
         var $search = $('#search');
-        var suggestionBox = $search.suggestionBox().getDomElement();
+        var suggestionBox = $search.suggestionBox();
 
-        expect(suggestionBox instanceof HTMLElement).toBeTruthy();
+        expect(suggestionBox.el() instanceof jQuery).toBeTruthy();
     });
 
     it('should clear the suggestions list', function () {
         var $search = $('#search');
         var suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#"}
             ]
         }));
@@ -728,25 +728,25 @@ describe("Suggestion Box", function () {
     it('adds an image to the suggestion list', function () {
         var $search = $('#search');
         var suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#", "image": "foo.jpg"}
             ]
         })).show(true);
 
         expect($(suggestionBox.getId(true)).find('img').length > 0).toBeTruthy();
-    })
+    });
 
     it('highlights the pattern match', function () {
         var $search = $('#search');
         $search.val('s');
         var suggestionBox = $search.suggestionBox({highlightMatch: true}).addSuggestions(JSON.stringify({
-            "results": [
+            "suggestions": [
                 {"suggestion": "suggestion", "url": "#", "image": "foo.jpg"}
             ]
         })).show(true);
 
-        expect($(suggestionBox.getId(true)).find('b').length > 0).toBeTruthy();
-    })
 
+        expect($(suggestionBox.getId(true)).find('b').length > 0).toBeTruthy();
+    });
 });
 

@@ -3,6 +3,7 @@
   display: none;
   font-family: inherit;
   border: 1px solid #ccc;
+  border-top: 0;
   background: #fff;
   padding: 0;
   margin: 0 10px 0 0; }
