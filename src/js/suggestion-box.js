@@ -54,11 +54,11 @@
             customData: [],
             scrollable: false,
             hybrid: false,
-            chainable: false
+            noConflict: false
         }, options);
 
-        // Initially set the return context to this
-        var self = this;
+        // Initially set the return context to context
+        var self = context;
 
         // Constants for key values
         var ENTER_KEY = 13;
@@ -139,9 +139,9 @@
                 $suggestionBox.css('overflow', 'auto');
             }
 
-            // If chainable return an instance of the jQuery object
-            if (options.chainable) {
-                self = context;
+            // If noConflict set the return context to this
+            if (options.noConflict) {
+                self = this;
             }
         }
 
