@@ -711,6 +711,20 @@ describe("Suggestion Box", function () {
         expect(suggestionBox.el() instanceof jQuery).toBeTruthy();
     });
 
+    it('should return a jQuery object', function () {
+        var $search = $('#search');
+        var suggestionBox = $search.suggestionBox();
+
+        expect(suggestionBox instanceof jQuery).toBeTruthy();
+    });
+
+    it('should not return a jQuery object', function () {
+        var $search = $('#search');
+        var suggestionBox = $search.suggestionBox({noConflict: true});
+
+        expect(suggestionBox instanceof jQuery).toBeFalsy();
+    });
+
     it('should clear the suggestions list', function () {
         var $search = $('#search');
         var suggestionBox = $search.suggestionBox().addSuggestions(JSON.stringify({

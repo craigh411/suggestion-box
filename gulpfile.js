@@ -11,7 +11,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var notify = require('gulp-notify');
 var Server = require('karma').Server;
 
-gulp.task('default', ['sass', 'compress']);
+gulp.task('default', ['sass', 'js']);
 gulp.task('watch', ['sass:watch', 'js:watch']);
 
 // Compile .scss to .css
@@ -27,7 +27,7 @@ gulp.task('sass', function () {
 });
 
 // minify using UglifyJS
-gulp.task('compress', function () {
+gulp.task('js', function () {
     return gulp.src('src/js/*.js')
         .pipe(sourcemaps.init())
         .pipe(uglify())
