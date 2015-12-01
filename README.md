@@ -7,7 +7,7 @@ jQuery suggestion box plugin for search suggestions.
 Automatically makes suggestions based on user input.
 
 *Screenshot*
-![alt text](https://raw.githubusercontent.com/craigh411/suggestion-box/2.0/screenshot.png "Suggestion box in action")
+![alt text](https://raw.githubusercontent.com/craigh411/suggestion-box/master/screenshot.png "Suggestion box in action")
 
 ### Features:
 
