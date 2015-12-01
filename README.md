@@ -1,5 +1,7 @@
 ![alt text](http://www.suggestion-box.co.uk/images/logo.png "Suggestion Box")
 
+[![Build Status](https://travis-ci.org/craigh411/suggestion-box.svg?branch=2.0)](https://travis-ci.org/craigh411/suggestion-box)
+
 jQuery suggestion box plugin for search suggestions. 
 
 Automatically makes suggestions based on user input.
@@ -20,7 +22,7 @@ Automatically makes suggestions based on user input.
 
 ## Documentation & Examples
 
-Full documentation and examples are available on the [Suggestion Box](http://www.suggestion-box.co.uk) Website.
+Full documentation and code examples are available on the [Suggestion Box](http://www.suggestion-box.co.uk) Website.
 
 ## Licence
 
