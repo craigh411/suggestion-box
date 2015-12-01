@@ -19,6 +19,21 @@ Automatically makes suggestions based on user input.
 - Supports copy & paste
 - Easy custom styling using css stylesheets
 
+### Setup
+
+Make sure you have jQuery included in your project then simply add the `js` and `css` files in the `dist` folder to your project and include them:
+
+```html
+<link rel="stylesheet" href="path/to/suggestion-box.min.css" />
+<script src="path/to/suggestion-box.min.js"></script>
+````
+
+#### Bower
+
+If you use Bower then you can install suggestion box with the following command:
+
+`bower install suggestion-box`
+
 
 ## Documentation & Examples
 
