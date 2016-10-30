@@ -1,6 +1,6 @@
-(function ($) {
+(function($) {
 
-    $.fn.suggestionBox = function (options) {
+    $.fn.suggestionBox = function(options) {
 
         // Get the bound dom element
         var domElement = $(this).get()[0];
@@ -23,6 +23,10 @@
         options = $.extend({
             topOffset: 0,
             leftOffset: 0,
+            zIndex: 10000,
+            hideOnExactMatch: false,
+            isSelectionBox: false,
+            loadImage: null,
             widthAdjustment: 0,
             delay: 400, // in ms
             heading: 'Suggestions',
@@ -36,20 +40,17 @@
             filterPattern: "({INPUT})",
             highlightMatch: false,
             adjustBorderRadius: true,
-            ajaxError: function (e) {
+            ajaxError: function(e) {
                 console.log(e);
             },
-            ajaxSuccess: function (data) {
-            },
-            onClick: function () {
+            ajaxSuccess: function(data) {},
+            onClick: function() {
                 goToSelection();
                 hideSuggestionBox();
                 context.val('');
             },
-            onShow: function () {
-            },
-            onHide: function () {
-            },
+            onShow: function() {},
+            onHide: function() {},
             paramName: 'search',
             customData: [],
             scrollable: false,
@@ -87,6 +88,10 @@
         var ajaxCalledVal;
         var urlClone;
 
+
+        // Variables for use with typeahead
+        var exactMatch = false;
+
         var searchBoxBorderRadius,
             $suggestionBox = null,
             randId;
@@ -122,9 +127,18 @@
             $suggestionBox.on('click', clickEvents);
 
             // Reset the position of the suggestion box if the window is re-sized
-            $(window).resize(function () {
+            $(window).resize(function() {
                 setSuggestionBoxPosition();
             });
+
+            // If it is a selection box then override the default on click method, to put the selected value in the box.
+            if (options.isSelectionBox) {
+                options.onClick = function() {
+                    context.val(context.selectedSuggestion());
+                    context.focus();
+                    hideSuggestionBox();
+                };
+            }
 
             setup();
         })();
@@ -204,7 +218,7 @@
             // Ignore the navigation keys. We don't want to fire ajax calls when navigating
             if (e.which !== UP_ARROW_KEY && e.which !== DOWN_ARROW_KEY && e.which !== ESCAPE_KEY && e.which !== ENTER_KEY) {
                 var input = context.val();
-                if (options.url) {
+                if (options.url && !options.hybrid) {
                     resetSelection();
                     if (timer) {
                         clearTimeout(timer);
@@ -212,7 +226,7 @@
 
                     // set the request to be sent sent as the data parameter
                     request[options.paramName] = input;
-                    timer = setTimeout(function () {
+                    timer = setTimeout(function() {
                         getSuggestions(options.url)
                     }, options.delay);
                 }
@@ -222,9 +236,11 @@
                     showSuggestions();
                 }
 
-                if (options.hybrid && (input.length <= 0 || !matches)) {
-                    self.clearSuggestions();
+                request[options.paramName] = input;
+                if (options.hybrid && (input.length <= 0 || !matches || ajaxCalledVal.length > input.length)) {
+                    //self.clearSuggestions();
                     getSuggestions(urlClone);
+                    showSuggestions();
                 }
             }
         }
@@ -233,6 +249,7 @@
          * Events for when the search box is focused
          */
         function focusEvents() {
+            setSuggestionBoxPosition();
             active = true;
             if ($(this).val()) {
                 showSuggestions(jsonData);
@@ -265,7 +282,7 @@
          */
         function pasteEvents() {
             // Simulate keyup after 200ms otherwise the value of the search box will not be available
-            setTimeout(function () {
+            setTimeout(function() {
                 context.keyup();
             }, 200);
         }
@@ -342,7 +359,7 @@
          * Moves the selection down to the next suggestion
          */
         function moveDown(scroll) {
-            var listSize = $suggestionBox.find('li').size();
+            var listSize = $suggestionBox.find('li').length;
 
             if ($suggestionBox.css('display') === 'none') {
                 showSuggestions();
@@ -370,7 +387,7 @@
                 select(selectedLi);
             } else if (selectedLi == -1) {
                 unselect(selectedLi);
-                selectedLi = $suggestionBox.find('li').size() - 1;
+                selectedLi = $suggestionBox.find('li').length - 1;
                 select(selectedLi);
             } else {
                 unselect(0);
@@ -394,40 +411,50 @@
          * @param url
          */
         function getSuggestions(url) {
-            ajaxCalledVal = context.val();
-            $.ajax({
-                url: url,
-                data: request,
-                dataType: 'json',
-                success: function (data) {
-
-                    var selectionHasChanged = true;
-                    var currentLi = selectedLi;
-
-                    if (jsonData.suggestions && data.suggestions) {
-                        selectionHasChanged = (JSON.stringify(jsonData.suggestions[selectedLi]) !== JSON.stringify(data.suggestions[selectedLi]))
-                    }
-
-                    setJsonData(data);
-                    showSuggestions();
-
-                    // Keep selection if no new information has been entered since ajax was called and the selection is the same.
-                    // This prevents the flick back effect when menu has the same data but the ajax hasn't finished.
-                    if (currentLi > -1 && (context.val() === ajaxCalledVal) && !selectionHasChanged) {
-                        selectedLi = currentLi;
-                        select(selectedLi);
-                    }
-
-                    if (options.hybrid) {
-                        urlClone = options.url;
-                    }
-
-                    options.ajaxSuccess(data);
-                },
-                error: function (e) {
-                    options.ajaxError(e);
+            if (context.val() != "") {
+                ajaxCalledVal = context.val();
+                if (options.loadImage != null) {
+                    context.css('background', "url('"+options.loadImage+"') no-repeat 99% 50%");
                 }
-            });
+
+                $.ajax({
+                    url: url,
+                    data: request,
+                    dataType: 'json',
+                    success: function(data) {
+                        var selectionHasChanged = true;
+                        var currentLi = selectedLi;
+
+                        if (jsonData.suggestions && data.suggestions) {
+                            selectionHasChanged = (JSON.stringify(jsonData.suggestions[selectedLi]) !== JSON.stringify(data.suggestions[selectedLi]))
+                        }
+
+                        setJsonData(data);
+                        showSuggestions();
+
+                        // Keep selection if no new information has been entered since ajax was called and the selection is the same.
+                        // This prevents the flick back effect when menu has the same data but the ajax hasn't finished.
+                        if (currentLi > -1 && (context.val() === ajaxCalledVal) && !selectionHasChanged) {
+                            selectedLi = currentLi;
+                            select(selectedLi);
+                        }
+
+                        if (options.hybrid) {
+                            urlClone = options.url;
+                        }
+                        setTimeout(function(){
+                           context.css('background', "");
+                       },500);
+
+                        options.ajaxSuccess(data);
+                    },
+                    error: function(e) {
+                        options.ajaxError(e);
+                    }
+                });
+            } else {
+                self.clearSuggestions();
+            }
         }
 
         /**
@@ -447,12 +474,13 @@
             var borders = getCssValue(context, 'border-bottom-width') + getCssValue(context, 'border-top-width');
             var padding = getCssValue(context, 'padding-bottom') + getCssValue(context, 'padding-top');
 
+            context.show();
             $suggestionBox.css({
                 'position': 'absolute',
+                'zIndex': options.zIndex,
                 'left': (context.offset().left) + options.leftOffset,
                 'top': (context.offset().top) + (context.height() + borders + padding + options.topOffset)
             });
-
         }
 
         /**
@@ -542,7 +570,7 @@
          * @returns {*}
          */
         function createAttributes(value, attr) {
-            $.each(value.attr, function (key, value) {
+            $.each(value.attr, function(key, value) {
                 var keys = Object.keys(value);
                 for (var i = 0; i < keys.length; i++) {
                     attr += keys[i] + '="' + value[keys[i]] + '" '
@@ -580,7 +608,7 @@
             var $suggestions = '<div class="suggestion-header">' + options.heading + '</div> ' +
                 '<ul class="suggestion-box-list">';
 
-            $.each(data.suggestions, function (key, value) {
+            $.each(data.suggestions, function(key, value) {
 
                 if (value.suggestion && value.url) {
                     matches = true;
@@ -636,11 +664,17 @@
 
             // Check for focus before showing suggestion box. User could have clicked outside before request finished.
             if (active || forceShow) {
+
                 if (matches && (context.val().length > 0 || forceShow)) {
-                    // we have some suggestions, so show them
-                    $suggestionBox.html($suggestions);
-                    setSuggestionBoxWidth();
-                    showSuggestionBox();
+                    // we have exactly 1 exact match and have set the hideOnExactMatch option to true, so hide the suggestion box
+                    if (options.hideOnExactMatch && exactMatch) {
+                        hideSuggestionBox();
+                    } else {
+                        // we have some suggestions, so show them
+                        $suggestionBox.html($suggestions);
+                        setSuggestionBoxWidth();
+                        showSuggestionBox();
+                    }
                 } else if (forceShow) {
                     // We don't have any suggestions, but we are forcing display, show it regardless.
                     if (options.showNoSuggestionsMessage) {
@@ -688,10 +722,10 @@
             $.ajax({
                 url: url,
                 dataType: 'json',
-                success: function (data) {
+                success: function(data) {
                     setJsonData(data);
                 },
-                error: function (e) {
+                error: function(e) {
                     console.log(e);
                 }
             });
@@ -717,7 +751,7 @@
 
                     // We have JSON data and user input, so apply the filter
                     var regex = new RegExp(filterPattern, "i");
-                    data = $.grep(jsonData.suggestions, function (name) {
+                    data = $.grep(jsonData.suggestions, function(name) {
                         return regex.test(name.suggestion);
                     });
                 }
@@ -727,79 +761,82 @@
                 data.sort(options.sort);
             }
 
+            if (data && options.hideOnExactMatch) {
+                exactMatch = (data.length == 1 && data[0].suggestion == value)
+            }
 
-            var json = JSON.stringify({"suggestions": data});
+            var json = JSON.stringify({ "suggestions": data });
 
             return $.parseJSON(json);
         }
 
         // public methods.
-        self.getSuggestions = function (url) {
+        self.getSuggestions = function(url) {
             getSuggestions(url);
             return self;
         };
-        self.addSuggestions = function (json) {
+        self.addSuggestions = function(json) {
             setJsonData(json);
             return self;
         };
-        self.loadSuggestions = function (url) {
+        self.loadSuggestions = function(url) {
             loadJson(url);
             return self;
         };
-        self.getJson = function () {
+        self.getJson = function() {
             return JSON.stringify(jsonData);
         };
-        self.moveUp = function () {
+        self.moveUp = function() {
             moveUp();
             return self;
         };
-        self.moveDown = function () {
+        self.moveDown = function() {
             moveDown();
             return self;
         };
-        self.selectedUrl = function () {
+        self.selectedUrl = function() {
             return selectedHref;
         };
-        self.selectedSuggestion = function () {
+        self.selectedSuggestion = function() {
             return $suggestionBox.find('li:eq(' + selectedLi + ')').text();
         };
-        self.selectedImage = function () {
+        self.selectedImage = function() {
             return $suggestionBox.find('li:eq(' + selectedLi + ')').find('img').attr('src');
         };
-        self.position = function () {
+        self.position = function() {
             return selectedLi;
         };
-        self.select = function (position) {
+        self.select = function(position) {
             unselect(selectedLi);
             selectedLi = position;
             select(position, options.scrollable);
             return self;
         };
-        self.resetSelection = function () {
+        self.resetSelection = function() {
             unselect(selectedLi);
             resetSelection();
             return self;
         };
-        self.show = function (force) {
+        self.show = function(force) {
             force = (force) ? force : false;
             showSuggestions(force);
             return self;
         };
-        self.hide = function () {
+        self.hide = function() {
             hideSuggestionBox();
             return self;
         };
-        self.getId = function (withHash) {
+        self.getId = function(withHash) {
             return (withHash) ? '#' + randId : randId;
         };
-        self.reservedKey = function (e) {
+        self.reservedKey = function(e) {
             var key = e.which;
             return key === ENTER_KEY || key === ESCAPE_KEY || key === UP_ARROW_KEY || key === DOWN_ARROW_KEY
         };
-        self.el = function () {
+        self.el = function() {
             return $suggestionBox;
         };
-        self.destroy = function () {
+        self.destroy = function() {
             $suggestionBox.unbind();
             $suggestionBox.remove();
 
@@ -812,12 +849,12 @@
 
             return null;
         };
-        self.set = function (option, value) {
+        self.set = function(option, value) {
             options[option] = value;
             setup();
             return self;
         };
-        self.clearSuggestions = function () {
+        self.clearSuggestions = function() {
             setJsonData(JSON.stringify({}));
             return self;
         };
