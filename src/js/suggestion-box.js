@@ -23,20 +23,30 @@
         options = $.extend({
             topOffset: 0,
             leftOffset: 0,
+            offset: {
+                top: 0,
+                left: 0,
+            },
             zIndex: 10000,
             hideOnExactMatch: false,
             isSelectionBox: false,
+            mode: 'navigate', // select, navigate
             loadImage: null,
             widthAdjustment: 0,
             delay: 400, // in ms
             heading: 'Suggestions',
             results: 10,
+            fade: {
+                in: true,
+                out: false
+            },
             fadeIn: true,
-            fadeOut: false,
+            fadeOut: true,
             menuWidth: 'auto',
             showNoSuggestionsMessage: false,
             noSuggestionsMessage: 'No Suggestions Found',
             filter: true,
+            listType: 'dynamic' // dynamic or static rather than filter
             filterPattern: "({INPUT})",
             highlightMatch: false,
             adjustBorderRadius: true,
@@ -55,6 +65,7 @@
             customData: [],
             scrollable: false,
             hybrid: false,
+            prefetch: true, // Rename hybrid to prefetch
             noConflict: false
         }, options);
 

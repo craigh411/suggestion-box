@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/craigh411/suggestion-box.svg?branch=2.0)](https://travis-ci.org/craigh411/suggestion-box)
 [![Bower](https://img.shields.io/bower/l/bootstrap.svg)](http://bower.io)
 
-**3.0 is currentlt in development, but you can expect: 
+**3.0 is currentlt in development, but you can expect:** 
 
  - A simplied api
  - Better integration of the two main use cases: typeaheads and search navigation
