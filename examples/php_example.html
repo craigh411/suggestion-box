@@ -6,17 +6,19 @@
     <link rel="stylesheet" href="../dist/css/suggestion-box.min.css"/>
 
     <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-    <script src="../dist/js/suggestion-box.min.js"></script>
+    <script src="../dist/js/main.js"></script>
 </head>
 <body>
 <p><label for="search">Search: </label>
     <input type="text" id="search"></p>
 <script>
     $(document).ready(function () {
-        var suggestionBox = $('#search').suggestionBox({
+        var suggestionBox = $('#search').suggestionBox();
+        
+/*        var suggestionBox = $('#search').suggestionBox({
             url: 'php/results.php',
             results: 5
-        });
+        });*/
     });
 </script>
 </body>

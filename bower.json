@@ -1,11 +1,11 @@
 {
   "name": "suggestion-box",
-  "version": "v2.0.0",
+  "version": "v3.0.0-dev",
   "homepage": "https://github.com/craigh411/suggestion-box",
   "authors": [
     "Craig Humphreys"
   ],
-  "description": "Suggestion box for search",
+  "description": "A jQuery typeahead and search suggestion plugin",
   "main": [
     "dist/css/suggestion-box.min.css",
     "dist/js/suggestion-box.min.js"

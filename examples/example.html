@@ -17,7 +17,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"
             integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ=="
             crossorigin="anonymous"></script>
-    <script src="../dist/js/suggestion-box.min.js"></script>
+    <script src="../dist/js/main.js"></script>
 </head>
 <body>
 
@@ -30,9 +30,12 @@
 <script>
     $(document).ready(function () {
         var $search = $('#search');
-        var suggestionBox = $search.suggestionBox({
+        $search.suggestionBox();
+
+        
+/*        var suggestionBox = $search.suggestionBox({
             highlightMatch: true
-        }).loadSuggestions('suggestions.json');
+        }).loadSuggestions('suggestions.json');*/
     });
 </script>
 </body>
