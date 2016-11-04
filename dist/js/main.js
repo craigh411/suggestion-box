@@ -1,9 +1,17 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
+var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+
+var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
+    return typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+} : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+};
 
 var _createClass = function () {
     function defineProperties(target, props) {
@@ -30,9 +38,7 @@ var Anubis = function () {
         this.sort = sort;
         this.search = "";
 
-        var data = [{ suggestion: 'foo' }, { suggestion: 'bar' }, { suggestion: 'foobar' }, { suggestion: 'qux' }];
-
-        this.setData(data);
+        console.log(this.regex);
     }
 
     _createClass(Anubis, [{
@@ -62,17 +68,23 @@ var Anubis = function () {
 
             var filterPattern = this.regex.replace('{{INPUT}}', this.search);
             var regex = new RegExp(filterPattern, "i");
+            var results = [];
+
             if (this.data && this.search.length > 0) {
-                return $.grep(this.data, function (item) {
-                    return regex.test(item[_this.searchBy]);
+                results = $.grep(this.data, function (item) {
+                    return (typeof item === 'undefined' ? 'undefined' : _typeof(item)) === "object" ? regex.test(item[_this.searchBy]) : regex.test(item);
                 });
             }
 
-            return [];
+            this.sortData(results);
+
+            return results;
         }
     }, {
         key: 'sortData',
-        value: function sortData() {}
+        value: function sortData(data) {
+            data.sort(this.sort);
+        }
     }], [{
         key: 'factory',
         value: function factory() {
@@ -89,9 +101,17 @@ exports.default = Anubis;
 (function (global){
 'use strict';
 
+var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+
+var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
+    return typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+} : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+};
 
 var _createClass = function () {
     function defineProperties(target, props) {
@@ -106,6 +126,10 @@ var _createClass = function () {
 var _util = require('./util');
 
 var _util2 = _interopRequireDefault(_util);
+
+var _TemplateParser = require('./TemplateParser');
+
+var _TemplateParser2 = _interopRequireDefault(_TemplateParser);
 
 var _jQuery = (typeof window !== "undefined" ? window['jQuery'] : typeof global !== "undefined" ? global['jQuery'] : null);
 
@@ -126,10 +150,14 @@ function _classCallCheck(instance, Constructor) {
 */
 
 var SuggestionListDropdown = function () {
-    function SuggestionListDropdown(inputEl) {
+    function SuggestionListDropdown(inputEl, template) {
         _classCallCheck(this, SuggestionListDropdown);
 
         this.inputEl = inputEl;
+        this.template = template;
+
+        this.templateParser = new _TemplateParser2.default(template);
+
         this.topOffset = 0;
         this.leftOffset = 0;
         this.zIndex = 10000;
@@ -140,7 +168,7 @@ var SuggestionListDropdown = function () {
     _createClass(SuggestionListDropdown, [{
         key: '_buildDom',
         value: function _buildDom() {
-            this.$suggestionBox = (0, _jQuery2.default)('<div id="' + this.randId + '" class="suggestion-box">FOOBAR!</div>').appendTo('body');
+            this.$suggestionBox = (0, _jQuery2.default)('<div id="' + this.randId + '" class="suggestion-box"></div>').appendTo('body');
         }
 
         /* Update the position of the suggestionList */
@@ -231,18 +259,30 @@ var SuggestionListDropdown = function () {
     }, {
         key: 'renderSuggestionsList',
         value: function renderSuggestionsList() {
+            var _this = this;
+
             var heading = 'Suggestions';
+            var suggestions = this.suggestions.slice(0, 10);
 
-            var suggestions = this.suggestions.slice(0, 1);
+            var template = this.templateParser.getParsedTemplate();
+            template = this.templateParser.replaceHandlebars(template, "header", heading);
 
-            var $suggestionMarkup = '<div class="suggestion-header">' + heading + '</div>' + '<ul class="suggestion-box-list">';
+            var listItemMarkup = this.templateParser.getListItemMarkup();
+            var listMarkup = "";
+
             suggestions.forEach(function (item) {
-                $suggestionMarkup += '<li><a href="#">' + item.suggestion + '</a></li>';
+                var suggestion = (typeof item === 'undefined' ? 'undefined' : _typeof(item)) == "object" ? item.suggestion : item;
+                var markup = _this.templateParser.replaceHandlebars(listItemMarkup, "suggestion", suggestion);
+                markup = _this.templateParser.replaceHandlebars(markup, "url", "#");
+
+                listMarkup += "<li>";
+                listMarkup += markup;
+                listMarkup += "</li>";
             });
 
-            $suggestionMarkup += '</ul>';
+            var suggestionMarkup = this.templateParser.replaceHandlebars(template, "suggestion_list", listMarkup);
 
-            this.$suggestionBox.html($suggestionMarkup);
+            this.$suggestionBox.html(suggestionMarkup);
         }
     }, {
         key: 'getLeftOffset',
@@ -297,7 +337,101 @@ var SuggestionListDropdown = function () {
 exports.default = SuggestionListDropdown;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./util":6}],3:[function(require,module,exports){
+},{"./TemplateParser":3,"./util":8}],3:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () {
+    function defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }return function (Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+    };
+}();
+
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+    }
+}
+
+var TemplateParser = function () {
+    function TemplateParser(template) {
+        _classCallCheck(this, TemplateParser);
+
+        this.template = template;
+        this._getTemplateForListItem();
+        this._removeListItemMarkup();
+        this._removeRootElement();
+    }
+
+    _createClass(TemplateParser, [{
+        key: '_getTemplateForListItem',
+        value: function _getTemplateForListItem() {
+            var listItem = "";
+
+            var html = $.parseHTML($.trim(this.template));
+
+            if (html.length !== 1) {
+                console.log('%c[Suggestion-Box:Error] Unable to parse template. Template must have one root element.', 'color: #f00');
+            }
+            var el = html[0];
+            if (el.id !== "" || el.class !== undefined) {
+                console.log('%c[Suggestion-Box:warn] Avoid adding style attributes such as "class", "id" or "style" to root element in template because these tags will be stripped.', 'color: #f00');
+            }
+
+            if (el.childNodes.length > 0) {
+                $.each(el.childNodes, function (i, el) {
+                    if (el.id == "suggestion-list") {
+                        $.each(el.childNodes, function (i, el) {
+                            if (el.nodeName == "LI") {
+                                listItem = el.innerHTML;
+                            }
+                        });
+                    }
+                });
+            }
+
+            this.listItem = listItem;
+        }
+    }, {
+        key: '_removeRootElement',
+        value: function _removeRootElement() {
+            this.template = $(this.template).unwrap().html();
+        }
+    }, {
+        key: '_removeListItemMarkup',
+        value: function _removeListItemMarkup() {
+            this.template = this.template.replace("<li>" + this.listItem + "</li>", "{{ suggestion_list }}");
+        }
+    }, {
+        key: 'replaceHandlebars',
+        value: function replaceHandlebars(str, name, replace) {
+            return str.replace(new RegExp("@?{{\\s?" + name + "\\s?}}", "gi"), replace);
+        }
+    }, {
+        key: 'getParsedTemplate',
+        value: function getParsedTemplate() {
+            return this.template;
+        }
+    }, {
+        key: 'getListItemMarkup',
+        value: function getListItemMarkup() {
+            return this.listItem;
+        }
+    }]);
+
+    return TemplateParser;
+}();
+
+exports.default = TemplateParser;
+
+},{}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -310,7 +444,7 @@ exports.default = {
     'ESCAPE_KEY': 27
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -346,7 +480,52 @@ function _interopRequireDefault(obj) {
 })(jQuery);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./suggestion-box.js":5}],5:[function(require,module,exports){
+},{"./suggestion-box.js":7}],6:[function(require,module,exports){
+'use strict';
+
+module.exports = {
+  data: [],
+  template: '#suggestion-box-template',
+  props: {
+    value: 'suggestion',
+    url: 'url',
+    custom: []
+  },
+  sort: function sort() {},
+  topOffset: 0,
+  leftOffset: 0,
+  zIndex: 10000,
+  hideOnExactMatch: false,
+  isSelectionBox: false,
+  loadImage: null,
+  widthAdjustment: 10,
+  delay: 250, // in ms
+  heading: 'Suggestions',
+  results: 10,
+  fadeIn: true,
+  fadeOut: false,
+  menuWidth: 'auto',
+  showNoSuggestionsMessage: false,
+  noSuggestionsMessage: 'No Suggestions Found',
+  filter: "{{INPUT}}",
+  highlightMatch: false,
+  adjustBorderRadius: true,
+  ajaxError: function ajaxError() {},
+  ajaxSuccess: function ajaxSuccess() {},
+  onClick: function onClick() {
+    goToSelection();
+    hideSuggestionBox();
+    context.val('');
+  },
+  onShow: function onShow() {},
+  onHide: function onHide() {},
+  paramName: 'search',
+  customData: [],
+  scrollable: false,
+  noConflict: false
+};
+
+},{}],7:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -384,6 +563,10 @@ var _Anubis = require('./Anubis.js');
 
 var _Anubis2 = _interopRequireDefault(_Anubis);
 
+var _options = require('./options.js');
+
+var _options2 = _interopRequireDefault(_options);
+
 function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : { default: obj };
 }
@@ -404,8 +587,14 @@ var SuggestionBox = function () {
         this.search = this.context.val();
         this.suggestions = [];
 
-        this.dropdown = new _SuggestionListDropdown2.default(this.context);
-        this.anubis = _Anubis2.default.factory();
+        this.options = _jQuery2.default.extend(_options2.default, options);
+
+        // get loaddefault template into options 
+        var template = _util2.default.isId(this.options.template) ? (0, _jQuery2.default)(this.options.template).html() : this.options.template;
+
+        this.dropdown = new _SuggestionListDropdown2.default(this.context, template);
+        this.anubis = new _Anubis2.default(this.options.props.value, this.options.filter, this.options.sort);
+        this.anubis.setData(this.options.data);
 
         this.context.on('keyup', this.keyupEvents.bind(this));
         this.context.on('blur', this.blurEvents.bind(this));
@@ -472,7 +661,7 @@ var SuggestionBox = function () {
 exports.default = SuggestionBox;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Anubis.js":1,"./SuggestionListDropdown.js":2,"./constants/keys.js":3,"./util.js":6}],6:[function(require,module,exports){
+},{"./Anubis.js":1,"./SuggestionListDropdown.js":2,"./constants/keys.js":4,"./options.js":6,"./util.js":8}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -546,6 +735,11 @@ var Util = function () {
 
             return false;
         }
+    }, {
+        key: 'isId',
+        value: function isId(str) {
+            return str.charAt(0) == "#";
+        }
     }]);
 
     return Util;
@@ -553,6 +747,6 @@ var Util = function () {
 
 exports.default = Util;
 
-},{}]},{},[4]);
+},{}]},{},[5]);
 
 //# sourceMappingURL=main.js.map

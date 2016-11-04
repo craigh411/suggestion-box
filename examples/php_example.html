@@ -11,10 +11,25 @@
 <body>
 <p><label for="search">Search: </label>
     <input type="text" id="search"></p>
+
+
+    <template id="suggestion-box-template">
+       <div>
+          <div class="suggestion-header">@{{ header }}</a></div>
+          <ul id="suggestion-list" class="suggestion-box-list">
+            <li><a href="@{{url}}">@{{suggestion}}</a></li>
+          </ul>
+       </div>
+    </template>
+
 <script>
     $(document).ready(function () {
-        var suggestionBox = $('#search').suggestionBox();
-        
+        var countries = ['England', 'Scotland', 'Wales', 'Northern Island'];
+        var suggestionBox = $('#search').suggestionBox({
+            data: countries,
+            filter: "^{{INPUT}}"
+        });
+
 /*        var suggestionBox = $('#search').suggestionBox({
             url: 'php/results.php',
             results: 5

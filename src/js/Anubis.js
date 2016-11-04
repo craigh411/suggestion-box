@@ -6,15 +6,7 @@ class Anubis {
         this.sort = sort;
         this.search = "";
 
-        let data = [
-            { suggestion: 'foo'},
-            { suggestion: 'bar'},
-            { suggestion: 'foobar'},
-            { suggestion: 'qux'}
-        ]
-
-        this.setData(data);
-
+        console.log(this.regex);
     }
 
     static factory() {
@@ -42,17 +34,21 @@ class Anubis {
     filterData() {
         let filterPattern = this.regex.replace('{{INPUT}}', this.search);
         let regex = new RegExp(filterPattern, "i");
+        let results = [];
+
         if (this.data && this.search.length > 0) {
-            return $.grep(this.data, item => {
-                return regex.test(item[this.searchBy]);
+            results = $.grep(this.data, item => {
+                return (typeof item === "object") ?  regex.test(item[this.searchBy]) : regex.test(item);
             });
         }
 
-        return [];
+        this.sortData(results)
+
+        return results;
     }
 
-    sortData() {
-
+    sortData(data) {
+      data.sort(this.sort);
     }
 
 }

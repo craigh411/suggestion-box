@@ -1,0 +1,1 @@
+export default = '<div class="suggestion-header">{{header}}</div><ul class="suggestion-list"><li class="suggestion-list-item"><a href="{{url}}">{{value}}</a></li></ul></div>';

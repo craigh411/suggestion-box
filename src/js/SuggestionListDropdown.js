@@ -1,4 +1,5 @@
 import Util from './util';
+import TemplateParser from './TemplateParser'
 import $ from 'jQuery';
 
 /*
@@ -7,8 +8,12 @@ import $ from 'jQuery';
 
 class SuggestionListDropdown {
 
-    constructor(inputEl) {
+    constructor(inputEl, template) {
         this.inputEl = inputEl;
+        this.template = template;
+
+        this.templateParser = new TemplateParser(template);
+
         this.topOffset = 0;
         this.leftOffset = 0;
         this.zIndex = 10000;
@@ -17,7 +22,7 @@ class SuggestionListDropdown {
     }
 
     _buildDom() {
-        this.$suggestionBox = $('<div id="' + this.randId + '" class="suggestion-box">FOOBAR!</div>').appendTo('body');
+        this.$suggestionBox = $('<div id="' + this.randId + '" class="suggestion-box"></div>').appendTo('body');
     }
 
     /* Update the position of the suggestionList */
@@ -96,20 +101,32 @@ class SuggestionListDropdown {
         this.$suggestionBox.css('display', 'none');;
     }
 
+
+
     renderSuggestionsList() {
-    	var heading = 'Suggestions';
+        var heading = 'Suggestions';
+        let suggestions = this.suggestions.slice(0, 10);
 
-    	let suggestions = this.suggestions.slice(0, 1);
+        var template = this.templateParser.getParsedTemplate();
+        template = this.templateParser.replaceHandlebars(template, "header", heading);
 
-        var $suggestionMarkup = `<div class="suggestion-header">${heading}</div>` +
-            '<ul class="suggestion-box-list">';
-            suggestions.forEach((item) => {
-               $suggestionMarkup += `<li><a href="#">${item.suggestion}</a></li>`;
-            })
+        var listItemMarkup = this.templateParser.getListItemMarkup();
+        var listMarkup = "";
 
-        $suggestionMarkup += '</ul>'
+        suggestions.forEach((item) => {
+            let suggestion = (typeof item == "object") ? item.suggestion : item;
+            let markup = this.templateParser.replaceHandlebars(listItemMarkup, "suggestion", suggestion);
+            markup = this.templateParser.replaceHandlebars(markup, "url", "#");
 
-            this.$suggestionBox.html($suggestionMarkup);
+            listMarkup += "<li>";
+            listMarkup += markup;
+            listMarkup += "</li>";
+        });
+
+
+        var suggestionMarkup = this.templateParser.replaceHandlebars(template, "suggestion_list", listMarkup);
+
+        this.$suggestionBox.html(suggestionMarkup);
 
     }
 

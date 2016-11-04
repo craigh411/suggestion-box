@@ -19,7 +19,7 @@ class Util {
     }
 
     static copyArray(arr) {
-      return arr.splice(0);
+        return arr.splice(0);
     }
 
     /**
@@ -36,6 +36,10 @@ class Util {
         }
 
         return false;
+    }
+
+    static isId(str) {
+        return str.charAt(0) == "#";
     }
 
 }
