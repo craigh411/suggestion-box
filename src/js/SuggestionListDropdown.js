@@ -8,21 +8,47 @@ import $ from 'jQuery';
 
 class SuggestionListDropdown {
 
-    constructor(inputEl, template) {
+    constructor(inputEl, template, options) {
         this.inputEl = inputEl;
         this.template = template;
 
+        this.suggestions = [];
         this.templateParser = new TemplateParser(template);
 
+        this.options = options;
+
+        // Whether or not the scroll action was done pragmatically
+        this.autoScrolled = false;
+
+        // REMOVE THIS ONCE OFFSET IMPLEMENTED
         this.topOffset = 0;
         this.leftOffset = 0;
-        this.zIndex = 10000;
+
+
+        this.radiusDefaults = {
+            bottomLeft: Util.getCssValue(this.inputEl, 'border-bottom-right-radius'),
+            bottomRight: Util.getCssValue(this.inputEl, 'border-bottom-right-radius')
+        }
+
+        this.selectedLi = -1; // Nothing selected
         this.setRandId();
         this._buildDom();
+
+        // Bind Events
+        this.$suggestionBox.on('mousemove', this.mousemoveEvents.bind(this));
+        this.$suggestionBox.on('mouseout', this.mouseoutEvents.bind(this));
+        this.$suggestionBox.on('click', this.clickEvents.bind(this));
     }
 
     _buildDom() {
         this.$suggestionBox = $('<div id="' + this.randId + '" class="suggestion-box"></div>').appendTo('body');
+        if (this.options.height) {
+            this.$suggestionBox.css('max-height', this.options.height);
+        }
+
+        if (this.options.scrollable) {
+            this.$suggestionBox.css('overflow', 'auto');
+        }
     }
 
     /* Update the position of the suggestionList */
@@ -34,7 +60,7 @@ class SuggestionListDropdown {
 
         this.$suggestionBox.css({
             'position': 'absolute',
-            'zIndex': this.zIndex,
+            'zIndex': this.options.zIndex,
             'left': (offset.left) + this.leftOffset,
             'top': (offset.top) + (this.inputEl.height() + borders + padding + this.topOffset)
         });
@@ -47,14 +73,26 @@ class SuggestionListDropdown {
         this.updatePosition();
         this.setWidth();
         this.renderSuggestionsList();
-        this.$suggestionBox.css('display', 'block');
+
+
+        if (this.options.adjustBorderRadius) {
+            this._applyBorderRadius(0, 0);
+        }
+
+        this.$suggestionBox.fadeIn();
+        //console.log(this.$suggestionBox.html());
+    }
+
+    _applyBorderRadius(left, right) {
+        this.inputEl.css('border-bottom-left-radius', left);
+        this.inputEl.css('border-bottom-right-radius', right);
     }
 
     /**
      * Sets the width of the suggestion box
      */
     setWidth() {
-        let searchBoxWidth = this.getSearchBoxWidth() - Util.calculateHorizontalBorders(this.$suggestionBox);
+        let searchBoxWidth = this.getSearchBoxWidth();
         this.$suggestionBox.css({
             'min-width': searchBoxWidth
         });
@@ -98,6 +136,8 @@ class SuggestionListDropdown {
      * Hide the suggestion box
      */
     hide() {
+    	this.selectedLi = -1;
+        this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
         this.$suggestionBox.css('display', 'none');;
     }
 
@@ -105,7 +145,7 @@ class SuggestionListDropdown {
 
     renderSuggestionsList() {
         var heading = 'Suggestions';
-        let suggestions = this.suggestions.slice(0, 10);
+        let suggestions = this.suggestions.slice(0, this.options.results);
 
         var template = this.templateParser.getParsedTemplate();
         template = this.templateParser.replaceHandlebars(template, "header", heading);
@@ -130,36 +170,191 @@ class SuggestionListDropdown {
 
     }
 
-    getLeftOffset() {
-        return this.leftOffset;
+    /**
+     * Selects the suggestion at the given position
+     * @param position
+     * @param scroll
+     */
+    select(position, scroll) {
+        this.selectedHref = this.$suggestionBox.find("li:eq(" + position + ") a").attr('href');
+        this.$suggestionBox.find("li:eq(" + position + ")").addClass('selected');
+
+        if (scroll) {
+            this.doScroll(position);
+        }
     }
 
-    setLeftOffset(offset) {
-        this.leftOffset = offset;
+    isOpen() {
+        return this.$suggestionBox.css('display') !== 'none';
     }
 
-    getTopOffset() {
-        return this.topOffset;
+    /**
+     * Scrolls the suggestion box to the given position
+     * @param to
+     */
+    doScroll(to) {
+        this.autoScrolled = true;
+
+        if (to > -1) {
+            var pos = this.$suggestionBox.find('li:eq(' + to + ')').position().top -
+                this.$suggestionBox.find('li:eq(0)').position().top;
+        }
+
+        // find scroll position at to and set scroll bars to it
+        let scrollTo = (to > -1) ? pos : 0;
+        this.$suggestionBox.scrollTop(scrollTo);
     }
 
-    setTopOffset(offset) {
-        this.topOffset = offset;
+    /**
+     * Unselects the suggestion at the given position
+     * @param position
+     */
+    unselect(position) {
+        this.$suggestionBox.find("li:eq(" + position + ")").removeClass('selected');
     }
 
-    setZIndex(zIndex) {
-        this.zIndex = zIndex;
+    /**
+     * Events for the mouse moving inside the suggestion box
+     * @param e
+     */
+    mousemoveEvents(e) {
+        if (this.isSuggestion(e) && !this.autoScrolled) {
+            this.unselect(this.selectedLi);
+            this.selectedLi = this.getSelectionMouseIsOver(e);
+            this.select(this.selectedLi);
+        }
+
+        this.mouseHover = true;
+        this.autoScrolled = false;
     }
 
-    getZIndex() {
-        return this.zIndex;
+    /**
+     * Moves the selection down to the next suggestion
+     */
+    moveDown(scroll) {
+        var listSize = this.$suggestionBox.find('li').length;
+
+        if (!this.isOpen() && this.suggestions.length > 0) {
+            this.show();
+        } else if (this.selectedLi === (listSize - 1)) {
+            this.unselect(this.selectedLi);
+            this.resetSelection();
+        } else {
+            this.unselect(this.selectedLi);
+            this.selectedLi++;
+            this.select(this.selectedLi);
+        }
+
+        if (scroll) {
+            this.doScroll(this.selectedLi);
+        }
     }
 
-    getId() {
-        return this.Id;
+    /**
+     * Moves the selection up to the previous suggestions
+     */
+    moveUp(scroll) {
+        if (this.selectedLi > 0) {
+            this.unselect(this.selectedLi);
+            this.selectedLi--;
+            this.select(this.selectedLi);
+        } else if (this.selectedLi == -1) {
+            this.unselect(this.selectedLi);
+            this.selectedLi = this.$suggestionBox.find('li').length - 1;
+            this.select(this.selectedLi);
+        } else {
+            this.unselect(0);
+            this.resetSelection();
+        }
+
+        if (scroll) {
+            this.doScroll(this.selectedLi);
+        }
     }
 
-    setId(id) {
-        this.Id = id;
+
+    /**
+     * Returns the index of the list item the mouse is currently hovering over
+     * @param e
+     * @returns {Number}
+     */
+    getSelectionMouseIsOver(e) {
+        let $parentLi = $(e.target).parents('li');
+
+        return $parentLi.parent().children().index($parentLi);
+    }
+
+    /**
+     * Events for when the mouse leaves the suggestion box
+     * @param e
+     */
+    mouseoutEvents(e) {
+        if (this.isSuggestion(e) && !this.autoScrolled) {
+            this.unselect(this.selectedLi);
+            this.resetSelection();
+        } else if ($(':focus').attr('id') !== this.inputEl.attr('id')) {
+            // We're out of the suggestion box so re-focus on search
+            this.inputEl.focus();
+        }
+        this.mouseHover = false;
+    }
+
+
+    /**
+     * Events for clicks inside the suggestion box
+     * @param e
+     */
+    clickEvents(e) {
+        if (this.isSuggestion(e)) {
+            e.preventDefault();
+            this.doClick(e);
+        }
+    }
+
+    /*
+     * Returns true if the mouse is over the dropdown list
+     */
+    isHovering(){
+    	return this.mouseHover;
+    }
+
+    /**
+     * Performs the click action, this can be called for any event you want to recreate a click action for.
+     * @param e
+     */
+    doClick(e) {
+        e.preventDefault();
+        let selectionText = this.$suggestionBox.find('li:eq(' + this.selectedLi + ')').text();
+        this.options.onClick(e, selectionText, this.selectedHref, this.inputEl);
+        this.$suggestionBox.hide();
+    }
+
+
+    simulateClick() {
+        if (this.selectedLi > -1) {
+            console.log('click');
+            this.$suggestionBox.find('.selected a').click();
+        }
+    }
+
+
+    /**
+     * Is the given event made on a suggestion?
+     * @param e
+     * @returns {boolean}
+     */
+    isSuggestion(e) {
+        return $(e.target).parents('a').length > 0 || e.target.nodeName === 'A';
+    }
+
+    /**
+     * Resets any selected suggestions
+     */
+    resetSelection() {
+        this.selectedHref = '#';
+        this.selectedLi = -1;
+        // remove all selected on reset
+        this.$suggestionBox.find('li').removeClass('selected');
     }
 
     setRandId() {

@@ -8,6 +8,12 @@ elixir(function(mix) {
 });
 
 
+elixir(function(mix){
+    mix.sass([
+        './src/scss/suggestion-box.scss',
+    ], 'dist/css/suggestion-box.mix.css');
+});
+
 /**
  * Run tests using karma once and exit
  */

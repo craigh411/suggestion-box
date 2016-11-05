@@ -6,7 +6,7 @@ import Anubis from './Anubis.js';
 import defaultOptions from './options.js';
 
 class SuggestionBox {
-    
+
     constructor(options, context) {
         this.context = context;
         this.active = false;
@@ -19,7 +19,7 @@ class SuggestionBox {
         // get loaddefault template into options 
         let template = (Util.isId(this.options.template)) ? $(this.options.template).html() : this.options.template;
 
-        this.dropdown = new Dropdown(this.context, template);
+        this.dropdown = new Dropdown(this.context, template, this.options);
         this.anubis = new Anubis(this.options.props.value, this.options.filter, this.options.sort);
         this.anubis.setData(this.options.data);
 
@@ -27,23 +27,52 @@ class SuggestionBox {
         this.context.on('keyup', this.keyupEvents.bind(this));
         this.context.on('blur', this.blurEvents.bind(this));
         this.context.on('focus', this.focusEvents.bind(this));
+        this.context.on('keydown', this.keydownEvents.bind(this));
+    }
+
+    getSuggestions() {
+        this.search = this.context.val();
+        this.anubis.setSearch(this.search);
+
+        this.suggestions = this.anubis.getSuggestions();
+        this.dropdown.setSuggestions(this.suggestions);
+        this.dropdown.resetSelection();
+        console.log('fetching');
     }
 
     keyupEvents(e) {
-        this.search = this.context.val();
+
         if (!this._isReservedKey(e)) {
-
-            this.anubis.setSearch(this.search);
-
-            this.suggestions = this.anubis.getSuggestions();
+            this.getSuggestions();
 
             if (this.suggestions.length > 0) {
-                this.dropdown.setSuggestions(this.suggestions);
                 this.dropdown.show();
-            }else{
+            } else {
                 this.dropdown.hide();
             }
-        console.log(this.suggestions);
+            console.log(this.suggestions);
+        }
+    }
+
+    keydownEvents(e) {
+        if (e.which == keys.DOWN_ARROW_KEY) {
+            e.preventDefault();
+            this.dropdown.moveDown(true);
+        }
+        if (this.dropdown.isOpen()) {
+            if (e.which == keys.UP_ARROW_KEY) {
+                e.preventDefault();
+                this.dropdown.moveUp(true);
+            }
+            if (e.which === keys.ENTER_KEY) {
+                e.preventDefault();
+                this.dropdown.simulateClick();
+                this.getSuggestions();
+            }
+            if (e.which == keys.ESCAPE_KEY) {
+                e.preventDefault();
+                this.dropdown.hide();
+            }
         }
     }
 
@@ -52,9 +81,9 @@ class SuggestionBox {
      */
     focusEvents() {
         this.active = true;
-        console.log(this.active);
+        this.getSuggestions();
+
         if (this.suggestions.length > 0) {
-            this.dropdown.setSuggestions(this.suggestions);
             this.dropdown.show();
         }
     }
@@ -64,7 +93,7 @@ class SuggestionBox {
      */
     blurEvents() {
         this.active = false;
-        if (!this.mouseHover) {
+        if (!this.dropdown.isHovering()) {
             this.dropdown.hide();
         }
     }

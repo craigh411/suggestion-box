@@ -42,13 +42,13 @@ class Anubis {
             });
         }
 
-        this.sortData(results)
+        results = this.sortData(results)
 
         return results;
     }
 
     sortData(data) {
-      data.sort(this.sort);
+      return data.sort(this.sort);
     }
 
 }

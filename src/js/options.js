@@ -27,14 +27,15 @@ module.exports = {
     adjustBorderRadius: true,
     ajaxError: () => {},
     ajaxSuccess: () => {},
-    onClick: () => {
-        goToSelection();
-        hideSuggestionBox();
-        context.val('');
+    onClick: (e, value, href, input) => {
+       input.val(value);
     },
     onShow: () => {},
     onHide: () => {},
     paramName: 'search',
+    sort: function(a, b) {
+    	return a.localeCompare(b);
+    },
     customData: [],
     scrollable: false,
     noConflict: false
