@@ -9,13 +9,14 @@ class SuggestionBox {
 
     constructor(options, context) {
         this.context = context;
-        this.active = false;
-        this.mouseHover = false;
+
         this.search = this.context.val();
         this.suggestions = [];
 
         this.options = $.extend(defaultOptions, options);
 
+        this.fetchRate = this.options.fetchAfter;
+        // this.perpetualFetch = (this.options.fetchEvery != -1) ? true : false;
         // get loaddefault template into options 
         let template = (Util.isId(this.options.template)) ? $(this.options.template).html() : this.options.template;
 
@@ -28,31 +29,26 @@ class SuggestionBox {
         this.context.on('blur', this.blurEvents.bind(this));
         this.context.on('focus', this.focusEvents.bind(this));
         this.context.on('keydown', this.keydownEvents.bind(this));
+        this.context.on('paste', this.pasteEvents.bind(this))
+
+        // Preload the loading image if it has been supplied so it loads faster!
+        if (this.options.loadImage) {
+            $('<img/>')[0].src = this.options.loadImage;
+        }
+
     }
 
     getSuggestions() {
-        this.search = this.context.val();
-        this.anubis.setSearch(this.search);
-
-        this.suggestions = this.anubis.getSuggestions();
-        this.dropdown.setSuggestions(this.suggestions);
-        this.dropdown.resetSelection();
-        console.log('fetching');
+        this.dropdown.updateSuggestions(this.context.val());
     }
 
     keyupEvents(e) {
-
         if (!this._isReservedKey(e)) {
             this.getSuggestions();
-
-            if (this.suggestions.length > 0) {
-                this.dropdown.show();
-            } else {
-                this.dropdown.hide();
-            }
-            console.log(this.suggestions);
         }
     }
+
+
 
     keydownEvents(e) {
         if (e.which == keys.DOWN_ARROW_KEY) {
@@ -67,10 +63,10 @@ class SuggestionBox {
             if (e.which === keys.ENTER_KEY) {
                 e.preventDefault();
                 this.dropdown.simulateClick();
-                this.getSuggestions();
             }
             if (e.which == keys.ESCAPE_KEY) {
                 e.preventDefault();
+                this.context.css('background', "");
                 this.dropdown.hide();
             }
         }
@@ -80,8 +76,7 @@ class SuggestionBox {
      * Events for when the search box is focused
      */
     focusEvents() {
-        this.active = true;
-        this.getSuggestions();
+        this.getSuggestions(false);
 
         if (this.suggestions.length > 0) {
             this.dropdown.show();
@@ -92,10 +87,20 @@ class SuggestionBox {
      * Events for when the search box loses focus
      */
     blurEvents() {
-        this.active = false;
         if (!this.dropdown.isHovering()) {
+            this.context.css('background', "");
             this.dropdown.hide();
         }
+    }
+
+    /**
+     * Events for when text is pasted in to the search box
+     */
+    pasteEvents() {
+        // Simulate keyup after 200ms otherwise the value of the search box will not be available
+        setTimeout(() => {
+            this.context.keyup();
+        }, 200);
     }
 
     _isReservedKey(e) {

@@ -42,6 +42,9 @@ class Util {
         return str.charAt(0) == "#";
     }
 
+    static logError(error){
+      console.log(error);
+    }
 }
 
 export default Util;

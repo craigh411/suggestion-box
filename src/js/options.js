@@ -12,13 +12,13 @@ module.exports = {
     zIndex: 10000,
     hideOnExactMatch: false,
     isSelectionBox: false,
-    loadImage: null,
+    loadImage: "/dist/images/loading.gif",
     widthAdjustment: 10,
-    delay: 250, // in ms
+    fetchAfter: 500,
+    fetchEvery: 1000, // in ms
+    fetchOnce: false,
     heading: 'Suggestions',
     results: 10,
-    fadeIn: true,
-    fadeOut: false,
     menuWidth: 'auto',
     showNoSuggestionsMessage: false,
     noSuggestionsMessage: 'No Suggestions Found',
@@ -33,10 +33,11 @@ module.exports = {
     onShow: () => {},
     onHide: () => {},
     paramName: 'search',
-    sort: function(a, b) {
+    sort: (a, b) => {
     	return a.localeCompare(b);
     },
     customData: [],
     scrollable: false,
-    noConflict: false
+    noConflict: false,
+    debug: true
 };

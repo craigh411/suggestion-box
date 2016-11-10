@@ -1,5 +1,6 @@
 import Util from './util';
 import TemplateParser from './TemplateParser'
+import Anubis from './Anubis'
 import $ from 'jQuery';
 
 /*
@@ -12,8 +13,9 @@ class SuggestionListDropdown {
         this.inputEl = inputEl;
         this.template = template;
 
-        this.suggestions = [];
+
         this.templateParser = new TemplateParser(template);
+        this.anubis = new Anubis(options.props.value, options.filter, options.sort);
 
         this.options = options;
 
@@ -51,6 +53,45 @@ class SuggestionListDropdown {
         }
     }
 
+    updateSuggestions(search) {
+        this.anubis.setSearch(search);
+
+        if (search == "") {
+            this.anubis.clearLastSearch();
+            this.hide();
+        } else {
+            if (!this.pending && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0)) {
+                this.anubis.setSearch(search);
+                this.pending = true;
+                this.inputEl.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
+
+                setTimeout(() => {
+                    this.loadSuggestionData();
+                }, 2000);
+
+            } else {
+                this.show();
+            }
+        }
+
+    }
+
+    loadSuggestionData() {
+        this.anubis.fetchSuggestions(this.options.url, (data) => {
+            this.anubis.setData(data);
+            // Only show if a selection was not made while wating for a response
+            if (!this.selectionMade) {
+                this.show();
+            } else {
+                console.log('interrupted');
+            }
+            this.selectionMade = false;
+            this.pending = false;
+
+            this.inputEl.css('background', "");
+        });
+    }
+
     /* Update the position of the suggestionList */
     updatePosition() {
         // Calculates the vertical padding and broder for the input box so the list isn't placed over the top.
@@ -65,6 +106,7 @@ class SuggestionListDropdown {
             'top': (offset.top) + (this.inputEl.height() + borders + padding + this.topOffset)
         });
     }
+
 
     /*
      * Show the suggestion box
@@ -110,13 +152,6 @@ class SuggestionListDropdown {
                 }*/
     }
 
-    setSuggestions(suggestions) {
-        this.suggestions = suggestions;
-    }
-
-    getSuggestions() {
-        return this.suggestions;
-    }
 
     /**
      * Returns the width of the search box
@@ -136,16 +171,17 @@ class SuggestionListDropdown {
      * Hide the suggestion box
      */
     hide() {
-    	this.selectedLi = -1;
+        this.selectedLi = -1;
+        console.log('hide');
         this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
-        this.$suggestionBox.css('display', 'none');;
+        this.$suggestionBox.css('display', 'none');
     }
 
 
 
     renderSuggestionsList() {
         var heading = 'Suggestions';
-        let suggestions = this.suggestions.slice(0, this.options.results);
+        let suggestions = this.anubis.getSuggestions().slice(0, this.options.results);
 
         var template = this.templateParser.getParsedTemplate();
         template = this.templateParser.replaceHandlebars(template, "header", heading);
@@ -234,7 +270,7 @@ class SuggestionListDropdown {
     moveDown(scroll) {
         var listSize = this.$suggestionBox.find('li').length;
 
-        if (!this.isOpen() && this.suggestions.length > 0) {
+        if (!this.isOpen() && this.anubis.getSuggestions().length > 0) {
             this.show();
         } else if (this.selectedLi === (listSize - 1)) {
             this.unselect(this.selectedLi);
@@ -314,8 +350,8 @@ class SuggestionListDropdown {
     /*
      * Returns true if the mouse is over the dropdown list
      */
-    isHovering(){
-    	return this.mouseHover;
+    isHovering() {
+        return this.mouseHover;
     }
 
     /**
@@ -324,15 +360,18 @@ class SuggestionListDropdown {
      */
     doClick(e) {
         e.preventDefault();
+
+        if (this.pending) {
+            this.selectionMade = true;
+        }
+
         let selectionText = this.$suggestionBox.find('li:eq(' + this.selectedLi + ')').text();
         this.options.onClick(e, selectionText, this.selectedHref, this.inputEl);
-        this.$suggestionBox.hide();
+        this.hide();
     }
-
 
     simulateClick() {
         if (this.selectedLi > -1) {
-            console.log('click');
             this.$suggestionBox.find('.selected a').click();
         }
     }

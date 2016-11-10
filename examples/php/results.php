@@ -11,22 +11,24 @@ $data = [
 $search = (isset($_REQUEST['search'])) ? $_REQUEST['search'] : '';
 
 $results = [];
+ $suggestions = [];
 
 if (!empty($search)) {
     $search = preg_quote($search, '~');
     $searchResults = preg_grep('~' . $search . '~', $data);
 
-    $suggestions = [];
+
     $i = 0;
     foreach ($searchResults as $result) {
         $suggestions[$i]['suggestion'] = $result;
         $suggestions[$i]['url'] = "selected.php?selected={$result}";
         $i++;
     }
+usleep(500);
 
-    if (count($suggestions)) {
+/*    if (count($suggestions)) {
         $results = ['suggestions' => $suggestions];
-    }
+    }*/
 }
 
-echo json_encode($results);
+echo json_encode($suggestions);

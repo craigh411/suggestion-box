@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-'use strict';
+"use strict";
 
 var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -37,32 +37,35 @@ var Anubis = function () {
         this.regex = regexPattern;
         this.sort = sort;
         this.search = "";
-
+        this.debug = false; // flag for showing debug messages from ajax call
+        this.lastSearch = "";
         console.log(this.regex);
     }
 
     _createClass(Anubis, [{
-        key: 'setData',
+        key: "setDebug",
+        value: function setDebug(debug) {
+            this.debug = debug;
+        }
+    }, {
+        key: "setData",
         value: function setData(data) {
             this.data = data;
         }
     }, {
-        key: 'getSuggestions',
+        key: "getSuggestions",
         value: function getSuggestions() {
             return this.filterData();
         }
     }, {
-        key: 'setSearch',
+        key: "setSearch",
         value: function setSearch(search) {
             // Escape any regex patterns is search string
             var santizedSearch = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
             this.search = santizedSearch;
         }
     }, {
-        key: 'formatData',
-        value: function formatData() {}
-    }, {
-        key: 'filterData',
+        key: "filterData",
         value: function filterData() {
             var _this = this;
 
@@ -72,21 +75,97 @@ var Anubis = function () {
 
             if (this.data && this.search.length > 0) {
                 results = $.grep(this.data, function (item) {
-                    return (typeof item === 'undefined' ? 'undefined' : _typeof(item)) === "object" ? regex.test(item[_this.searchBy]) : regex.test(item);
+                    return (typeof item === "undefined" ? "undefined" : _typeof(item)) === "object" ? regex.test(item[_this.searchBy]) : regex.test(item);
                 });
             }
 
-            results = this.sortData(results);
+            // results = this.sortData(results)
 
             return results;
         }
     }, {
-        key: 'sortData',
+        key: "sortData",
         value: function sortData(data) {
+            if ((typeof item === "undefined" ? "undefined" : _typeof(item)) === "object") {
+                return data;
+            }
             return data.sort(this.sort);
         }
+
+        /*            if (context.val() != "") {
+                        ajaxCalledVal = context.val();
+                          console.log('calling bg');
+                          if (options.loadImage != null) {
+                            context.css('background', "url('"+options.loadImage+"') no-repeat 99% 50%");
+                        }
+                          $.ajax({
+                            url: url,
+                            data: request,
+                            dataType: 'json',
+                            success: function(data) {
+                                var selectionHasChanged = true;
+                                var currentLi = selectedLi;
+                                  if (jsonData.suggestions && data.suggestions) {
+                                    selectionHasChanged = (JSON.stringify(jsonData.suggestions[selectedLi]) !== JSON.stringify(data.suggestions[selectedLi]))
+                                }
+                                  setJsonData(data);
+                                showSuggestions();
+                                  // Keep selection if no new information has been entered since ajax was called and the selection is the same.
+                                // This prevents the flick back effect when menu has the same data but the ajax hasn't finished.
+                                if (currentLi > -1 && (context.val() === ajaxCalledVal) && !selectionHasChanged) {
+                                    selectedLi = currentLi;
+                                    select(selectedLi);
+                                }
+                                  setTimeout(function(){
+                                   context.css('background', "");
+                               },500);
+                                  options.ajaxSuccess(data);
+                            },
+                            error: function(e) {
+                                options.ajaxError(e);
+                            }
+                        });*/
+
+    }, {
+        key: "getLastSearch",
+        value: function getLastSearch() {
+            return this.lastSearch;
+        }
+    }, {
+        key: "clearLastSearch",
+        value: function clearLastSearch() {
+            this.lastSearch = "";
+        }
+
+        // Fetches suggestions from the given url
+
+    }, {
+        key: "fetchSuggestions",
+        value: function fetchSuggestions(url, callback) {
+            var _this2 = this;
+
+            // Don't maka a call for an empty search string or while another request is still processing
+
+            this.lastSearch = this.search;
+            console.log('searching for ' + this.search);
+
+            if (this.xhr != undefined) {
+                this.xhr.abort();
+            }
+
+            this.xhr = $.ajax({
+                url: url,
+                method: 'get',
+                dataType: 'json',
+                data: { search: this.search }
+            }).done(callback).fail(function (data) {
+                if (_this2.debug) {
+                    console.log('[Ajax Error]:' + data);
+                }
+            });
+        }
     }], [{
-        key: 'factory',
+        key: "factory",
         value: function factory() {
             return new Anubis('suggestion', '{{INPUT}}');
         }
@@ -131,6 +210,10 @@ var _TemplateParser = require('./TemplateParser');
 
 var _TemplateParser2 = _interopRequireDefault(_TemplateParser);
 
+var _Anubis = require('./Anubis');
+
+var _Anubis2 = _interopRequireDefault(_Anubis);
+
 var _jQuery = (typeof window !== "undefined" ? window['jQuery'] : typeof global !== "undefined" ? global['jQuery'] : null);
 
 var _jQuery2 = _interopRequireDefault(_jQuery);
@@ -156,8 +239,8 @@ var SuggestionListDropdown = function () {
         this.inputEl = inputEl;
         this.template = template;
 
-        this.suggestions = [];
         this.templateParser = new _TemplateParser2.default(template);
+        this.anubis = new _Anubis2.default(options.props.value, options.filter, options.sort);
 
         this.options = options;
 
@@ -194,6 +277,49 @@ var SuggestionListDropdown = function () {
             if (this.options.scrollable) {
                 this.$suggestionBox.css('overflow', 'auto');
             }
+        }
+    }, {
+        key: 'updateSuggestions',
+        value: function updateSuggestions(search) {
+            var _this = this;
+
+            this.anubis.setSearch(search);
+
+            if (search == "") {
+                this.anubis.clearLastSearch();
+                this.hide();
+            } else {
+                if (!this.pending && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0)) {
+                    this.anubis.setSearch(search);
+                    this.pending = true;
+                    this.inputEl.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
+
+                    setTimeout(function () {
+                        _this.loadSuggestionData();
+                    }, 2000);
+                } else {
+                    this.show();
+                }
+            }
+        }
+    }, {
+        key: 'loadSuggestionData',
+        value: function loadSuggestionData() {
+            var _this2 = this;
+
+            this.anubis.fetchSuggestions(this.options.url, function (data) {
+                _this2.anubis.setData(data);
+                // Only show if a selection was not made while wating for a response
+                if (!_this2.selectionMade) {
+                    _this2.show();
+                } else {
+                    console.log('interrupted');
+                }
+                _this2.selectionMade = false;
+                _this2.pending = false;
+
+                _this2.inputEl.css('background', "");
+            });
         }
 
         /* Update the position of the suggestionList */
@@ -262,16 +388,6 @@ var SuggestionListDropdown = function () {
                         });
                     }*/
         }
-    }, {
-        key: 'setSuggestions',
-        value: function setSuggestions(suggestions) {
-            this.suggestions = suggestions;
-        }
-    }, {
-        key: 'getSuggestions',
-        value: function getSuggestions() {
-            return this.suggestions;
-        }
 
         /**
          * Returns the width of the search box
@@ -292,16 +408,17 @@ var SuggestionListDropdown = function () {
         key: 'hide',
         value: function hide() {
             this.selectedLi = -1;
+            console.log('hide');
             this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
-            this.$suggestionBox.css('display', 'none');;
+            this.$suggestionBox.css('display', 'none');
         }
     }, {
         key: 'renderSuggestionsList',
         value: function renderSuggestionsList() {
-            var _this = this;
+            var _this3 = this;
 
             var heading = 'Suggestions';
-            var suggestions = this.suggestions.slice(0, this.options.results);
+            var suggestions = this.anubis.getSuggestions().slice(0, this.options.results);
 
             var template = this.templateParser.getParsedTemplate();
             template = this.templateParser.replaceHandlebars(template, "header", heading);
@@ -311,8 +428,8 @@ var SuggestionListDropdown = function () {
 
             suggestions.forEach(function (item) {
                 var suggestion = (typeof item === 'undefined' ? 'undefined' : _typeof(item)) == "object" ? item.suggestion : item;
-                var markup = _this.templateParser.replaceHandlebars(listItemMarkup, "suggestion", suggestion);
-                markup = _this.templateParser.replaceHandlebars(markup, "url", "#");
+                var markup = _this3.templateParser.replaceHandlebars(listItemMarkup, "suggestion", suggestion);
+                markup = _this3.templateParser.replaceHandlebars(markup, "url", "#");
 
                 listMarkup += "<li>";
                 listMarkup += markup;
@@ -403,7 +520,7 @@ var SuggestionListDropdown = function () {
         value: function moveDown(scroll) {
             var listSize = this.$suggestionBox.find('li').length;
 
-            if (!this.isOpen() && this.suggestions.length > 0) {
+            if (!this.isOpen() && this.anubis.getSuggestions().length > 0) {
                 this.show();
             } else if (this.selectedLi === listSize - 1) {
                 this.unselect(this.selectedLi);
@@ -509,15 +626,19 @@ var SuggestionListDropdown = function () {
         key: 'doClick',
         value: function doClick(e) {
             e.preventDefault();
+
+            if (this.pending) {
+                this.selectionMade = true;
+            }
+
             var selectionText = this.$suggestionBox.find('li:eq(' + this.selectedLi + ')').text();
             this.options.onClick(e, selectionText, this.selectedHref, this.inputEl);
-            this.$suggestionBox.hide();
+            this.hide();
         }
     }, {
         key: 'simulateClick',
         value: function simulateClick() {
             if (this.selectedLi > -1) {
-                console.log('click');
                 this.$suggestionBox.find('.selected a').click();
             }
         }
@@ -559,7 +680,7 @@ var SuggestionListDropdown = function () {
 exports.default = SuggestionListDropdown;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./TemplateParser":3,"./util":8}],3:[function(require,module,exports){
+},{"./Anubis":1,"./TemplateParser":3,"./util":8}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -729,13 +850,13 @@ module.exports = (_module$exports = {
    zIndex: 10000,
    hideOnExactMatch: false,
    isSelectionBox: false,
-   loadImage: null,
+   loadImage: "/dist/images/loading.gif",
    widthAdjustment: 10,
-   delay: 250, // in ms
+   fetchAfter: 500,
+   fetchEvery: 1000, // in ms
+   fetchOnce: false,
    heading: 'Suggestions',
    results: 10,
-   fadeIn: true,
-   fadeOut: false,
    menuWidth: 'auto',
    showNoSuggestionsMessage: false,
    noSuggestionsMessage: 'No Suggestions Found',
@@ -752,7 +873,7 @@ module.exports = (_module$exports = {
    paramName: 'search'
 }, _defineProperty(_module$exports, 'sort', function sort(a, b) {
    return a.localeCompare(b);
-}), _defineProperty(_module$exports, 'customData', []), _defineProperty(_module$exports, 'scrollable', false), _defineProperty(_module$exports, 'noConflict', false), _module$exports);
+}), _defineProperty(_module$exports, 'customData', []), _defineProperty(_module$exports, 'scrollable', false), _defineProperty(_module$exports, 'noConflict', false), _defineProperty(_module$exports, 'debug', true), _module$exports);
 
 },{}],7:[function(require,module,exports){
 (function (global){
@@ -811,13 +932,14 @@ var SuggestionBox = function () {
         _classCallCheck(this, SuggestionBox);
 
         this.context = context;
-        this.active = false;
-        this.mouseHover = false;
+
         this.search = this.context.val();
         this.suggestions = [];
 
         this.options = _jQuery2.default.extend(_options2.default, options);
 
+        this.fetchRate = this.options.fetchAfter;
+        // this.perpetualFetch = (this.options.fetchEvery != -1) ? true : false;
         // get loaddefault template into options 
         var template = _util2.default.isId(this.options.template) ? (0, _jQuery2.default)(this.options.template).html() : this.options.template;
 
@@ -829,32 +951,24 @@ var SuggestionBox = function () {
         this.context.on('blur', this.blurEvents.bind(this));
         this.context.on('focus', this.focusEvents.bind(this));
         this.context.on('keydown', this.keydownEvents.bind(this));
+        this.context.on('paste', this.pasteEvents.bind(this));
+
+        // Preload the loading image if it has been supplied so it loads faster!
+        if (this.options.loadImage) {
+            (0, _jQuery2.default)('<img/>')[0].src = this.options.loadImage;
+        }
     }
 
     _createClass(SuggestionBox, [{
         key: 'getSuggestions',
         value: function getSuggestions() {
-            this.search = this.context.val();
-            this.anubis.setSearch(this.search);
-
-            this.suggestions = this.anubis.getSuggestions();
-            this.dropdown.setSuggestions(this.suggestions);
-            this.dropdown.resetSelection();
-            console.log('fetching');
+            this.dropdown.updateSuggestions(this.context.val());
         }
     }, {
         key: 'keyupEvents',
         value: function keyupEvents(e) {
-
             if (!this._isReservedKey(e)) {
                 this.getSuggestions();
-
-                if (this.suggestions.length > 0) {
-                    this.dropdown.show();
-                } else {
-                    this.dropdown.hide();
-                }
-                console.log(this.suggestions);
             }
         }
     }, {
@@ -872,10 +986,10 @@ var SuggestionBox = function () {
                 if (e.which === _keys2.default.ENTER_KEY) {
                     e.preventDefault();
                     this.dropdown.simulateClick();
-                    this.getSuggestions();
                 }
                 if (e.which == _keys2.default.ESCAPE_KEY) {
                     e.preventDefault();
+                    this.context.css('background', "");
                     this.dropdown.hide();
                 }
             }
@@ -888,8 +1002,7 @@ var SuggestionBox = function () {
     }, {
         key: 'focusEvents',
         value: function focusEvents() {
-            this.active = true;
-            this.getSuggestions();
+            this.getSuggestions(false);
 
             if (this.suggestions.length > 0) {
                 this.dropdown.show();
@@ -903,10 +1016,25 @@ var SuggestionBox = function () {
     }, {
         key: 'blurEvents',
         value: function blurEvents() {
-            this.active = false;
             if (!this.dropdown.isHovering()) {
+                this.context.css('background', "");
                 this.dropdown.hide();
             }
+        }
+
+        /**
+         * Events for when text is pasted in to the search box
+         */
+
+    }, {
+        key: 'pasteEvents',
+        value: function pasteEvents() {
+            var _this = this;
+
+            // Simulate keyup after 200ms otherwise the value of the search box will not be available
+            setTimeout(function () {
+                _this.context.keyup();
+            }, 200);
         }
     }, {
         key: '_isReservedKey',
@@ -999,6 +1127,11 @@ var Util = function () {
         key: 'isId',
         value: function isId(str) {
             return str.charAt(0) == "#";
+        }
+    }, {
+        key: 'logError',
+        value: function logError(error) {
+            console.log(error);
         }
     }]);
 
