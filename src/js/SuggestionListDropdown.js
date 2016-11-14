@@ -2,29 +2,27 @@ import Util from './util';
 import TemplateParser from './TemplateParser'
 import Anubis from './Anubis'
 import $ from 'jQuery';
-
 /*
 / @class SuggestionListDropdown - builds the SuggestionList Dom object
 */
 
 class SuggestionListDropdown {
 
-    constructor(inputEl, template, options) {
+    constructor(inputEl, template, options, anubis, typeAhead) {
         this.inputEl = inputEl;
         this.template = template;
 
-
         this.templateParser = new TemplateParser(template);
-        this.anubis = new Anubis(options.props.value, options.filter, options.sort);
+        this.anubis = anubis;
+        this.typeAhead = typeAhead;
 
         this.options = options;
+        this.perpetualFetch = (this.options.fetchEvery !== -1) ? true : false;
+        this.fetchRate = this.options.fetchAfter;
+        this.endFetch = false;
 
         // Whether or not the scroll action was done pragmatically
         this.autoScrolled = false;
-
-        // REMOVE THIS ONCE OFFSET IMPLEMENTED
-        this.topOffset = 0;
-        this.leftOffset = 0;
 
 
         this.radiusDefaults = {
@@ -56,18 +54,28 @@ class SuggestionListDropdown {
     updateSuggestions(search) {
         this.anubis.setSearch(search);
 
+
         if (search == "") {
             this.anubis.clearLastSearch();
             this.hide();
         } else {
-            if (!this.pending && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0)) {
+            console.log('choose');
+            if ((this.options.url && (!this.pending) && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0) && !this.endFetch) || this.perpetualFetch) {
                 this.anubis.setSearch(search);
                 this.pending = true;
                 this.inputEl.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
 
                 setTimeout(() => {
                     this.loadSuggestionData();
-                }, 2000);
+                }, this.fetchRate);
+
+                this.endFetch = this.options.fetchOnce;
+
+                if (this.perpetualFetch) {
+                    // make sure we continue to filter
+                    this.show();
+                    this.fetchRate = this.options.fetchEvery;
+                }
 
             } else {
                 this.show();
@@ -76,20 +84,44 @@ class SuggestionListDropdown {
 
     }
 
-    loadSuggestionData() {
-        this.anubis.fetchSuggestions(this.options.url, (data) => {
-            this.anubis.setData(data);
-            // Only show if a selection was not made while wating for a response
-            if (!this.selectionMade) {
-                this.show();
-            } else {
-                console.log('interrupted');
-            }
-            this.selectionMade = false;
-            this.pending = false;
+    getSelectedItemIndex() {
+        return this.selectedLi;
+    }
 
+    getSuggestionAt(index) {
+        return this.anubis.getSuggestions()[index];
+    }
+
+    /**
+     * Clears the last suggestions and updates the suggestions, useful for `ctrl+v` paste
+     */
+    clearAndUpdate(search) {
+        this.hide();
+        this.anubis.clearLastSearch();
+        this.updateSuggestions(search);
+    }
+
+    loadSuggestionData() {
+        // Don't bother fetching data we already have again
+        if (this.anubis.getLastSearch() !== this.anubis.getSearch()) {
+            this.anubis.fetchSuggestions(this.options.url, (data) => {
+                this.anubis.setData(data);
+                console.log(this.selectionMade);
+                // Only show if a selection was not made while wating for a response
+                if (!this.selectionMade && this.anubis.getSearch().length > 0) {
+                    this.show();
+                } else {
+                    this.hide();
+                }
+
+                this.selectionMade = false;
+                this.pending = false;
+
+                this.inputEl.css('background', "");
+            });
+        } else {
             this.inputEl.css('background', "");
-        });
+        }
     }
 
     /* Update the position of the suggestionList */
@@ -102,8 +134,8 @@ class SuggestionListDropdown {
         this.$suggestionBox.css({
             'position': 'absolute',
             'zIndex': this.options.zIndex,
-            'left': (offset.left) + this.leftOffset,
-            'top': (offset.top) + (this.inputEl.height() + borders + padding + this.topOffset)
+            'left': (offset.left) + this.options.leftOffset,
+            'top': (offset.top) + (this.inputEl.height() + borders + padding + this.options.topOffset)
         });
     }
 
@@ -112,17 +144,33 @@ class SuggestionListDropdown {
      * Show the suggestion box
      */
     show() {
-        this.updatePosition();
-        this.setWidth();
-        this.renderSuggestionsList();
 
-
-        if (this.options.adjustBorderRadius) {
-            this._applyBorderRadius(0, 0);
+        // Don't reset if a suggestion is still available at the index it's annoying when trying to select while data is loading
+        if (this.anubis.getSuggestions().length < this.selectedLi) {
+            this.selectedLi = -1;
         }
 
-        this.$suggestionBox.fadeIn();
-        //console.log(this.$suggestionBox.html());
+        this.renderSuggestionsList();
+        // Reset election after page loaded
+        if (this.selectedLi > -1) {
+            this.select(this.selectedLi);
+        }
+
+        if (this.anubis.getSuggestions().length > 0) {
+            this.updatePosition();
+            this.setWidth();
+
+
+            if (this.options.adjustBorderRadius) {
+                this._applyBorderRadius(0, 0);
+            }
+
+            this.$suggestionBox.fadeIn();
+        } else if (this.options.showNoSuggestionsMessage) {
+            // SHOW NO SUGGESTIONS FOUND MESSAGE
+        } else {
+            this.hide();
+        }
     }
 
     _applyBorderRadius(left, right) {
@@ -135,21 +183,9 @@ class SuggestionListDropdown {
      */
     setWidth() {
         let searchBoxWidth = this.getSearchBoxWidth();
-        this.$suggestionBox.css({
-            'min-width': searchBoxWidth
-        });
-
-        /*       let searchBoxWidth = this.getSearchBoxWidth() + options.widthAdjustment;
-
-                if (options.menuWidth == 'auto') {
-                    $suggestionBox.css({
-                        'min-width': searchBoxWidth
-                    });
-                } else if (options.menuWidth == 'constrain') {
-                    $suggestionBox.css({
-                        'width': searchBoxWidth
-                    });
-                }*/
+        let width = {};
+        width[this.options.widthType] = searchBoxWidth;
+        this.$suggestionBox.css(width);
     }
 
 
@@ -175,35 +211,56 @@ class SuggestionListDropdown {
         console.log('hide');
         this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
         this.$suggestionBox.css('display', 'none');
+        this.typeAhead.removeTypeahead();
     }
 
 
 
     renderSuggestionsList() {
-        var heading = 'Suggestions';
         let suggestions = this.anubis.getSuggestions().slice(0, this.options.results);
 
         var template = this.templateParser.getParsedTemplate();
-        template = this.templateParser.replaceHandlebars(template, "header", heading);
+        template = this.templateParser.replaceHandlebars(template, "header", this.options.heading);
 
         var listItemMarkup = this.templateParser.getListItemMarkup();
+
+
         var listMarkup = "";
 
         suggestions.forEach((item) => {
-            let suggestion = (typeof item == "object") ? item.suggestion : item;
-            let markup = this.templateParser.replaceHandlebars(listItemMarkup, "suggestion", suggestion);
-            markup = this.templateParser.replaceHandlebars(markup, "url", "#");
+            let markup = listItemMarkup;
+
+            if (typeof item == "object") {
+                let templateItems = this.templateParser.getTemplatedItems(listItemMarkup);
+                templateItems.forEach((templateItem) => {
+                    let itemVal = (this.options.highlightMatch && templateItem === this.options.props.value) ? this.highlightMatches(item[templateItem]) : item[templateItem];
+                    markup = this.templateParser.replaceHandlebars(markup, templateItem, itemVal);
+                });
+            } else {
+                let suggestion = (this.options.highlightMatch) ? this.highlightMatches(item) : item;
+                markup = this.templateParser.replaceHandlebars(markup, this.options.props.value, suggestion);
+                markup = this.templateParser.replaceHandlebars(markup, "url", "#");
+            }
 
             listMarkup += "<li>";
             listMarkup += markup;
             listMarkup += "</li>";
+
         });
+
+
 
 
         var suggestionMarkup = this.templateParser.replaceHandlebars(template, "suggestion_list", listMarkup);
 
         this.$suggestionBox.html(suggestionMarkup);
 
+    }
+
+    highlightMatches(suggestion) {
+        // Replace all 
+        let filterPattern = this.templateParser.replaceHandlebars(this.options.filter, "INPUT", this.inputEl.val());
+        return suggestion.replace(new RegExp(filterPattern, 'gi'), '<b>$&</b>');
     }
 
     /**
@@ -214,9 +271,10 @@ class SuggestionListDropdown {
     select(position, scroll) {
         this.selectedHref = this.$suggestionBox.find("li:eq(" + position + ") a").attr('href');
         this.$suggestionBox.find("li:eq(" + position + ")").addClass('selected');
+        this.typeAhead.updateTypeAhead(position);
 
         if (scroll) {
-            this.doScroll(position);
+            this.doScroll();
         }
     }
 
@@ -228,16 +286,18 @@ class SuggestionListDropdown {
      * Scrolls the suggestion box to the given position
      * @param to
      */
-    doScroll(to) {
+    doScroll() {
         this.autoScrolled = true;
 
-        if (to > -1) {
-            var pos = this.$suggestionBox.find('li:eq(' + to + ')').position().top -
-                this.$suggestionBox.find('li:eq(0)').position().top;
+        if (this.selectedLi > -1) {
+            let selection = this.$suggestionBox.find('li:eq(' + this.selectedLi + ')').position();
+
+            var pos = (selection) ? selection.top -
+                this.$suggestionBox.find('li:eq(0)').position().top : 0;
         }
 
         // find scroll position at to and set scroll bars to it
-        let scrollTo = (to > -1) ? pos : 0;
+        let scrollTo = (this.selectedLi > -1) ? pos : 0;
         this.$suggestionBox.scrollTop(scrollTo);
     }
 
@@ -271,6 +331,7 @@ class SuggestionListDropdown {
         var listSize = this.$suggestionBox.find('li').length;
 
         if (!this.isOpen() && this.anubis.getSuggestions().length > 0) {
+            this.updateSuggestions(this.inputEl.val());
             this.show();
         } else if (this.selectedLi === (listSize - 1)) {
             this.unselect(this.selectedLi);
@@ -282,8 +343,10 @@ class SuggestionListDropdown {
         }
 
         if (scroll) {
-            this.doScroll(this.selectedLi);
+            this.doScroll();
         }
+
+
     }
 
     /**
@@ -304,7 +367,7 @@ class SuggestionListDropdown {
         }
 
         if (scroll) {
-            this.doScroll(this.selectedLi);
+            this.doScroll();
         }
     }
 
@@ -365,9 +428,16 @@ class SuggestionListDropdown {
             this.selectionMade = true;
         }
 
+        if (this.perpetualFetch) {
+            //this.getSuggestions();
+        }
+
         let selectionText = this.$suggestionBox.find('li:eq(' + this.selectedLi + ')').text();
         this.options.onClick(e, selectionText, this.selectedHref, this.inputEl);
         this.hide();
+
+        this.typeAhead.removeTypeahead();
+
     }
 
     simulateClick() {

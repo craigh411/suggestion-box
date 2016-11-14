@@ -3,6 +3,7 @@ import Dropdown from './SuggestionListDropdown.js';
 import Util from './util.js';
 import keys from './constants/keys.js';
 import Anubis from './Anubis.js';
+import TypeAhead from './TypeAhead.js';
 import defaultOptions from './options.js';
 
 class SuggestionBox {
@@ -12,24 +13,38 @@ class SuggestionBox {
 
         this.search = this.context.val();
         this.suggestions = [];
+        let defaultFilter = defaultOptions.filter;
 
         this.options = $.extend(defaultOptions, options);
+
+
+        if (defaultFilter != this.options.filter && this.options.typeahead) {
+            console.log('[suggestion-box: warn]: Using a custom filter pattern with the typeahed option can cause unexpected results');
+        }
 
         this.fetchRate = this.options.fetchAfter;
         // this.perpetualFetch = (this.options.fetchEvery != -1) ? true : false;
         // get loaddefault template into options 
         let template = (Util.isId(this.options.template)) ? $(this.options.template).html() : this.options.template;
 
-        this.dropdown = new Dropdown(this.context, template, this.options);
         this.anubis = new Anubis(this.options.props.value, this.options.filter, this.options.sort);
         this.anubis.setData(this.options.data);
+        this.anubis.setDebug(this.options.debug);
 
+        this.typeAhead = new TypeAhead(this.anubis, this.options.props.value);
+        this.dropdown = new Dropdown(this.context, template, this.options, this.anubis, this.typeAhead);
 
         this.context.on('keyup', this.keyupEvents.bind(this));
         this.context.on('blur', this.blurEvents.bind(this));
         this.context.on('focus', this.focusEvents.bind(this));
         this.context.on('keydown', this.keydownEvents.bind(this));
         this.context.on('paste', this.pasteEvents.bind(this))
+
+
+        // Set up typeahead option
+        this._initTypeAhead();
+
+        this.context.attr('autocomplete', 'off');
 
         // Preload the loading image if it has been supplied so it loads faster!
         if (this.options.loadImage) {
@@ -38,27 +53,46 @@ class SuggestionBox {
 
     }
 
+    _initTypeAhead(){
+        if (this.options.typeahead) {
+            this.context.wrap('<div id="suggestion-box-typeahead" data-placeholder=""></div>');
+            let top = Util.getCssValue(this.context, 'padding-top') + Util.getCssValue(this.context, 'border-top-width');
+            let left = Util.getCssValue(this.context, 'padding-left') + Util.getCssValue(this.context, 'border-left-width');
+            $('<style>#suggestion-box-typeahead::after{left:' + left + 'px;top:' + top + 'px;}</style>').appendTo('head');
+        }
+    }
+
     getSuggestions() {
         this.dropdown.updateSuggestions(this.context.val());
     }
 
+    updateTypeAhead() {
+        let selectedIndex = this.dropdown.getSelectedItemIndex();
+        this.typeAhead.updateTypeAhead(selectedIndex);
+    }
+
+
     keyupEvents(e) {
         if (!this._isReservedKey(e)) {
             this.getSuggestions();
+            this.updateTypeAhead();
         }
     }
 
 
 
     keydownEvents(e) {
+
         if (e.which == keys.DOWN_ARROW_KEY) {
             e.preventDefault();
             this.dropdown.moveDown(true);
+            this.updateTypeAhead();
         }
         if (this.dropdown.isOpen()) {
             if (e.which == keys.UP_ARROW_KEY) {
                 e.preventDefault();
                 this.dropdown.moveUp(true);
+                this.updateTypeAhead();
             }
             if (e.which === keys.ENTER_KEY) {
                 e.preventDefault();
@@ -76,11 +110,7 @@ class SuggestionBox {
      * Events for when the search box is focused
      */
     focusEvents() {
-        this.getSuggestions(false);
-
-        if (this.suggestions.length > 0) {
-            this.dropdown.show();
-        }
+        this.getSuggestions();
     }
 
     /**
@@ -99,7 +129,7 @@ class SuggestionBox {
     pasteEvents() {
         // Simulate keyup after 200ms otherwise the value of the search box will not be available
         setTimeout(() => {
-            this.context.keyup();
+            this.dropdown.clearAndUpdate(this.context.val());
         }, 200);
     }
 

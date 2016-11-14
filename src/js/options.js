@@ -1,43 +1,39 @@
 module.exports = {
-	data: [],
-	template: '#suggestion-box-template',
-	props: {
-		value: 'suggestion',
-		url: 'url',
-		custom: []
-	},
-	sort: () => {},
+    data: [],
+    template: '#suggestion-box-template',
+    props: {
+        value: 'suggestion'
+    },
+    sort: () => {},
     topOffset: 0,
     leftOffset: 0,
+    widthAdjustment: 0,
+    adjustBorderRadius: true,
     zIndex: 10000,
     hideOnExactMatch: false,
-    isSelectionBox: false,
     loadImage: "/dist/images/loading.gif",
-    widthAdjustment: 10,
-    fetchAfter: 500,
-    fetchEvery: 1000, // in ms
+    fetchAfter: 1000,
+    fetchEvery: -1, // in ms
     fetchOnce: false,
-    heading: 'Suggestions',
     results: 10,
-    menuWidth: 'auto',
+    widthType: 'width',  // Pass a css width attr (i.e. 'width', 'min-width')
     showNoSuggestionsMessage: false,
     noSuggestionsMessage: 'No Suggestions Found',
-    filter: "{{INPUT}}",
+    filter: "^{{INPUT}}",
+    typeahead: false,
     highlightMatch: false,
-    adjustBorderRadius: true,
     ajaxError: () => {},
     ajaxSuccess: () => {},
-    onClick: (e, value, href, input) => {
-       input.val(value);
+    loading: () => {},
+    completed: () => {},
+    onClick: (el, value, href, input) => {
+        input.val(value);
     },
     onShow: () => {},
     onHide: () => {},
     paramName: 'search',
-    sort: (a, b) => {
-    	return a.localeCompare(b);
-    },
-    customData: [],
+    sort: () => {},
     scrollable: false,
-    noConflict: false,
     debug: true
+    //height: 50
 };

@@ -16,7 +16,7 @@ class TemplateParser {
             console.log('%c[Suggestion-Box:Error] Unable to parse template. Template must have one root element.', 'color: #f00');
         }
         var el = html[0];
-         if (el.id !== "" || el.class !== undefined) {
+        if (el.id !== "" || el.class !== undefined) {
             console.log('%c[Suggestion-Box:warn] Avoid adding style attributes such as "class", "id" or "style" to root element in template because these tags will be stripped.', 'color: #f00');
         }
 
@@ -34,6 +34,23 @@ class TemplateParser {
 
 
         this.listItem = listItem;
+    }
+
+    // returns an arroy of names for items that are inside handlebars
+    getTemplatedItems(str) {
+        let regex = new RegExp("@?{{\\s?[a-z0-9_-]+\\s?}}", "ig");
+        let items = str.match(regex);
+
+        let itemNames = [];
+
+        items.forEach((item) => {
+            //console.log(item);
+            item = item.replace(new RegExp("@?{{\\s?"), "");
+            item = item.replace(new RegExp("\\s?}}"), "");
+            itemNames.push(item);
+        })
+
+        return itemNames;
     }
 
     _removeRootElement() {

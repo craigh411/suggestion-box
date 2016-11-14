@@ -11,7 +11,7 @@ elixir(function(mix) {
 elixir(function(mix){
     mix.sass([
         './src/scss/suggestion-box.scss',
-    ], 'dist/css/suggestion-box.mix.css');
+    ], 'dist/css/suggestion-box.min.css');
 });
 
 /**

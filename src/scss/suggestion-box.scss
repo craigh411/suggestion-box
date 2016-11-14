@@ -14,6 +14,7 @@ $font-family: inherit;
   background: $background-color;
   padding: 0;
   margin: 0 10px 0 0;
+  z-index: 1;
 
   .no-suggestions {
     padding: 10px;
@@ -48,13 +49,20 @@ $font-family: inherit;
   .selected {
     background-color: $hover-color;
   }
+}
 
-  .suggestion-header {
-    margin-right: 10px;
-    margin-top: 5px;
-    font-weight: bold;
-    font-size: 0.8em;
-    color: $header-color;
-    float: right;
-  }
+#suggestion-box-typeahead
+{
+    position: relative;
+}
+
+#suggestion-box-typeahead::after
+{
+    position: absolute;
+    left: 13px;
+    top: 7px;
+    content: attr(data-placeholder);
+    pointer-events: none;
+    opacity: 0.5;
+    z-index: 1;
 }
