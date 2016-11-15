@@ -11,7 +11,7 @@ Automatically makes suggestions based on user input.
 
 ## What's New
 
-  ### Templating
+### Templating
 
   A new templating engine has been implemented to allow creation of templates using a string or the HTML5 template tag. Suggestion box no longer requires you to return your data in a set format, you can simply create a template for displaying you data. There are even conditionals!
 
