@@ -1,1 +1,9 @@
-export default = '<div class="suggestion-header">{{header}}</div><ul class="suggestion-list"><li class="suggestion-list-item"><a href="{{url}}">{{value}}</a></li></ul></div>';
+const template = '<div>' +
+            '<ul id="suggestion-list" class="suggestion-box-list">' +
+            '<li>' +
+            '<a href="#">{{suggestion}}</a>' +
+            '</li>' +
+            '</ul>' +
+            '</div>';
+
+export default template;

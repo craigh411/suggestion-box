@@ -7,7 +7,6 @@ class Anubis {
         this.search = "";
         this.debug = false; // flag for showing debug messages from ajax call
         this.lastSearch = "";
-        console.log(this.regex);
     }
 
     setDebug(debug) {
@@ -91,7 +90,8 @@ class Anubis {
             data: { search: this.search }
         }).done(callback).fail((data) => {
             if (this.debug) {
-                console.log('[Ajax Error]:' + data);
+                console.log('[Ajax Error]:');
+                console.log(data);
             }
         });
     }

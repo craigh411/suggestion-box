@@ -1,10 +1,10 @@
-import $ from 'jQuery';
 import Dropdown from './SuggestionListDropdown.js';
 import Util from './util.js';
 import keys from './constants/keys.js';
 import Anubis from './Anubis.js';
 import TypeAhead from './TypeAhead.js';
 import defaultOptions from './options.js';
+import defaultTemplate from './template.js';
 
 class SuggestionBox {
 
@@ -23,15 +23,14 @@ class SuggestionBox {
         }
 
         this.fetchRate = this.options.fetchAfter;
-        // this.perpetualFetch = (this.options.fetchEvery != -1) ? true : false;
-        // get loaddefault template into options 
+
+        // load default template into options 
         let template = (Util.isId(this.options.template)) ? $(this.options.template).html() : this.options.template;
+        template = (template === '') ? defaultTemplate : template;
 
-        this.anubis = new Anubis(this.options.props.value, this.options.filter, this.options.sort);
-        this.anubis.setData(this.options.data);
-        this.anubis.setDebug(this.options.debug);
+        this._initAnubis();
 
-        this.typeAhead = new TypeAhead(this.anubis, this.options.props.value);
+        this.typeAhead = new TypeAhead(this.anubis, this.options.searchBy);
         this.dropdown = new Dropdown(this.context, template, this.options, this.anubis, this.typeAhead);
 
         this.context.on('keyup', this.keyupEvents.bind(this));
@@ -51,6 +50,16 @@ class SuggestionBox {
             $('<img/>')[0].src = this.options.loadImage;
         }
 
+        // If we are prefetching our data
+        if(this.options.prefetch){
+            this.dropdown.updateSuggestions(this.context.val(), true);
+        }
+    }
+
+    _initAnubis(){
+        this.anubis = new Anubis(this.options.searchBy, this.options.filter, this.options.sort);
+        this.anubis.setData(this.options.data);
+        this.anubis.setDebug(this.options.debug);
     }
 
     _initTypeAhead(){
@@ -63,7 +72,7 @@ class SuggestionBox {
     }
 
     getSuggestions() {
-        this.dropdown.updateSuggestions(this.context.val());
+        this.dropdown.updateSuggestions(this.context.val(), false);
     }
 
     updateTypeAhead() {

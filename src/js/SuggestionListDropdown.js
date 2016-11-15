@@ -1,7 +1,7 @@
 import Util from './util';
 import TemplateParser from './TemplateParser'
 import Anubis from './Anubis'
-import $ from 'jQuery';
+
 /*
 / @class SuggestionListDropdown - builds the SuggestionList Dom object
 */
@@ -40,6 +40,9 @@ class SuggestionListDropdown {
         this.$suggestionBox.on('click', this.clickEvents.bind(this));
     }
 
+    /*
+     * Builds the HTML for the suggestion list
+     */
     _buildDom() {
         this.$suggestionBox = $('<div id="' + this.randId + '" class="suggestion-box"></div>').appendTo('body');
         if (this.options.height) {
@@ -51,22 +54,26 @@ class SuggestionListDropdown {
         }
     }
 
-    updateSuggestions(search) {
+    /*
+     * Updates the suggestion list
+     * @param search - The search string for finding suggestions
+     * @param forceFetch -   set to true to fetch suggestions regardless of input (used internally for prefetching)
+     */
+    updateSuggestions(search, forceFetch) {
         this.anubis.setSearch(search);
 
 
-        if (search == "") {
+        if (search == "" && !forceFetch) {
             this.anubis.clearLastSearch();
             this.hide();
         } else {
-            console.log('choose');
             if ((this.options.url && (!this.pending) && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0) && !this.endFetch) || this.perpetualFetch) {
                 this.anubis.setSearch(search);
                 this.pending = true;
                 this.inputEl.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
 
                 setTimeout(() => {
-                    this.loadSuggestionData();
+                    this.loadSuggestionData(forceFetch);
                 }, this.fetchRate);
 
                 this.endFetch = this.options.fetchOnce;
@@ -84,29 +91,41 @@ class SuggestionListDropdown {
 
     }
 
+    /*
+     * Returns the index for the currently selected/highlighted item 
+     */
     getSelectedItemIndex() {
         return this.selectedLi;
     }
 
-    getSuggestionAt(index) {
-        return this.anubis.getSuggestions()[index];
-    }
-
+    /*
+     * Gets the suggestion for the given index, justr 
+     */
+    /*    _getSuggestionAt(index) {
+            return this.anubis.getSuggestions()[index];
+        }
+    */
     /**
-     * Clears the last suggestions and updates the suggestions, useful for `ctrl+v` paste
+     * Clears the last suggestion and updates the suggestions list, useful for `ctrl+v` paste
+     * when a user highlights the current text and pastes new text over the top.
+     * @param search - The new search for the suggestion list
      */
     clearAndUpdate(search) {
         this.hide();
         this.anubis.clearLastSearch();
-        this.updateSuggestions(search);
+        this.updateSuggestions(search, false);
     }
 
-    loadSuggestionData() {
+    /*
+     * loads the suggestion data from the server
+     * @param forceFetch - set to true to force the fetch (used for prefetch when search value is empty)
+     */
+    loadSuggestionData(forceFetch) {
         // Don't bother fetching data we already have again
-        if (this.anubis.getLastSearch() !== this.anubis.getSearch()) {
+        if (this.anubis.getLastSearch() !== this.anubis.getSearch() || forceFetch) {
             this.anubis.fetchSuggestions(this.options.url, (data) => {
                 this.anubis.setData(data);
-                console.log(this.selectionMade);
+
                 // Only show if a selection was not made while wating for a response
                 if (!this.selectionMade && this.anubis.getSearch().length > 0) {
                     this.show();
@@ -124,7 +143,9 @@ class SuggestionListDropdown {
         }
     }
 
-    /* Update the position of the suggestionList */
+    /* 
+     * Update the position of the suggestionList 
+     */
     updatePosition() {
         // Calculates the vertical padding and broder for the input box so the list isn't placed over the top.
         let borders = Util.calculateVerticalBorderWidth(this.inputEl);
@@ -173,6 +194,10 @@ class SuggestionListDropdown {
         }
     }
 
+    /*
+     * Applies the give border-radius to the search input, used when diosplaying suggestion list
+     * with an input that has a border radius.
+     */
     _applyBorderRadius(left, right) {
         this.inputEl.css('border-bottom-left-radius', left);
         this.inputEl.css('border-bottom-right-radius', right);
@@ -208,7 +233,6 @@ class SuggestionListDropdown {
      */
     hide() {
         this.selectedLi = -1;
-        console.log('hide');
         this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
         this.$suggestionBox.css('display', 'none');
         this.typeAhead.removeTypeahead();
@@ -232,22 +256,32 @@ class SuggestionListDropdown {
 
             if (typeof item == "object") {
                 let templateItems = this.templateParser.getTemplatedItems(listItemMarkup);
+
                 templateItems.forEach((templateItem) => {
-                    let itemVal = (this.options.highlightMatch && templateItem === this.options.props.value) ? this.highlightMatches(item[templateItem]) : item[templateItem];
+                    let itemVal = (this.options.highlightMatch && templateItem === this.options.searchBy) ? this.highlightMatches(item[templateItem]) : item[templateItem];
                     markup = this.templateParser.replaceHandlebars(markup, templateItem, itemVal);
                 });
             } else {
                 let suggestion = (this.options.highlightMatch) ? this.highlightMatches(item) : item;
-                markup = this.templateParser.replaceHandlebars(markup, this.options.props.value, suggestion);
+                markup = this.templateParser.replaceHandlebars(markup, this.options.searchBy, suggestion);
                 markup = this.templateParser.replaceHandlebars(markup, "url", "#");
             }
 
+            var markupDom = $(markup);
+            this.templateParser.getConditionals().forEach((conditional) => {
+                let expression = markupDom.find('#' + conditional.id).attr('sb-show');
+
+                if (!this.displayEl(expression)) {
+                    markupDom.find('#' + conditional.id).css('display', 'none');
+                }
+            });
+
+
             listMarkup += "<li>";
-            listMarkup += markup;
+            listMarkup += markupDom[0].outerHTML;
             listMarkup += "</li>";
 
         });
-
 
 
 
@@ -256,6 +290,15 @@ class SuggestionListDropdown {
         this.$suggestionBox.html(suggestionMarkup);
 
     }
+
+    displayEl(expression) {
+        try {
+            return new Function(("return " + expression + "? true : false"))();
+        } catch (e) {
+          console.log('%c[suggestion-box: warn]: Invalid "sb-show" expression in template. Remember to wrap any strings in quotes even if they are template items.', 'color: #f00');
+        }
+    }
+
 
     highlightMatches(suggestion) {
         // Replace all 
@@ -269,8 +312,8 @@ class SuggestionListDropdown {
      * @param scroll
      */
     select(position, scroll) {
-        this.selectedHref = this.$suggestionBox.find("li:eq(" + position + ") a").attr('href');
-        this.$suggestionBox.find("li:eq(" + position + ")").addClass('selected');
+        this.selectedHref = this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ") a").attr('href');
+        this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ")").addClass('selected');
         this.typeAhead.updateTypeAhead(position);
 
         if (scroll) {
@@ -290,10 +333,10 @@ class SuggestionListDropdown {
         this.autoScrolled = true;
 
         if (this.selectedLi > -1) {
-            let selection = this.$suggestionBox.find('li:eq(' + this.selectedLi + ')').position();
+            let selection = this.$suggestionBox.find('#suggestion-list > li:eq(' + this.selectedLi + ')').position();
 
             var pos = (selection) ? selection.top -
-                this.$suggestionBox.find('li:eq(0)').position().top : 0;
+                this.$suggestionBox.find('#suggestion-list > li:eq(0)').position().top : 0;
         }
 
         // find scroll position at to and set scroll bars to it
@@ -306,7 +349,7 @@ class SuggestionListDropdown {
      * @param position
      */
     unselect(position) {
-        this.$suggestionBox.find("li:eq(" + position + ")").removeClass('selected');
+        this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ")").removeClass('selected');
     }
 
     /**
@@ -328,10 +371,10 @@ class SuggestionListDropdown {
      * Moves the selection down to the next suggestion
      */
     moveDown(scroll) {
-        var listSize = this.$suggestionBox.find('li').length;
+        var listSize = this.$suggestionBox.find('#suggestion-list > li').length;
 
         if (!this.isOpen() && this.anubis.getSuggestions().length > 0) {
-            this.updateSuggestions(this.inputEl.val());
+            this.updateSuggestions(this.inputEl.val(), false);
             this.show();
         } else if (this.selectedLi === (listSize - 1)) {
             this.unselect(this.selectedLi);
@@ -359,7 +402,7 @@ class SuggestionListDropdown {
             this.select(this.selectedLi);
         } else if (this.selectedLi == -1) {
             this.unselect(this.selectedLi);
-            this.selectedLi = this.$suggestionBox.find('li').length - 1;
+            this.selectedLi = this.$suggestionBox.find('#suggestion-list > li').length - 1;
             this.select(this.selectedLi);
         } else {
             this.unselect(0);
@@ -423,17 +466,14 @@ class SuggestionListDropdown {
      */
     doClick(e) {
         e.preventDefault();
-
         if (this.pending) {
             this.selectionMade = true;
         }
 
-        if (this.perpetualFetch) {
-            //this.getSuggestions();
-        }
+        let suggestion = this.anubis.getSuggestions()[this.selectedLi];
+        let selectedEl = this.$suggestionBox.find('#suggestion-list > li:eq(' + this.selectedLi + ')');
 
-        let selectionText = this.$suggestionBox.find('li:eq(' + this.selectedLi + ')').text();
-        this.options.onClick(e, selectionText, this.selectedHref, this.inputEl);
+        this.options.onClick(suggestion[this.options.searchBy], suggestion, e, this.inputEl, selectedEl);
         this.hide();
 
         this.typeAhead.removeTypeahead();
@@ -463,7 +503,7 @@ class SuggestionListDropdown {
         this.selectedHref = '#';
         this.selectedLi = -1;
         // remove all selected on reset
-        this.$suggestionBox.find('li').removeClass('selected');
+        this.$suggestionBox.find('#suggestion-list > li').removeClass('selected');
     }
 
     setRandId() {

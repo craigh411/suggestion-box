@@ -22,6 +22,7 @@ class Util {
         return arr.splice(0);
     }
 
+
     /**
      * Returns true if the given search is found in the given object;
      */

@@ -39,7 +39,6 @@ var Anubis = function () {
         this.search = "";
         this.debug = false; // flag for showing debug messages from ajax call
         this.lastSearch = "";
-        console.log(this.regex);
     }
 
     _createClass(Anubis, [{
@@ -142,7 +141,8 @@ var Anubis = function () {
                 data: { search: this.search }
             }).done(callback).fail(function (data) {
                 if (_this2.debug) {
-                    console.log('[Ajax Error]:' + data);
+                    console.log('[Ajax Error]:');
+                    console.log(data);
                 }
             });
         }
@@ -154,7 +154,6 @@ var Anubis = function () {
 exports.default = Anubis;
 
 },{}],2:[function(require,module,exports){
-(function (global){
 'use strict';
 
 var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -190,10 +189,6 @@ var _TemplateParser2 = _interopRequireDefault(_TemplateParser);
 var _Anubis = require('./Anubis');
 
 var _Anubis2 = _interopRequireDefault(_Anubis);
-
-var _jQuery = (typeof window !== "undefined" ? window['jQuery'] : typeof global !== "undefined" ? global['jQuery'] : null);
-
-var _jQuery2 = _interopRequireDefault(_jQuery);
 
 function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : { default: obj };
@@ -243,10 +238,14 @@ var SuggestionListDropdown = function () {
         this.$suggestionBox.on('click', this.clickEvents.bind(this));
     }
 
+    /*
+     * Builds the HTML for the suggestion list
+     */
+
     _createClass(SuggestionListDropdown, [{
         key: '_buildDom',
         value: function _buildDom() {
-            this.$suggestionBox = (0, _jQuery2.default)('<div id="' + this.randId + '" class="suggestion-box"></div>').appendTo('body');
+            this.$suggestionBox = $('<div id="' + this.randId + '" class="suggestion-box"></div>').appendTo('body');
             if (this.options.height) {
                 this.$suggestionBox.css('max-height', this.options.height);
             }
@@ -255,25 +254,31 @@ var SuggestionListDropdown = function () {
                 this.$suggestionBox.css('overflow', 'auto');
             }
         }
+
+        /*
+         * Updates the suggestion list
+         * @param search - The search string for finding suggestions
+         * @param forceFetch -   set to true to fetch suggestions regardless of input (used internally for prefetching)
+         */
+
     }, {
         key: 'updateSuggestions',
-        value: function updateSuggestions(search) {
+        value: function updateSuggestions(search, forceFetch) {
             var _this = this;
 
             this.anubis.setSearch(search);
 
-            if (search == "") {
+            if (search == "" && !forceFetch) {
                 this.anubis.clearLastSearch();
                 this.hide();
             } else {
-                console.log('choose');
                 if (this.options.url && !this.pending && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0) && !this.endFetch || this.perpetualFetch) {
                     this.anubis.setSearch(search);
                     this.pending = true;
                     this.inputEl.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
 
                     setTimeout(function () {
-                        _this.loadSuggestionData();
+                        _this.loadSuggestionData(forceFetch);
                     }, this.fetchRate);
 
                     this.endFetch = this.options.fetchOnce;
@@ -288,19 +293,28 @@ var SuggestionListDropdown = function () {
                 }
             }
         }
+
+        /*
+         * Returns the index for the currently selected/highlighted item 
+         */
+
     }, {
         key: 'getSelectedItemIndex',
         value: function getSelectedItemIndex() {
             return this.selectedLi;
         }
-    }, {
-        key: 'getSuggestionAt',
-        value: function getSuggestionAt(index) {
-            return this.anubis.getSuggestions()[index];
-        }
 
+        /*
+         * Gets the suggestion for the given index, justr 
+         */
+        /*    _getSuggestionAt(index) {
+                return this.anubis.getSuggestions()[index];
+            }
+        */
         /**
-         * Clears the last suggestions and updates the suggestions, useful for `ctrl+v` paste
+         * Clears the last suggestion and updates the suggestions list, useful for `ctrl+v` paste
+         * when a user highlights the current text and pastes new text over the top.
+         * @param search - The new search for the suggestion list
          */
 
     }, {
@@ -308,18 +322,24 @@ var SuggestionListDropdown = function () {
         value: function clearAndUpdate(search) {
             this.hide();
             this.anubis.clearLastSearch();
-            this.updateSuggestions(search);
+            this.updateSuggestions(search, false);
         }
+
+        /*
+         * loads the suggestion data from the server
+         * @param forceFetch - set to true to force the fetch (used for prefetch when search value is empty)
+         */
+
     }, {
         key: 'loadSuggestionData',
-        value: function loadSuggestionData() {
+        value: function loadSuggestionData(forceFetch) {
             var _this2 = this;
 
             // Don't bother fetching data we already have again
-            if (this.anubis.getLastSearch() !== this.anubis.getSearch()) {
+            if (this.anubis.getLastSearch() !== this.anubis.getSearch() || forceFetch) {
                 this.anubis.fetchSuggestions(this.options.url, function (data) {
                     _this2.anubis.setData(data);
-                    console.log(_this2.selectionMade);
+
                     // Only show if a selection was not made while wating for a response
                     if (!_this2.selectionMade && _this2.anubis.getSearch().length > 0) {
                         _this2.show();
@@ -337,7 +357,9 @@ var SuggestionListDropdown = function () {
             }
         }
 
-        /* Update the position of the suggestionList */
+        /* 
+         * Update the position of the suggestionList 
+         */
 
     }, {
         key: 'updatePosition',
@@ -389,6 +411,12 @@ var SuggestionListDropdown = function () {
                 this.hide();
             }
         }
+
+        /*
+         * Applies the give border-radius to the search input, used when diosplaying suggestion list
+         * with an input that has a border radius.
+         */
+
     }, {
         key: '_applyBorderRadius',
         value: function _applyBorderRadius(left, right) {
@@ -428,7 +456,6 @@ var SuggestionListDropdown = function () {
         key: 'hide',
         value: function hide() {
             this.selectedLi = -1;
-            console.log('hide');
             this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
             this.$suggestionBox.css('display', 'none');
             this.typeAhead.removeTypeahead();
@@ -452,24 +479,43 @@ var SuggestionListDropdown = function () {
 
                 if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) == "object") {
                     var templateItems = _this3.templateParser.getTemplatedItems(listItemMarkup);
+
                     templateItems.forEach(function (templateItem) {
-                        var itemVal = _this3.options.highlightMatch && templateItem === _this3.options.props.value ? _this3.highlightMatches(item[templateItem]) : item[templateItem];
+                        var itemVal = _this3.options.highlightMatch && templateItem === _this3.options.searchBy ? _this3.highlightMatches(item[templateItem]) : item[templateItem];
                         markup = _this3.templateParser.replaceHandlebars(markup, templateItem, itemVal);
                     });
                 } else {
                     var suggestion = _this3.options.highlightMatch ? _this3.highlightMatches(item) : item;
-                    markup = _this3.templateParser.replaceHandlebars(markup, _this3.options.props.value, suggestion);
+                    markup = _this3.templateParser.replaceHandlebars(markup, _this3.options.searchBy, suggestion);
                     markup = _this3.templateParser.replaceHandlebars(markup, "url", "#");
                 }
 
+                var markupDom = $(markup);
+                _this3.templateParser.getConditionals().forEach(function (conditional) {
+                    var expression = markupDom.find('#' + conditional.id).attr('sb-show');
+
+                    if (!_this3.displayEl(expression)) {
+                        markupDom.find('#' + conditional.id).css('display', 'none');
+                    }
+                });
+
                 listMarkup += "<li>";
-                listMarkup += markup;
+                listMarkup += markupDom[0].outerHTML;
                 listMarkup += "</li>";
             });
 
             var suggestionMarkup = this.templateParser.replaceHandlebars(template, "suggestion_list", listMarkup);
 
             this.$suggestionBox.html(suggestionMarkup);
+        }
+    }, {
+        key: 'displayEl',
+        value: function displayEl(expression) {
+            try {
+                return new Function("return " + expression + "? true : false")();
+            } catch (e) {
+                console.log('%c[suggestion-box: warn]: Invalid "sb-show" expression in template. Remember to wrap any strings in quotes even if they are template items.', 'color: #f00');
+            }
         }
     }, {
         key: 'highlightMatches',
@@ -488,8 +534,8 @@ var SuggestionListDropdown = function () {
     }, {
         key: 'select',
         value: function select(position, scroll) {
-            this.selectedHref = this.$suggestionBox.find("li:eq(" + position + ") a").attr('href');
-            this.$suggestionBox.find("li:eq(" + position + ")").addClass('selected');
+            this.selectedHref = this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ") a").attr('href');
+            this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ")").addClass('selected');
             this.typeAhead.updateTypeAhead(position);
 
             if (scroll) {
@@ -513,9 +559,9 @@ var SuggestionListDropdown = function () {
             this.autoScrolled = true;
 
             if (this.selectedLi > -1) {
-                var selection = this.$suggestionBox.find('li:eq(' + this.selectedLi + ')').position();
+                var selection = this.$suggestionBox.find('#suggestion-list > li:eq(' + this.selectedLi + ')').position();
 
-                var pos = selection ? selection.top - this.$suggestionBox.find('li:eq(0)').position().top : 0;
+                var pos = selection ? selection.top - this.$suggestionBox.find('#suggestion-list > li:eq(0)').position().top : 0;
             }
 
             // find scroll position at to and set scroll bars to it
@@ -531,7 +577,7 @@ var SuggestionListDropdown = function () {
     }, {
         key: 'unselect',
         value: function unselect(position) {
-            this.$suggestionBox.find("li:eq(" + position + ")").removeClass('selected');
+            this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ")").removeClass('selected');
         }
 
         /**
@@ -559,10 +605,10 @@ var SuggestionListDropdown = function () {
     }, {
         key: 'moveDown',
         value: function moveDown(scroll) {
-            var listSize = this.$suggestionBox.find('li').length;
+            var listSize = this.$suggestionBox.find('#suggestion-list > li').length;
 
             if (!this.isOpen() && this.anubis.getSuggestions().length > 0) {
-                this.updateSuggestions(this.inputEl.val());
+                this.updateSuggestions(this.inputEl.val(), false);
                 this.show();
             } else if (this.selectedLi === listSize - 1) {
                 this.unselect(this.selectedLi);
@@ -591,7 +637,7 @@ var SuggestionListDropdown = function () {
                 this.select(this.selectedLi);
             } else if (this.selectedLi == -1) {
                 this.unselect(this.selectedLi);
-                this.selectedLi = this.$suggestionBox.find('li').length - 1;
+                this.selectedLi = this.$suggestionBox.find('#suggestion-list > li').length - 1;
                 this.select(this.selectedLi);
             } else {
                 this.unselect(0);
@@ -612,7 +658,7 @@ var SuggestionListDropdown = function () {
     }, {
         key: 'getSelectionMouseIsOver',
         value: function getSelectionMouseIsOver(e) {
-            var $parentLi = (0, _jQuery2.default)(e.target).parents('li');
+            var $parentLi = $(e.target).parents('li');
 
             return $parentLi.parent().children().index($parentLi);
         }
@@ -628,7 +674,7 @@ var SuggestionListDropdown = function () {
             if (this.isSuggestion(e) && !this.autoScrolled) {
                 this.unselect(this.selectedLi);
                 this.resetSelection();
-            } else if ((0, _jQuery2.default)(':focus').attr('id') !== this.inputEl.attr('id')) {
+            } else if ($(':focus').attr('id') !== this.inputEl.attr('id')) {
                 // We're out of the suggestion box so re-focus on search
                 this.inputEl.focus();
             }
@@ -668,17 +714,14 @@ var SuggestionListDropdown = function () {
         key: 'doClick',
         value: function doClick(e) {
             e.preventDefault();
-
             if (this.pending) {
                 this.selectionMade = true;
             }
 
-            if (this.perpetualFetch) {
-                //this.getSuggestions();
-            }
+            var suggestion = this.anubis.getSuggestions()[this.selectedLi];
+            var selectedEl = this.$suggestionBox.find('#suggestion-list > li:eq(' + this.selectedLi + ')');
 
-            var selectionText = this.$suggestionBox.find('li:eq(' + this.selectedLi + ')').text();
-            this.options.onClick(e, selectionText, this.selectedHref, this.inputEl);
+            this.options.onClick(suggestion[this.options.searchBy], suggestion, e, this.inputEl, selectedEl);
             this.hide();
 
             this.typeAhead.removeTypeahead();
@@ -700,7 +743,7 @@ var SuggestionListDropdown = function () {
     }, {
         key: 'isSuggestion',
         value: function isSuggestion(e) {
-            return (0, _jQuery2.default)(e.target).parents('a').length > 0 || e.target.nodeName === 'A';
+            return $(e.target).parents('a').length > 0 || e.target.nodeName === 'A';
         }
 
         /**
@@ -713,7 +756,7 @@ var SuggestionListDropdown = function () {
             this.selectedHref = '#';
             this.selectedLi = -1;
             // remove all selected on reset
-            this.$suggestionBox.find('li').removeClass('selected');
+            this.$suggestionBox.find('#suggestion-list > li').removeClass('selected');
         }
     }, {
         key: 'setRandId',
@@ -727,8 +770,7 @@ var SuggestionListDropdown = function () {
 
 exports.default = SuggestionListDropdown;
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Anubis":1,"./TemplateParser":3,"./util":9}],3:[function(require,module,exports){
+},{"./Anubis":1,"./TemplateParser":3,"./util":10}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -756,6 +798,11 @@ var TemplateParser = function () {
         _classCallCheck(this, TemplateParser);
 
         this.template = template;
+        this.nodes = [];
+        this.conditionals = [];
+
+        this._getNodes();
+        this._getConditionals();
         this._getTemplateForListItem();
         this._removeListItemMarkup();
         this._removeRootElement();
@@ -778,9 +825,9 @@ var TemplateParser = function () {
 
             if (el.childNodes.length > 0) {
                 $.each(el.childNodes, function (i, el) {
-                    if (el.id == "suggestion-list") {
+                    if (el.id === "suggestion-list") {
                         $.each(el.childNodes, function (i, el) {
-                            if (el.nodeName == "LI") {
+                            if (el.nodeName === "LI") {
                                 listItem = el.innerHTML;
                             }
                         });
@@ -802,13 +849,64 @@ var TemplateParser = function () {
             var itemNames = [];
 
             items.forEach(function (item) {
-                //console.log(item);
                 item = item.replace(new RegExp("@?{{\\s?"), "");
                 item = item.replace(new RegExp("\\s?}}"), "");
                 itemNames.push(item);
             });
 
             return itemNames;
+        }
+    }, {
+        key: '_getConditionals',
+        value: function _getConditionals() {
+            var _this = this;
+
+            this.nodes.forEach(function (node) {
+                if (node.attributes.length > 0) {
+                    for (var i = 0; i < node.attributes.length; i++) {
+                        if (node.attributes[i].nodeName === "sb-show") {
+                            var id = $(node).attr('id') || 'sb' + Math.floor(Math.random() * 10000000);
+
+                            // Add the id to the template
+                            _this.template = _this.template.replace($(node)[0].outerHTML, $(node).attr('id', id)[0].outerHTML);
+                            _this.conditionals.push({ 'id': id });
+                        }
+                    }
+                }
+            });
+        }
+    }, {
+        key: 'getConditional',
+        value: function getConditional(id) {
+            for (var key in this.conditionals) {
+                if (this.conditionals[key].id === id) {
+                    return this.conditionals[key];
+                }
+            }
+
+            return false;
+        }
+    }, {
+        key: 'getConditionals',
+        value: function getConditionals() {
+            return this.conditionals;
+        }
+    }, {
+        key: '_getNodes',
+        value: function _getNodes(node) {
+            var _this2 = this;
+
+            if (!node) {
+                var html = $.parseHTML($.trim(this.template));
+                var node = html[0];
+            }
+
+            $.each(node.childNodes, function (i, el) {
+                if (el.childNodes.length > 0) {
+                    _this2.nodes.push(el);
+                    _this2._getNodes(el);
+                }
+            });
         }
     }, {
         key: '_removeRootElement',
@@ -823,6 +921,7 @@ var TemplateParser = function () {
     }, {
         key: 'replaceHandlebars',
         value: function replaceHandlebars(str, name, replace) {
+
             return str.replace(new RegExp("@?{{\\s?" + name + "\\s?}}", "gi"), replace);
         }
     }, {
@@ -922,12 +1021,7 @@ exports.default = {
 };
 
 },{}],6:[function(require,module,exports){
-(function (global){
 'use strict';
-
-var _jQuery = (typeof window !== "undefined" ? window['jQuery'] : typeof global !== "undefined" ? global['jQuery'] : null);
-
-var _jQuery2 = _interopRequireDefault(_jQuery);
 
 var _suggestionBox = require('./suggestion-box.js');
 
@@ -956,11 +1050,14 @@ function _interopRequireDefault(obj) {
     };
 })(jQuery);
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./suggestion-box.js":8}],7:[function(require,module,exports){
 'use strict';
 
-var _module$exports;
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _data$template$search;
 
 function _defineProperty(obj, key, value) {
     if (key in obj) {
@@ -970,12 +1067,10 @@ function _defineProperty(obj, key, value) {
     }return obj;
 }
 
-module.exports = (_module$exports = {
+exports.default = (_data$template$search = {
     data: [],
     template: '#suggestion-box-template',
-    props: {
-        value: 'suggestion'
-    },
+    searchBy: 'suggestion',
     sort: function sort() {},
     topOffset: 0,
     leftOffset: 0,
@@ -987,6 +1082,7 @@ module.exports = (_module$exports = {
     fetchAfter: 1000,
     fetchEvery: -1, // in ms
     fetchOnce: false,
+    prefetch: false,
     results: 10,
     widthType: 'width', // Pass a css width attr (i.e. 'width', 'min-width')
     showNoSuggestionsMessage: false,
@@ -998,16 +1094,20 @@ module.exports = (_module$exports = {
     ajaxSuccess: function ajaxSuccess() {},
     loading: function loading() {},
     completed: function completed() {},
-    onClick: function onClick(el, value, href, input) {
-        input.val(value);
+    onClick: function onClick(value, obj, event, inputEl, selectedEl) {
+        inputEl.val(value);
+        /*        console.log(value);
+                console.log(obj);
+                console.log(event);
+                console.log(inputEl);
+                console.log(selectedEl);*/
     },
     onShow: function onShow() {},
     onHide: function onHide() {},
     paramName: 'search'
-}, _defineProperty(_module$exports, 'sort', function sort() {}), _defineProperty(_module$exports, 'scrollable', false), _defineProperty(_module$exports, 'debug', true), _module$exports);
+}, _defineProperty(_data$template$search, 'sort', function sort() {}), _defineProperty(_data$template$search, 'scrollable', false), _defineProperty(_data$template$search, 'debug', true), _data$template$search);
 
 },{}],8:[function(require,module,exports){
-(function (global){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1023,10 +1123,6 @@ var _createClass = function () {
         if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
     };
 }();
-
-var _jQuery = (typeof window !== "undefined" ? window['jQuery'] : typeof global !== "undefined" ? global['jQuery'] : null);
-
-var _jQuery2 = _interopRequireDefault(_jQuery);
 
 var _SuggestionListDropdown = require('./SuggestionListDropdown.js');
 
@@ -1052,6 +1148,10 @@ var _options = require('./options.js');
 
 var _options2 = _interopRequireDefault(_options);
 
+var _template = require('./template.js');
+
+var _template2 = _interopRequireDefault(_template);
+
 function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : { default: obj };
 }
@@ -1072,22 +1172,21 @@ var SuggestionBox = function () {
         this.suggestions = [];
         var defaultFilter = _options2.default.filter;
 
-        this.options = _jQuery2.default.extend(_options2.default, options);
+        this.options = $.extend(_options2.default, options);
 
         if (defaultFilter != this.options.filter && this.options.typeahead) {
             console.log('[suggestion-box: warn]: Using a custom filter pattern with the typeahed option can cause unexpected results');
         }
 
         this.fetchRate = this.options.fetchAfter;
-        // this.perpetualFetch = (this.options.fetchEvery != -1) ? true : false;
-        // get loaddefault template into options 
-        var template = _util2.default.isId(this.options.template) ? (0, _jQuery2.default)(this.options.template).html() : this.options.template;
 
-        this.anubis = new _Anubis2.default(this.options.props.value, this.options.filter, this.options.sort);
-        this.anubis.setData(this.options.data);
-        this.anubis.setDebug(this.options.debug);
+        // load default template into options 
+        var template = _util2.default.isId(this.options.template) ? $(this.options.template).html() : this.options.template;
+        template = template === '' ? _template2.default : template;
 
-        this.typeAhead = new _TypeAhead2.default(this.anubis, this.options.props.value);
+        this._initAnubis();
+
+        this.typeAhead = new _TypeAhead2.default(this.anubis, this.options.searchBy);
         this.dropdown = new _SuggestionListDropdown2.default(this.context, template, this.options, this.anubis, this.typeAhead);
 
         this.context.on('keyup', this.keyupEvents.bind(this));
@@ -1103,24 +1202,36 @@ var SuggestionBox = function () {
 
         // Preload the loading image if it has been supplied so it loads faster!
         if (this.options.loadImage) {
-            (0, _jQuery2.default)('<img/>')[0].src = this.options.loadImage;
+            $('<img/>')[0].src = this.options.loadImage;
+        }
+
+        // If we are prefetching our data
+        if (this.options.prefetch) {
+            this.dropdown.updateSuggestions(this.context.val(), true);
         }
     }
 
     _createClass(SuggestionBox, [{
+        key: '_initAnubis',
+        value: function _initAnubis() {
+            this.anubis = new _Anubis2.default(this.options.searchBy, this.options.filter, this.options.sort);
+            this.anubis.setData(this.options.data);
+            this.anubis.setDebug(this.options.debug);
+        }
+    }, {
         key: '_initTypeAhead',
         value: function _initTypeAhead() {
             if (this.options.typeahead) {
                 this.context.wrap('<div id="suggestion-box-typeahead" data-placeholder=""></div>');
                 var top = _util2.default.getCssValue(this.context, 'padding-top') + _util2.default.getCssValue(this.context, 'border-top-width');
                 var left = _util2.default.getCssValue(this.context, 'padding-left') + _util2.default.getCssValue(this.context, 'border-left-width');
-                (0, _jQuery2.default)('<style>#suggestion-box-typeahead::after{left:' + left + 'px;top:' + top + 'px;}</style>').appendTo('head');
+                $('<style>#suggestion-box-typeahead::after{left:' + left + 'px;top:' + top + 'px;}</style>').appendTo('head');
             }
         }
     }, {
         key: 'getSuggestions',
         value: function getSuggestions() {
-            this.dropdown.updateSuggestions(this.context.val());
+            this.dropdown.updateSuggestions(this.context.val(), false);
         }
     }, {
         key: 'updateTypeAhead',
@@ -1212,8 +1323,17 @@ var SuggestionBox = function () {
 
 exports.default = SuggestionBox;
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Anubis.js":1,"./SuggestionListDropdown.js":2,"./TypeAhead.js":4,"./constants/keys.js":5,"./options.js":7,"./util.js":9}],9:[function(require,module,exports){
+},{"./Anubis.js":1,"./SuggestionListDropdown.js":2,"./TypeAhead.js":4,"./constants/keys.js":5,"./options.js":7,"./template.js":9,"./util.js":10}],9:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+            value: true
+});
+var template = '<div>' + '<ul id="suggestion-list" class="suggestion-box-list">' + '<li>' + '<a href="#">{{suggestion}}</a>' + '</li>' + '</ul>' + '</div>';
+
+exports.default = template;
+
+},{}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

@@ -1,4 +1,3 @@
-import $ from 'jQuery';
 import SuggestionBox from './suggestion-box.js';
 
 (function($) {
