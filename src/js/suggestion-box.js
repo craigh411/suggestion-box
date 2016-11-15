@@ -26,7 +26,7 @@ class SuggestionBox {
 
         // load default template into options 
         let template = (Util.isId(this.options.template)) ? $(this.options.template).html() : this.options.template;
-        template = (template === '') ? defaultTemplate : template;
+        template = (!template) ? defaultTemplate : template;
 
         this._initAnubis();
 
@@ -51,18 +51,26 @@ class SuggestionBox {
         }
 
         // If we are prefetching our data
-        if(this.options.prefetch){
+        if (this.options.prefetch) {
             this.dropdown.updateSuggestions(this.context.val(), true);
         }
     }
+  
+    getAnubis() {
+        return this.anubis;
+    }
 
-    _initAnubis(){
+    getSuggestionList() {
+        return this.dropdown;
+    }
+
+    _initAnubis() {
         this.anubis = new Anubis(this.options.searchBy, this.options.filter, this.options.sort);
         this.anubis.setData(this.options.data);
         this.anubis.setDebug(this.options.debug);
     }
 
-    _initTypeAhead(){
+    _initTypeAhead() {
         if (this.options.typeahead) {
             this.context.wrap('<div id="suggestion-box-typeahead" data-placeholder=""></div>');
             let top = Util.getCssValue(this.context, 'padding-top') + Util.getCssValue(this.context, 'border-top-width');

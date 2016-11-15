@@ -1,5 +1,6 @@
 /* File: gulpfile.js */
-
+var gulp = require('gulp');
+var Server = require('karma').Server;
 var elixir = require('laravel-elixir');
 
 
@@ -17,9 +18,9 @@ elixir(function(mix){
 /**
  * Run tests using karma once and exit
  */
-/*gulp.task('test', function (done) {
+gulp.task('test', function (done) {
     new Server({
         configFile: __dirname + '/karma.conf.js',
         singleRun: true
     }, done).start();
-});*/
+});

@@ -39,7 +39,7 @@
             </ul>
         </div>
     </template> -->
-
+<!-- 
     <template id="suggestion-box-template">
         <div>
             <ul id="suggestion-list">
@@ -62,7 +62,7 @@
                 </li>
             </ul>
         </div>
-    </template>
+    </template> -->
 
     <script>
     $(document).ready(function() {
@@ -71,8 +71,8 @@
           {suggestion: "laos", image : "foo.jps"}
         ];*/
         var suggestionBox = $('#search').suggestionBox({
-            //data: countries,
-            results: Infinity,
+            data: countries
+/*            results: Infinity,
             scrollable: true,
             height: 250,
             //url: 'php/results.php',
@@ -88,7 +88,7 @@
             sort: (a, b) => {
                 return a.name > b.name;
             },
-            topOffset: 10
+            topOffset: 10*/
         });
     });
     </script>

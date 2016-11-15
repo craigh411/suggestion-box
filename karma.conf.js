@@ -32,7 +32,7 @@ module.exports = function (config) {
         files: [
             'spec/support/jquery.js',
             'spec/support/jasmine-jquery.js',
-            'src/js/suggestion-box.js',
+            'dist/js/main.js',
 
             // tests
             'spec/appSpec.js',

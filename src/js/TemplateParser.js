@@ -16,11 +16,12 @@ class TemplateParser {
         let listItem = "";
 
         let html = $.parseHTML($.trim(this.template));
+        var el = (html) ? html[0] : [];
 
         if (html.length !== 1) {
             console.log('%c[Suggestion-Box:Error] Unable to parse template. Template must have one root element.', 'color: #f00');
         }
-        var el = html[0];
+
         if (el.id !== "" || el.class !== undefined) {
             console.log('%c[Suggestion-Box:warn] Avoid adding style attributes such as "class", "id" or "style" to root element in template because these tags will be stripped.', 'color: #f00');
         }
@@ -90,7 +91,7 @@ class TemplateParser {
     _getNodes(node) {
         if (!node) {
             let html = $.parseHTML($.trim(this.template));
-            var node = html[0];
+            var node = (html) ? html[0] : [];
         }
 
         $.each(node.childNodes, (i, el) => {

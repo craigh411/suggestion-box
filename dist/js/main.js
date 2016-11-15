@@ -220,7 +220,7 @@ var SuggestionListDropdown = function () {
         this.fetchRate = this.options.fetchAfter;
         this.endFetch = false;
 
-        // Whether or not the scroll action was done pragmatically
+        // Whether or not the scroll action was done progrmatically
         this.autoScrolled = false;
 
         this.radiusDefaults = {
@@ -273,6 +273,7 @@ var SuggestionListDropdown = function () {
                 this.hide();
             } else {
                 if (this.options.url && !this.pending && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0) && !this.endFetch || this.perpetualFetch) {
+
                     this.anubis.setSearch(search);
                     this.pending = true;
                     this.inputEl.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
@@ -721,6 +722,8 @@ var SuggestionListDropdown = function () {
             var suggestion = this.anubis.getSuggestions()[this.selectedLi];
             var selectedEl = this.$suggestionBox.find('#suggestion-list > li:eq(' + this.selectedLi + ')');
 
+            // TODO: Make sure this callback works for non-object arrays!
+
             this.options.onClick(suggestion[this.options.searchBy], suggestion, e, this.inputEl, selectedEl);
             this.hide();
 
@@ -814,11 +817,12 @@ var TemplateParser = function () {
             var listItem = "";
 
             var html = $.parseHTML($.trim(this.template));
+            var el = html ? html[0] : [];
 
             if (html.length !== 1) {
                 console.log('%c[Suggestion-Box:Error] Unable to parse template. Template must have one root element.', 'color: #f00');
             }
-            var el = html[0];
+
             if (el.id !== "" || el.class !== undefined) {
                 console.log('%c[Suggestion-Box:warn] Avoid adding style attributes such as "class", "id" or "style" to root element in template because these tags will be stripped.', 'color: #f00');
             }
@@ -898,7 +902,7 @@ var TemplateParser = function () {
 
             if (!node) {
                 var html = $.parseHTML($.trim(this.template));
-                var node = html[0];
+                var node = html ? html[0] : [];
             }
 
             $.each(node.childNodes, function (i, el) {
@@ -1182,7 +1186,7 @@ var SuggestionBox = function () {
 
         // load default template into options 
         var template = _util2.default.isId(this.options.template) ? $(this.options.template).html() : this.options.template;
-        template = template === '' ? _template2.default : template;
+        template = !template ? _template2.default : template;
 
         this._initAnubis();
 
@@ -1212,6 +1216,16 @@ var SuggestionBox = function () {
     }
 
     _createClass(SuggestionBox, [{
+        key: 'getAnubis',
+        value: function getAnubis() {
+            return this.anubis;
+        }
+    }, {
+        key: 'getSuggestionList',
+        value: function getSuggestionList() {
+            return this.dropdown;
+        }
+    }, {
         key: '_initAnubis',
         value: function _initAnubis() {
             this.anubis = new _Anubis2.default(this.options.searchBy, this.options.filter, this.options.sort);

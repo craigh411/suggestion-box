@@ -21,7 +21,7 @@ class SuggestionListDropdown {
         this.fetchRate = this.options.fetchAfter;
         this.endFetch = false;
 
-        // Whether or not the scroll action was done pragmatically
+        // Whether or not the scroll action was done progrmatically
         this.autoScrolled = false;
 
 
@@ -68,6 +68,7 @@ class SuggestionListDropdown {
             this.hide();
         } else {
             if ((this.options.url && (!this.pending) && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0) && !this.endFetch) || this.perpetualFetch) {
+
                 this.anubis.setSearch(search);
                 this.pending = true;
                 this.inputEl.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
@@ -473,6 +474,8 @@ class SuggestionListDropdown {
         let suggestion = this.anubis.getSuggestions()[this.selectedLi];
         let selectedEl = this.$suggestionBox.find('#suggestion-list > li:eq(' + this.selectedLi + ')');
 
+        // TODO: Make sure this callback works for non-object arrays!
+        
         this.options.onClick(suggestion[this.options.searchBy], suggestion, e, this.inputEl, selectedEl);
         this.hide();
 
