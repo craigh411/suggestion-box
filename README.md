@@ -15,23 +15,23 @@ Automatically makes suggestions based on user input.
 
   A new templating engine has been implemented to allow creation of templates using a string or the HTML5 template tag. Suggestion box no longer requires you to return your data in a set format, you can simply create a template for displaying you data. There are even conditionals!
 
-  ### Typehead
+#### Typehead
 
   It's now possible for suggestion box to add the most relevant suggestion in the suggestion box as the user types.
 
-  ### Simplified API
+#### Simplified API
 
   Gone are all the methods, suggestion box now uses options and callbacks to receive information.
 
-  ### Native array support
+#### Native array support
 
   Suggestion box now supports direct input from a javascript array or an array of objects. JSON is still used when returning server data.
 
-  ### New server call options
+#### New server call options
 
   The way suggestion box interacts with the server has been completely rewritten. It's now possible to prefetch data, fetch data once, fetch on a continuous cycle as the user types or use a mixture of the filter and server calls, allowing for greater flixibility. 
 
-  ### Loading spinner
+#### Loading spinner
 
   It may be a small thing, but suggestion box now places a loading spinner in the suggestion box when it is fetching data, for a better user experience.
 
