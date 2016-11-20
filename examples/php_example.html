@@ -15,7 +15,7 @@
 
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
-
+    <script src="../dist/js/globals/Anubis.js"></script>
     <script src="../dist/js/main.js"></script>
 
     <style>
@@ -32,6 +32,7 @@
         <input type="text" id="search" class="form-control" />
     </div>
 
+
     <!--     <template id="suggestion-box-template">
         <div>
             <ul id="suggestion-list" class="suggestion-box-list">
@@ -39,7 +40,7 @@
             </ul>
         </div>
     </template> -->
-<!-- 
+
     <template id="suggestion-box-template">
         <div>
             <ul id="suggestion-list">
@@ -62,20 +63,33 @@
                 </li>
             </ul>
         </div>
-    </template> -->
+    </template>
 
     <script>
     $(document).ready(function() {
         var countries = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Anguilla", "Antigua &amp; Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia", "Bosnia &amp; Herzegovina", "Botswana", "Brazil", "British Virgin Islands", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Cape Verde", "Cayman Islands", "Chad", "Chile", "China", "Colombia", "Congo", "Cook Islands", "Costa Rica", "Cote D Ivoire", "Croatia", "Cruise Ship", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Estonia", "Ethiopia", "Falkland Islands", "Faroe Islands", "Fiji", "Finland", "France", "French Polynesia", "French West Indies", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guam", "Guatemala", "Guernsey", "Guinea", "Guinea Bissau", "Guyana", "Haiti", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Isle of Man", "Israel", "Italy", "Jamaica", "Japan", "Jersey", "Jordan", "Kazakhstan", "Kenya", "Kuwait", "Kyrgyz Republic", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macau", "Macedonia", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Mauritania", "Mauritius", "Mexico", "Moldova", "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique", "Namibia", "Nepal", "Netherlands", "Netherlands Antilles", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Norway", "Oman", "Pakistan", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Puerto Rico", "Qatar", "Reunion", "Romania", "Russia", "Rwanda", "Saint Pierre & Miquelon", "Samoa", "San Marino", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "South Africa", "South Korea", "Spain", "Sri Lanka", "St Kitts & Nevis", "St Lucia", "St Vincent", "St. Lucia", "Sudan", "Suriname", "Swaziland", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor L'Este", "Togo", "Tonga", "Trinidad & Tobago", "Tunisia", "Turkey", "Turkmenistan", "Turks &amp; Caicos", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "Uruguay", "Uzbekistan", "Venezuela", "Vietnam", "Virgin Islands (US)", "Yemen", "Zambia", "Zimbabwe", "Canada", "United States"];
+
+
+
         /*var countries = [
           {suggestion: "laos", image : "foo.jps"}
         ];*/
+
+
+
+ /*       var country = $('#countries').suggestionBox({data: countries});
+        var search = $('#search').suggestionBox({data: countries});*/
+
+
         var suggestionBox = $('#search').suggestionBox({
-            data: countries
-/*            results: Infinity,
+           // data: countries
+            results: 10,
             scrollable: true,
             height: 250,
+            widthAdjustment: -10,
+            leftOffset: 5,
             //url: 'php/results.php',
+            template: '#suggestion-box-template',
             url: 'data/users.json',
             searchBy: 'name',
             typeahead: true,
@@ -86,10 +100,14 @@
             prefetch: true,
             adjustBorderRadius: false,
             sort: (a, b) => {
-                return a.name > b.name;
+                return a.name.localeCompare(b.name);
             },
-            topOffset: 10*/
+            topOffset: 10
         });
+
+/*        suggestionBox.destroy();
+        $('#search').suggestionBox({data: ['foo']});*/
+
     });
     </script>
 </body>

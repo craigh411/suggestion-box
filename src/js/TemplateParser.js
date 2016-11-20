@@ -1,6 +1,9 @@
+import Util from './util.js';
+
 class TemplateParser {
 
-    constructor(template) {
+    constructor(template, debug) {
+        this.debug = debug || false;
         this.template = template;
         this.nodes = [];
         this.conditionals = [];
@@ -18,12 +21,12 @@ class TemplateParser {
         let html = $.parseHTML($.trim(this.template));
         var el = (html) ? html[0] : [];
 
-        if (html.length !== 1) {
-            console.log('%c[Suggestion-Box:Error] Unable to parse template. Template must have one root element.', 'color: #f00');
+        if (html.length !== 1 && this.debug) {
+            Util.logger(this.debug, 'Unable to parse template. Template must have one root element.', 'error');
         }
 
-        if (el.id !== "" || el.class !== undefined) {
-            console.log('%c[Suggestion-Box:warn] Avoid adding style attributes such as "class", "id" or "style" to root element in template because these tags will be stripped.', 'color: #f00');
+        if ((el.id !== "" || el.class !== undefined) && this.debug) {
+            Util.logger(this.debug, 'Avoid adding style attributes such as "class", "id" or "style" to root element in template because these tags will be stripped.', 'warn');
         }
 
         if (el.childNodes.length > 0) {
@@ -122,6 +125,10 @@ class TemplateParser {
 
     getListItemMarkup() {
         return this.listItem;
+    }
+
+    setDebug(debug){
+        this.debug = debug;
     }
 }
 

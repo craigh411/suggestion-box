@@ -1,7 +1,7 @@
 // Karma configuration
 // Generated on Thu Nov 05 2015 19:32:20 GMT+0000 (GMT Standard Time)
 
-module.exports = function (config) {
+module.exports = function(config) {
     config.set({
 
 
@@ -30,12 +30,19 @@ module.exports = function (config) {
 
         // list of files / patterns to load in the browser
         files: [
-            'spec/support/jquery.js',
-            'spec/support/jasmine-jquery.js',
+            'node_modules/babel-polyfill/dist/polyfill.js',
+            'https://code.jquery.com/jquery-1.11.3.min.js',
+            'spec/support/mock-ajax.js',
+            'dist/js/globals/Anubis.js',
+            'dist/js/globals/TypeAhead.js',
+            'dist/js/globals/TemplateParser.js',
             'dist/js/main.js',
 
             // tests
             'spec/appSpec.js',
+            'spec/typeaheadSpec.js',
+            'spec/templateParserSpec.js',
+            'spec/anubisSpec.js',
 
             // fixtures
             {

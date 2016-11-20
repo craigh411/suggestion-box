@@ -1,0 +1,1 @@
+window.Typeahead = require('../Typeahead.js').default

@@ -6,15 +6,15 @@ import Anubis from './Anubis'
 / @class SuggestionListDropdown - builds the SuggestionList Dom object
 */
 
-class SuggestionListDropdown {
+class SuggestionList {
 
-    constructor(inputEl, template, options, anubis, typeAhead) {
+    constructor(inputEl, templateParser, options, anubis, typeahead, suggestions) {
         this.inputEl = inputEl;
-        this.template = template;
 
-        this.templateParser = new TemplateParser(template);
+        this.templateParser = templateParser;
         this.anubis = anubis;
-        this.typeAhead = typeAhead;
+        this.typeahead = typeahead;
+        this.suggestions = suggestions;
 
         this.options = options;
         this.perpetualFetch = (this.options.fetchEvery !== -1) ? true : false;
@@ -32,26 +32,46 @@ class SuggestionListDropdown {
 
         this.selectedLi = -1; // Nothing selected
         this.setRandId();
-        this._buildDom();
+        this.$suggestionBox = $('<div id="' + this.randId + '" class="suggestion-box"></div>').appendTo('body');
+        this.buildDom();
+    }
 
-        // Bind Events
-        this.$suggestionBox.on('mousemove', this.mousemoveEvents.bind(this));
-        this.$suggestionBox.on('mouseout', this.mouseoutEvents.bind(this));
-        this.$suggestionBox.on('click', this.clickEvents.bind(this));
+    /**
+     * Reset the template by creating a new Template object, this is necassary because template
+     * Parser automtically parses the node tree, so it doesn't have to be done multiple times.
+     */
+    setTemplate(templateParser) {
+        this.templateParser = templateParser;
     }
 
     /*
-     * Builds the HTML for the suggestion list
+     * Builds the HTML for the suggestion list and binds the events
      */
-    _buildDom() {
-        this.$suggestionBox = $('<div id="' + this.randId + '" class="suggestion-box"></div>').appendTo('body');
+    buildDom() {
         if (this.options.height) {
             this.$suggestionBox.css('max-height', this.options.height);
         }
 
         if (this.options.scrollable) {
             this.$suggestionBox.css('overflow', 'auto');
+        } else {
+            this.$suggestionBox.css('overflow', 'hidden');
         }
+
+        // Bind Events
+        this.$suggestionBox.unbind();
+        this.$suggestionBox.on('mousemove', this.mousemoveEvents.bind(this));
+        this.$suggestionBox.on('mouseout', this.mouseoutEvents.bind(this));
+        this.$suggestionBox.on('click', this.clickEvents.bind(this));
+    }
+
+    destroy() {
+        $('#' + this.randId).remove();
+        this.$suggestionBox.unbind();
+    }
+
+    setOptions(options) {
+        this.options = options;
     }
 
     /*
@@ -67,7 +87,7 @@ class SuggestionListDropdown {
             this.anubis.clearLastSearch();
             this.hide();
         } else {
-            if ((this.options.url && (!this.pending) && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0) && !this.endFetch) || this.perpetualFetch) {
+            if ((this.options.url.length > 0 && (!this.pending) && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0) && !this.endFetch) || this.perpetualFetch) {
 
                 this.anubis.setSearch(search);
                 this.pending = true;
@@ -99,13 +119,6 @@ class SuggestionListDropdown {
         return this.selectedLi;
     }
 
-    /*
-     * Gets the suggestion for the given index, justr 
-     */
-    /*    _getSuggestionAt(index) {
-            return this.anubis.getSuggestions()[index];
-        }
-    */
     /**
      * Clears the last suggestion and updates the suggestions list, useful for `ctrl+v` paste
      * when a user highlights the current text and pastes new text over the top.
@@ -166,9 +179,10 @@ class SuggestionListDropdown {
      * Show the suggestion box
      */
     show() {
+        this.suggestions.setSuggestions(this.anubis.getSuggestions());
 
         // Don't reset if a suggestion is still available at the index it's annoying when trying to select while data is loading
-        if (this.anubis.getSuggestions().length < this.selectedLi) {
+        if (this.suggestions.getSuggestions().length < this.selectedLi) {
             this.selectedLi = -1;
         }
 
@@ -178,20 +192,24 @@ class SuggestionListDropdown {
             this.select(this.selectedLi);
         }
 
-        if (this.anubis.getSuggestions().length > 0) {
+        if (this.suggestions.getSuggestions().length > 0) {
+
             this.updatePosition();
             this.setWidth();
-
+            this.typeahead.updateTypeaheadPosition(this.inputEl);
 
             if (this.options.adjustBorderRadius) {
                 this._applyBorderRadius(0, 0);
             }
 
-            this.$suggestionBox.fadeIn();
+            if (this.$suggestionBox.css('display') === 'none') {
+                this.$suggestionBox.fadeIn();
+            }
         } else if (this.options.showNoSuggestionsMessage) {
             // SHOW NO SUGGESTIONS FOUND MESSAGE
         } else {
             this.hide();
+
         }
     }
 
@@ -208,10 +226,12 @@ class SuggestionListDropdown {
      * Sets the width of the suggestion box
      */
     setWidth() {
-        let searchBoxWidth = this.getSearchBoxWidth();
+        let searchBoxWidth = this.getSearchBoxWidth() + this.options.widthAdjustment;
         let width = {};
         width[this.options.widthType] = searchBoxWidth;
         this.$suggestionBox.css(width);
+
+
     }
 
 
@@ -236,18 +256,20 @@ class SuggestionListDropdown {
         this.selectedLi = -1;
         this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
         this.$suggestionBox.css('display', 'none');
-        this.typeAhead.removeTypeahead();
+        this.typeahead.removeTypeahead();
+        this.$suggestionBox.css('display');
     }
 
 
 
     renderSuggestionsList() {
-        let suggestions = this.anubis.getSuggestions().slice(0, this.options.results);
+        let suggestions = this.suggestions.getSuggestions().slice(0, this.options.results);
 
         var template = this.templateParser.getParsedTemplate();
         template = this.templateParser.replaceHandlebars(template, "header", this.options.heading);
 
         var listItemMarkup = this.templateParser.getListItemMarkup();
+
 
 
         var listMarkup = "";
@@ -296,14 +318,14 @@ class SuggestionListDropdown {
         try {
             return new Function(("return " + expression + "? true : false"))();
         } catch (e) {
-          console.log('%c[suggestion-box: warn]: Invalid "sb-show" expression in template. Remember to wrap any strings in quotes even if they are template items.', 'color: #f00');
+            console.log('%c[suggestion-box: warn]: Invalid "sb-show" expression in template. Remember to wrap any strings in quotes even if they are template items.', 'color: #f00');
         }
     }
 
 
     highlightMatches(suggestion) {
         // Replace all 
-        let filterPattern = this.templateParser.replaceHandlebars(this.options.filter, "INPUT", this.inputEl.val());
+        let filterPattern = this.templateParser.replaceHandlebars(this.options.filter, "INPUT", this.anubis.getSearch());
         return suggestion.replace(new RegExp(filterPattern, 'gi'), '<b>$&</b>');
     }
 
@@ -315,7 +337,9 @@ class SuggestionListDropdown {
     select(position, scroll) {
         this.selectedHref = this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ") a").attr('href');
         this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ")").addClass('selected');
-        this.typeAhead.updateTypeAhead(position);
+
+        let value = this.typeahead.getTypeahead(position);
+        this.typeahead.updateTypeahead(value, this.suggestions.getSuggestions()[position]);
 
         if (scroll) {
             this.doScroll();
@@ -374,8 +398,8 @@ class SuggestionListDropdown {
     moveDown(scroll) {
         var listSize = this.$suggestionBox.find('#suggestion-list > li').length;
 
-        if (!this.isOpen() && this.anubis.getSuggestions().length > 0) {
-            this.updateSuggestions(this.inputEl.val(), false);
+        if (!this.isOpen() && this.suggestions.getSuggestions().length > 0) {
+            this.updateSuggestions(this.anubis.getSearch(), false);
             this.show();
         } else if (this.selectedLi === (listSize - 1)) {
             this.unselect(this.selectedLi);
@@ -471,15 +495,15 @@ class SuggestionListDropdown {
             this.selectionMade = true;
         }
 
-        let suggestion = this.anubis.getSuggestions()[this.selectedLi];
+        let suggestion = this.suggestions.getSuggestions()[this.selectedLi];
         let selectedEl = this.$suggestionBox.find('#suggestion-list > li:eq(' + this.selectedLi + ')');
 
         // TODO: Make sure this callback works for non-object arrays!
-        
+
         this.options.onClick(suggestion[this.options.searchBy], suggestion, e, this.inputEl, selectedEl);
         this.hide();
 
-        this.typeAhead.removeTypeahead();
+        this.typeahead.removeTypeahead();
 
     }
 
@@ -515,4 +539,4 @@ class SuggestionListDropdown {
 
 }
 
-export default SuggestionListDropdown;
+export default SuggestionList;

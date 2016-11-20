@@ -2,7 +2,8 @@ class Util {
 
 
     static getCssValue(el, name) {
-        return parseInt(el.css(name).replace('px', ''));
+        let value = parseInt(el.css(name).replace('px', ''));
+        return (isNaN(value)) ? 0 : value;
     }
 
     /** Calculates the padding for the given elements**/
@@ -22,6 +23,15 @@ class Util {
         return arr.splice(0);
     }
 
+    static logger(debug, message, type) {
+        if (debug) {
+            if (type === 'error') {
+                console.log('%c[Suggestion-Box Error] ' + message, 'color: #f00');
+            } else {
+                console.log('[suggestion-box ' + type + '] ' + message);
+            }
+        }
+    }
 
     /**
      * Returns true if the given search is found in the given object;
@@ -43,8 +53,8 @@ class Util {
         return str.charAt(0) == "#";
     }
 
-    static logError(error){
-      console.log(error);
+    static logError(error) {
+        console.log(error);
     }
 }
 

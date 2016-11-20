@@ -1,10 +1,11 @@
 class Anubis {
 
-    constructor(searchBy, regexPattern, sort) {
+    constructor(searchBy, filter, sort, param) {
         this.searchBy = searchBy;
-        this.regex = regexPattern;
+        this.filter = filter;
         this.sort = sort;
         this.search = "";
+        this.param = param || 'search';
         this.debug = false; // flag for showing debug messages from ajax call
         this.lastSearch = "";
     }
@@ -15,6 +16,18 @@ class Anubis {
 
     setData(data) {
         this.data = data;
+    }
+
+    getData() {
+        return this.data;
+    }
+
+    setSearchBy(searchBy) {
+        this.searchBy = searchBy;
+    }
+
+    getSearchBy() {
+        return this.searchBy;
     }
 
     getSuggestions() {
@@ -31,16 +44,24 @@ class Anubis {
         return this.search;
     }
 
-    /**
-     * Returns the first result that matches the filter
-     */
-    findFirst(filter) {
-        let regex = new RegExp(filter);
-        retun
+    setFilter(filter) {
+        this.filter = filter;
+    }
+
+    getFilter() {
+        return this.filter;
+    }
+
+    setSort(sort) {
+        this.sort = sort;
+    }
+
+    getSort() {
+        return this.sort;
     }
 
     filterData() {
-        let filterPattern = this.regex.replace('{{INPUT}}', this.search);
+        let filterPattern = this.filter.replace('{{INPUT}}', this.search);
         let regex = new RegExp(filterPattern, "i");
         let results = [];
 
@@ -60,6 +81,13 @@ class Anubis {
         return data.sort(this.sort);
     }
 
+    getParam() {
+        return this.param;
+    }
+
+    setParam(param) {
+        this.param = param;
+    }
 
     getLastSearch() {
         return this.lastSearch;
@@ -79,21 +107,25 @@ class Anubis {
     fetchSuggestions(url, callback) {
         this.lastSearch = this.search;
 
-        console.log('searching for ' + this.search);
-
         this.killCurrentFetch();
+        let request = {};
+        request[this.param] = this.search;
 
         this.xhr = $.ajax({
             url: url,
             method: 'get',
             dataType: 'json',
-            data: { search: this.search }
-        }).done(callback).fail((data) => {
-            if (this.debug) {
+            data: request,
+            success: callback
+        });
+
+
+        if (this.xhr && this.debug) {
+            this.xhr.fail((data) => {
                 console.log('[Ajax Error]:');
                 console.log(data);
-            }
-        });
+            });
+        }
     }
 
 }
