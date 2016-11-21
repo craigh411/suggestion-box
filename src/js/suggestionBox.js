@@ -101,13 +101,14 @@ class SuggestionBox {
     }
 
     _buildTemplate() {
-            let template = (Util.isId(this.options.template)) ? $(this.options.template).html() : this.options.template;
-            template = (!template) ? defaultTemplate : template;
-            return new TemplateParser(template, this.options.debug);
-        }
-        /**
-         *  Returns the Anubis object
-         */
+        let template = (Util.isId(this.options.template)) ? $(this.options.template).html() : this.options.template;
+        template = (!template) ? defaultTemplate : template;
+        return new TemplateParser(template, this.options.debug);
+    }
+
+    /**
+     *  Returns the Anubis object
+     */
     getAnubis() {
         return this.anubis;
     }
@@ -163,7 +164,6 @@ class SuggestionBox {
 
     updateTypeahead() {
         if (this.context.val() !== "") {
-            this.typeahead.removeTypeahead();
             let selectedIndex = this.suggestionList.getSelectedItemIndex();
 
             this.typeahead.setCurrentInput(this.context.val());

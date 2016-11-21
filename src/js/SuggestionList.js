@@ -1,39 +1,31 @@
+import Dropdown from './Dropdown';
 import Util from './util';
-import TemplateParser from './TemplateParser'
-import Anubis from './Anubis'
 
 /*
 / @class SuggestionListDropdown - builds the SuggestionList Dom object
 */
 
-class SuggestionList {
+class SuggestionList extends Dropdown {
 
     constructor(inputEl, templateParser, options, anubis, typeahead, suggestions) {
-        this.inputEl = inputEl;
+        super(options);
 
+        this.inputEl = inputEl;
         this.templateParser = templateParser;
         this.anubis = anubis;
         this.typeahead = typeahead;
         this.suggestions = suggestions;
 
-        this.options = options;
+        // Get the fatch options
         this.perpetualFetch = (this.options.fetchEvery !== -1) ? true : false;
         this.fetchRate = this.options.fetchAfter;
         this.endFetch = false;
 
-        // Whether or not the scroll action was done progrmatically
-        this.autoScrolled = false;
-
-
+        // Sets up the border radius defaults so we can change the border radius back when menu closes
         this.radiusDefaults = {
             bottomLeft: Util.getCssValue(this.inputEl, 'border-bottom-right-radius'),
             bottomRight: Util.getCssValue(this.inputEl, 'border-bottom-right-radius')
         }
-
-        this.selectedLi = -1; // Nothing selected
-        this.setRandId();
-        this.$suggestionBox = $('<div id="' + this.randId + '" class="suggestion-box"></div>').appendTo('body');
-        this.buildDom();
     }
 
     /**
@@ -44,31 +36,6 @@ class SuggestionList {
         this.templateParser = templateParser;
     }
 
-    /*
-     * Builds the HTML for the suggestion list and binds the events
-     */
-    buildDom() {
-        if (this.options.height) {
-            this.$suggestionBox.css('max-height', this.options.height);
-        }
-
-        if (this.options.scrollable) {
-            this.$suggestionBox.css('overflow', 'auto');
-        } else {
-            this.$suggestionBox.css('overflow', 'hidden');
-        }
-
-        // Bind Events
-        this.$suggestionBox.unbind();
-        this.$suggestionBox.on('mousemove', this.mousemoveEvents.bind(this));
-        this.$suggestionBox.on('mouseout', this.mouseoutEvents.bind(this));
-        this.$suggestionBox.on('click', this.clickEvents.bind(this));
-    }
-
-    destroy() {
-        $('#' + this.randId).remove();
-        this.$suggestionBox.unbind();
-    }
 
     setOptions(options) {
         this.options = options;
@@ -109,14 +76,6 @@ class SuggestionList {
                 this.show();
             }
         }
-
-    }
-
-    /*
-     * Returns the index for the currently selected/highlighted item 
-     */
-    getSelectedItemIndex() {
-        return this.selectedLi;
     }
 
     /**
@@ -137,22 +96,29 @@ class SuggestionList {
     loadSuggestionData(forceFetch) {
         // Don't bother fetching data we already have again
         if (this.anubis.getLastSearch() !== this.anubis.getSearch() || forceFetch) {
-            this.anubis.fetchSuggestions(this.options.url, (data) => {
-                this.anubis.setData(data);
-
-                // Only show if a selection was not made while wating for a response
-                if (!this.selectionMade && this.anubis.getSearch().length > 0) {
-                    this.show();
-                } else {
-                    this.hide();
-                }
-
-                this.selectionMade = false;
-                this.pending = false;
-
-                this.inputEl.css('background', "");
-            });
+            this.anubis.fetchSuggestions(this.options.url, this._fetchSuggestionsCallback());
         } else {
+            this.inputEl.css('background', "");
+        }
+    }
+
+    /**
+     * The actions to perform when data has been successfullt fetched from the server
+     */
+    _fetchSuggestionsCallback() {
+        return (data) => {
+            this.anubis.setData(data);
+
+            // Only show if a selection was not made while wating for a response
+            if (!this.selectionMade && this.anubis.getSearch().length > 0) {
+                this.show();
+            } else {
+                this.hide();
+            }
+
+            this.selectionMade = false;
+            this.pending = false;
+
             this.inputEl.css('background', "");
         }
     }
@@ -166,7 +132,7 @@ class SuggestionList {
         let padding = Util.calculateVerticalPadding(this.inputEl);
         let offset = this.inputEl.offset();
 
-        this.$suggestionBox.css({
+        this.$menu.css({
             'position': 'absolute',
             'zIndex': this.options.zIndex,
             'left': (offset.left) + this.options.leftOffset,
@@ -174,6 +140,14 @@ class SuggestionList {
         });
     }
 
+
+    // This should be the show() method without actually displaying the box, which shoul dbe done from suggestionBox class
+    setSuggestions(suggestions){
+
+    }
+
+    // This should be the hide() method without actually hiding the box, the dropdown shoul not be responsibnle for how it is displayed.
+    reset(){}
 
     /*
      * Show the suggestion box
@@ -202,8 +176,8 @@ class SuggestionList {
                 this._applyBorderRadius(0, 0);
             }
 
-            if (this.$suggestionBox.css('display') === 'none') {
-                this.$suggestionBox.fadeIn();
+            if (this.$menu.css('display') === 'none') {
+                this.$menu.fadeIn();
             }
         } else if (this.options.showNoSuggestionsMessage) {
             // SHOW NO SUGGESTIONS FOUND MESSAGE
@@ -229,9 +203,7 @@ class SuggestionList {
         let searchBoxWidth = this.getSearchBoxWidth() + this.options.widthAdjustment;
         let width = {};
         width[this.options.widthType] = searchBoxWidth;
-        this.$suggestionBox.css(width);
-
-
+        this.$menu.css(width);
     }
 
 
@@ -250,14 +222,14 @@ class SuggestionList {
     }
 
     /*
-     * Hide the suggestion box
+     * Hide the suggestion list
      */
     hide() {
         this.selectedLi = -1;
         this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
-        this.$suggestionBox.css('display', 'none');
+        this.$menu.css('display', 'none');
         this.typeahead.removeTypeahead();
-        this.$suggestionBox.css('display');
+        this.$menu.css('display');
     }
 
 
@@ -269,7 +241,6 @@ class SuggestionList {
         template = this.templateParser.replaceHandlebars(template, "header", this.options.heading);
 
         var listItemMarkup = this.templateParser.getListItemMarkup();
-
 
 
         var listMarkup = "";
@@ -310,7 +281,7 @@ class SuggestionList {
 
         var suggestionMarkup = this.templateParser.replaceHandlebars(template, "suggestion_list", listMarkup);
 
-        this.$suggestionBox.html(suggestionMarkup);
+        this.$menu.html(suggestionMarkup);
 
     }
 
@@ -318,7 +289,7 @@ class SuggestionList {
         try {
             return new Function(("return " + expression + "? true : false"))();
         } catch (e) {
-            console.log('%c[suggestion-box: warn]: Invalid "sb-show" expression in template. Remember to wrap any strings in quotes even if they are template items.', 'color: #f00');
+            Util.logger(this.options.debug, 'Invalid "sb-show" expression in template. Remember to wrap any strings in quotes even if they are template items.', 'warn');
         }
     }
 
@@ -335,68 +306,18 @@ class SuggestionList {
      * @param scroll
      */
     select(position, scroll) {
-        this.selectedHref = this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ") a").attr('href');
-        this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ")").addClass('selected');
+        super.select(position, scroll);
 
         let value = this.typeahead.getTypeahead(position);
         this.typeahead.updateTypeahead(value, this.suggestions.getSuggestions()[position]);
-
-        if (scroll) {
-            this.doScroll();
-        }
     }
 
-    isOpen() {
-        return this.$suggestionBox.css('display') !== 'none';
-    }
-
-    /**
-     * Scrolls the suggestion box to the given position
-     * @param to
-     */
-    doScroll() {
-        this.autoScrolled = true;
-
-        if (this.selectedLi > -1) {
-            let selection = this.$suggestionBox.find('#suggestion-list > li:eq(' + this.selectedLi + ')').position();
-
-            var pos = (selection) ? selection.top -
-                this.$suggestionBox.find('#suggestion-list > li:eq(0)').position().top : 0;
-        }
-
-        // find scroll position at to and set scroll bars to it
-        let scrollTo = (this.selectedLi > -1) ? pos : 0;
-        this.$suggestionBox.scrollTop(scrollTo);
-    }
-
-    /**
-     * Unselects the suggestion at the given position
-     * @param position
-     */
-    unselect(position) {
-        this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ")").removeClass('selected');
-    }
-
-    /**
-     * Events for the mouse moving inside the suggestion box
-     * @param e
-     */
-    mousemoveEvents(e) {
-        if (this.isSuggestion(e) && !this.autoScrolled) {
-            this.unselect(this.selectedLi);
-            this.selectedLi = this.getSelectionMouseIsOver(e);
-            this.select(this.selectedLi);
-        }
-
-        this.mouseHover = true;
-        this.autoScrolled = false;
-    }
 
     /**
      * Moves the selection down to the next suggestion
      */
     moveDown(scroll) {
-        var listSize = this.$suggestionBox.find('#suggestion-list > li').length;
+        var listSize = this.$menu.find('#suggestion-list > li').length;
 
         if (!this.isOpen() && this.suggestions.getSuggestions().length > 0) {
             this.updateSuggestions(this.anubis.getSearch(), false);
@@ -413,8 +334,6 @@ class SuggestionList {
         if (scroll) {
             this.doScroll();
         }
-
-
     }
 
     /**
@@ -427,7 +346,7 @@ class SuggestionList {
             this.select(this.selectedLi);
         } else if (this.selectedLi == -1) {
             this.unselect(this.selectedLi);
-            this.selectedLi = this.$suggestionBox.find('#suggestion-list > li').length - 1;
+            this.selectedLi = this.$menu.find('#suggestion-list > li').length - 1;
             this.select(this.selectedLi);
         } else {
             this.unselect(0);
@@ -441,21 +360,12 @@ class SuggestionList {
 
 
     /**
-     * Returns the index of the list item the mouse is currently hovering over
-     * @param e
-     * @returns {Number}
-     */
-    getSelectionMouseIsOver(e) {
-        let $parentLi = $(e.target).parents('li');
-
-        return $parentLi.parent().children().index($parentLi);
-    }
-
-    /**
      * Events for when the mouse leaves the suggestion box
      * @param e
      */
     mouseoutEvents(e) {
+        super.mouseoutEvents(e);
+
         if (this.isSuggestion(e) && !this.autoScrolled) {
             this.unselect(this.selectedLi);
             this.resetSelection();
@@ -466,77 +376,22 @@ class SuggestionList {
         this.mouseHover = false;
     }
 
-
-    /**
-     * Events for clicks inside the suggestion box
-     * @param e
-     */
-    clickEvents(e) {
-        if (this.isSuggestion(e)) {
-            e.preventDefault();
-            this.doClick(e);
-        }
-    }
-
-    /*
-     * Returns true if the mouse is over the dropdown list
-     */
-    isHovering() {
-        return this.mouseHover;
-    }
-
     /**
      * Performs the click action, this can be called for any event you want to recreate a click action for.
      * @param e
      */
     doClick(e) {
-        e.preventDefault();
-        if (this.pending) {
-            this.selectionMade = true;
-        }
+        super.doClick(e);
 
         let suggestion = this.suggestions.getSuggestions()[this.selectedLi];
-        let selectedEl = this.$suggestionBox.find('#suggestion-list > li:eq(' + this.selectedLi + ')');
+        let selectedEl = this.$menu.find('#suggestion-list > li:eq(' + this.selectedLi + ')');
 
         // TODO: Make sure this callback works for non-object arrays!
-
         this.options.onClick(suggestion[this.options.searchBy], suggestion, e, this.inputEl, selectedEl);
         this.hide();
 
         this.typeahead.removeTypeahead();
-
     }
-
-    simulateClick() {
-        if (this.selectedLi > -1) {
-            this.$suggestionBox.find('.selected a').click();
-        }
-    }
-
-
-    /**
-     * Is the given event made on a suggestion?
-     * @param e
-     * @returns {boolean}
-     */
-    isSuggestion(e) {
-        return $(e.target).parents('a').length > 0 || e.target.nodeName === 'A';
-    }
-
-    /**
-     * Resets any selected suggestions
-     */
-    resetSelection() {
-        this.selectedHref = '#';
-        this.selectedLi = -1;
-        // remove all selected on reset
-        this.$suggestionBox.find('#suggestion-list > li').removeClass('selected');
-    }
-
-    setRandId() {
-        this.Id = 'suggestion-box-' + Math.floor(Math.random() * 10000000);
-    }
-
 }
 
 export default SuggestionList;

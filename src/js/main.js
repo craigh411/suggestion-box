@@ -1,4 +1,4 @@
-import SuggestionBox from './suggestion-box.js';
+import SuggestionBox from './suggestionBox.js';
 
 (function($) {
     $.fn.suggestionBox = function(options) {

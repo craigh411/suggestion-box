@@ -192,6 +192,268 @@ exports.default = Anubis;
 },{}],2:[function(require,module,exports){
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () {
+    function defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }return function (Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+    };
+}();
+
+var _util = require('./util.js');
+
+var _util2 = _interopRequireDefault(_util);
+
+function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+}
+
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+    }
+}
+
+/*
+ * Class to build the dropdown $menu
+ */
+var Dropdown = function () {
+    function Dropdown(options, id) {
+        _classCallCheck(this, Dropdown);
+
+        this.id = id || this._getRandId();
+        this.mouseHover = false;
+        this.options = options;
+        this.selectedLi = -1;
+        this.autoScrolled = false; // Whether or not the scroll action was done progrmatically
+
+
+        this.$menu = $('<div id="' + this.id + '" class="suggestion-box"></div>').appendTo('body');
+        this.buildDom();
+    }
+
+    /*
+     * Builds the HTML for the suggestion list and binds the events
+     */
+
+    _createClass(Dropdown, [{
+        key: 'buildDom',
+        value: function buildDom() {
+            if (this.options.height) {
+                this.$menu.css('max-height', this.options.height);
+            }
+
+            if (this.options.scrollable) {
+                this.$menu.css('overflow', 'auto');
+            } else {
+                this.$menu.css('overflow', 'hidden');
+            }
+
+            this._bindEvents();
+        }
+    }, {
+        key: '_bindEvents',
+        value: function _bindEvents() {
+            this.$menu.unbind();
+            this.$menu.on('mousemove', this.mousemoveEvents.bind(this));
+            this.$menu.on('mouseout', this.mouseoutEvents.bind(this));
+            this.$menu.on('click', this.clickEvents.bind(this));
+        }
+
+        /*
+         * Destroys the dropdown $menu
+         */
+
+    }, {
+        key: 'destroy',
+        value: function destroy() {
+            this.$menu.unbind();
+            $('#' + this.id).remove();
+        }
+
+        /**
+         *  Selects the item at the given position
+         */
+
+    }, {
+        key: 'select',
+        value: function select(position, scroll) {
+            this.$menu.find("#suggestion-list > li:eq(" + position + ")").addClass('selected');
+
+            if (scroll) {
+                this.doScroll();
+            }
+        }
+
+        /**
+         *  Unselects the item at the given postion
+         */
+
+    }, {
+        key: 'unselect',
+        value: function unselect(position) {
+            this.$menu.find("#suggestion-list > li:eq(" + position + ")").removeClass('selected');
+        }
+
+        /**
+         * Events for when the mouse leaves the suggestion box
+         */
+
+    }, {
+        key: 'mouseoutEvents',
+        value: function mouseoutEvents(event) {
+            this.mouseHover = false;
+        }
+
+        /**
+         * Events for clicks inside the suggestion box
+         * @param e
+         */
+
+    }, {
+        key: 'clickEvents',
+        value: function clickEvents(event) {
+            if (this.isSuggestion(event)) {
+                event.preventDefault();
+                this.doClick(event);
+            }
+        }
+
+        /**
+         * Performs the click action, this can be called for any event you want to recreate a click action for.
+         * @param e
+         */
+
+    }, {
+        key: 'doClick',
+        value: function doClick(event) {
+            event.preventDefault();
+        }
+
+        /**
+         * Events for the mouse moving inside the suggestion box
+         * @param e
+         */
+
+    }, {
+        key: 'mousemoveEvents',
+        value: function mousemoveEvents(event) {
+            if (this.isSuggestion(event) && !this.autoScrolled) {
+                this.unselect(this.selectedLi);
+                this.selectedLi = this.getSelectionMouseIsOver(event);
+                this.select(this.selectedLi);
+            }
+
+            this.mouseHover = true;
+            this.autoScrolled = false;
+        }
+
+        /**
+         * Returns the index of the list item the mouse is currently hovering over
+         * @param e
+         * @returns {Number}
+         */
+
+    }, {
+        key: 'getSelectionMouseIsOver',
+        value: function getSelectionMouseIsOver(e) {
+            var $parentLi = $(e.target).parents('li');
+
+            return $parentLi.parent().children().index($parentLi);
+        }
+
+        /**
+         * Is the given event made on a suggestion (targets anchor tag)?
+         * @param e
+         * @returns {boolean}
+         */
+
+    }, {
+        key: 'isSuggestion',
+        value: function isSuggestion(event) {
+            return $(event.target).parents('a').length > 0 || event.target.nodeName === 'A';
+        }
+    }, {
+        key: 'simulateClick',
+        value: function simulateClick() {
+            if (this.selectedLi > -1) {
+                this.$menu.find('.selected a').click();
+            }
+        }
+    }, {
+        key: 'resetSelection',
+        value: function resetSelection() {
+            this.selectedLi = -1;
+            // remove all selected on reset
+            this.$menu.find('#suggestion-list > li').removeClass('selected');
+        }
+    }, {
+        key: 'getSelectedItemIndex',
+        value: function getSelectedItemIndex() {
+            return this.selectedLi;
+        }
+
+        /**
+         * Scrolls the suggestion box to the given position
+         * @param to
+         */
+
+    }, {
+        key: 'doScroll',
+        value: function doScroll() {
+            this.autoScrolled = true;
+
+            if (this.selectedLi > -1) {
+                var selection = this.$menu.find('#suggestion-list > li:eq(' + this.selectedLi + ')').position();
+
+                var pos = selection ? selection.top - this.$menu.find('#suggestion-list > li:eq(0)').position().top : 0;
+            }
+
+            // find scroll position at to and set scroll bars to it
+            var scrollTo = this.selectedLi > -1 ? pos : 0;
+            this.$menu.scrollTop(scrollTo);
+        }
+    }, {
+        key: 'isOpen',
+        value: function isOpen() {
+            return this.$menu.css('display') !== 'none';
+        }
+
+        /*
+         * Returns true if the mouse is over the dropdown list
+         */
+
+    }, {
+        key: 'isHovering',
+        value: function isHovering() {
+            return this.mouseHover;
+        }
+    }, {
+        key: '_getRandId',
+        value: function _getRandId() {
+            return 'suggestion-box-' + Math.floor(Math.random() * 10000000);
+        }
+    }, {
+        key: 'getId',
+        value: function getId(withHash) {
+            return withHash ? '#' + this.id : this.id;
+        }
+    }]);
+
+    return Dropdown;
+}();
+
+exports.default = Dropdown;
+
+},{"./util.js":12}],3:[function(require,module,exports){
+'use strict';
+
 var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 Object.defineProperty(exports, "__esModule", {
@@ -214,17 +476,29 @@ var _createClass = function () {
     };
 }();
 
+var _get = function get(object, property, receiver) {
+    if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
+        var parent = Object.getPrototypeOf(object);if (parent === null) {
+            return undefined;
+        } else {
+            return get(parent, property, receiver);
+        }
+    } else if ("value" in desc) {
+        return desc.value;
+    } else {
+        var getter = desc.get;if (getter === undefined) {
+            return undefined;
+        }return getter.call(receiver);
+    }
+};
+
+var _Dropdown2 = require('./Dropdown');
+
+var _Dropdown3 = _interopRequireDefault(_Dropdown2);
+
 var _util = require('./util');
 
 var _util2 = _interopRequireDefault(_util);
-
-var _TemplateParser = require('./TemplateParser');
-
-var _TemplateParser2 = _interopRequireDefault(_TemplateParser);
-
-var _Anubis = require('./Anubis');
-
-var _Anubis2 = _interopRequireDefault(_Anubis);
 
 function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : { default: obj };
@@ -236,38 +510,47 @@ function _classCallCheck(instance, Constructor) {
     }
 }
 
+function _possibleConstructorReturn(self, call) {
+    if (!self) {
+        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }return call && ((typeof call === "undefined" ? "undefined" : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+}
+
+function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+        throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof2(superClass)));
+    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+}
+
 /*
 / @class SuggestionListDropdown - builds the SuggestionList Dom object
 */
 
-var SuggestionList = function () {
+var SuggestionList = function (_Dropdown) {
+    _inherits(SuggestionList, _Dropdown);
+
     function SuggestionList(inputEl, templateParser, options, anubis, typeahead, suggestions) {
         _classCallCheck(this, SuggestionList);
 
-        this.inputEl = inputEl;
+        var _this = _possibleConstructorReturn(this, (SuggestionList.__proto__ || Object.getPrototypeOf(SuggestionList)).call(this, options));
 
-        this.templateParser = templateParser;
-        this.anubis = anubis;
-        this.typeahead = typeahead;
-        this.suggestions = suggestions;
+        _this.inputEl = inputEl;
+        _this.templateParser = templateParser;
+        _this.anubis = anubis;
+        _this.typeahead = typeahead;
+        _this.suggestions = suggestions;
 
-        this.options = options;
-        this.perpetualFetch = this.options.fetchEvery !== -1 ? true : false;
-        this.fetchRate = this.options.fetchAfter;
-        this.endFetch = false;
+        // Get the fatch options
+        _this.perpetualFetch = _this.options.fetchEvery !== -1 ? true : false;
+        _this.fetchRate = _this.options.fetchAfter;
+        _this.endFetch = false;
 
-        // Whether or not the scroll action was done progrmatically
-        this.autoScrolled = false;
-
-        this.radiusDefaults = {
-            bottomLeft: _util2.default.getCssValue(this.inputEl, 'border-bottom-right-radius'),
-            bottomRight: _util2.default.getCssValue(this.inputEl, 'border-bottom-right-radius')
+        // Sets up the border radius defaults so we can change the border radius back when menu closes
+        _this.radiusDefaults = {
+            bottomLeft: _util2.default.getCssValue(_this.inputEl, 'border-bottom-right-radius'),
+            bottomRight: _util2.default.getCssValue(_this.inputEl, 'border-bottom-right-radius')
         };
-
-        this.selectedLi = -1; // Nothing selected
-        this.setRandId();
-        this.$suggestionBox = $('<div id="' + this.randId + '" class="suggestion-box"></div>').appendTo('body');
-        this.buildDom();
+        return _this;
     }
 
     /**
@@ -279,36 +562,6 @@ var SuggestionList = function () {
         key: 'setTemplate',
         value: function setTemplate(templateParser) {
             this.templateParser = templateParser;
-        }
-
-        /*
-         * Builds the HTML for the suggestion list and binds the events
-         */
-
-    }, {
-        key: 'buildDom',
-        value: function buildDom() {
-            if (this.options.height) {
-                this.$suggestionBox.css('max-height', this.options.height);
-            }
-
-            if (this.options.scrollable) {
-                this.$suggestionBox.css('overflow', 'auto');
-            } else {
-                this.$suggestionBox.css('overflow', 'hidden');
-            }
-
-            // Bind Events
-            this.$suggestionBox.unbind();
-            this.$suggestionBox.on('mousemove', this.mousemoveEvents.bind(this));
-            this.$suggestionBox.on('mouseout', this.mouseoutEvents.bind(this));
-            this.$suggestionBox.on('click', this.clickEvents.bind(this));
-        }
-    }, {
-        key: 'destroy',
-        value: function destroy() {
-            $('#' + this.randId).remove();
-            this.$suggestionBox.unbind();
         }
     }, {
         key: 'setOptions',
@@ -325,7 +578,7 @@ var SuggestionList = function () {
     }, {
         key: 'updateSuggestions',
         value: function updateSuggestions(search, forceFetch) {
-            var _this = this;
+            var _this2 = this;
 
             this.anubis.setSearch(search);
 
@@ -340,7 +593,7 @@ var SuggestionList = function () {
                     this.inputEl.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
 
                     setTimeout(function () {
-                        _this.loadSuggestionData(forceFetch);
+                        _this2.loadSuggestionData(forceFetch);
                     }, this.fetchRate);
 
                     this.endFetch = this.options.fetchOnce;
@@ -354,16 +607,6 @@ var SuggestionList = function () {
                     this.show();
                 }
             }
-        }
-
-        /*
-         * Returns the index for the currently selected/highlighted item 
-         */
-
-    }, {
-        key: 'getSelectedItemIndex',
-        value: function getSelectedItemIndex() {
-            return this.selectedLi;
         }
 
         /**
@@ -388,28 +631,38 @@ var SuggestionList = function () {
     }, {
         key: 'loadSuggestionData',
         value: function loadSuggestionData(forceFetch) {
-            var _this2 = this;
-
             // Don't bother fetching data we already have again
             if (this.anubis.getLastSearch() !== this.anubis.getSearch() || forceFetch) {
-                this.anubis.fetchSuggestions(this.options.url, function (data) {
-                    _this2.anubis.setData(data);
-
-                    // Only show if a selection was not made while wating for a response
-                    if (!_this2.selectionMade && _this2.anubis.getSearch().length > 0) {
-                        _this2.show();
-                    } else {
-                        _this2.hide();
-                    }
-
-                    _this2.selectionMade = false;
-                    _this2.pending = false;
-
-                    _this2.inputEl.css('background', "");
-                });
+                this.anubis.fetchSuggestions(this.options.url, this._fetchSuggestionsCallback());
             } else {
                 this.inputEl.css('background', "");
             }
+        }
+
+        /**
+         * The actions to perform when data has been successfullt fetched from the server
+         */
+
+    }, {
+        key: '_fetchSuggestionsCallback',
+        value: function _fetchSuggestionsCallback() {
+            var _this3 = this;
+
+            return function (data) {
+                _this3.anubis.setData(data);
+
+                // Only show if a selection was not made while wating for a response
+                if (!_this3.selectionMade && _this3.anubis.getSearch().length > 0) {
+                    _this3.show();
+                } else {
+                    _this3.hide();
+                }
+
+                _this3.selectionMade = false;
+                _this3.pending = false;
+
+                _this3.inputEl.css('background', "");
+            };
         }
 
         /* 
@@ -424,13 +677,25 @@ var SuggestionList = function () {
             var padding = _util2.default.calculateVerticalPadding(this.inputEl);
             var offset = this.inputEl.offset();
 
-            this.$suggestionBox.css({
+            this.$menu.css({
                 'position': 'absolute',
                 'zIndex': this.options.zIndex,
                 'left': offset.left + this.options.leftOffset,
                 'top': offset.top + (this.inputEl.height() + borders + padding + this.options.topOffset)
             });
         }
+
+        // This should be the show() method without actually displaying the box, which shoul dbe done from suggestionBox class
+
+    }, {
+        key: 'setSuggestions',
+        value: function setSuggestions(suggestions) {}
+
+        // This should be the hide() method without actually hiding the box, the dropdown shoul not be responsibnle for how it is displayed.
+
+    }, {
+        key: 'reset',
+        value: function reset() {}
 
         /*
          * Show the suggestion box
@@ -462,8 +727,8 @@ var SuggestionList = function () {
                     this._applyBorderRadius(0, 0);
                 }
 
-                if (this.$suggestionBox.css('display') === 'none') {
-                    this.$suggestionBox.fadeIn();
+                if (this.$menu.css('display') === 'none') {
+                    this.$menu.fadeIn();
                 }
             } else if (this.options.showNoSuggestionsMessage) {
                 // SHOW NO SUGGESTIONS FOUND MESSAGE
@@ -494,7 +759,7 @@ var SuggestionList = function () {
             var searchBoxWidth = this.getSearchBoxWidth() + this.options.widthAdjustment;
             var width = {};
             width[this.options.widthType] = searchBoxWidth;
-            this.$suggestionBox.css(width);
+            this.$menu.css(width);
         }
 
         /**
@@ -509,7 +774,7 @@ var SuggestionList = function () {
         }
 
         /*
-         * Hide the suggestion box
+         * Hide the suggestion list
          */
 
     }, {
@@ -517,14 +782,14 @@ var SuggestionList = function () {
         value: function hide() {
             this.selectedLi = -1;
             this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
-            this.$suggestionBox.css('display', 'none');
+            this.$menu.css('display', 'none');
             this.typeahead.removeTypeahead();
-            this.$suggestionBox.css('display');
+            this.$menu.css('display');
         }
     }, {
         key: 'renderSuggestionsList',
         value: function renderSuggestionsList() {
-            var _this3 = this;
+            var _this4 = this;
 
             var suggestions = this.suggestions.getSuggestions().slice(0, this.options.results);
 
@@ -539,23 +804,23 @@ var SuggestionList = function () {
                 var markup = listItemMarkup;
 
                 if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) == "object") {
-                    var templateItems = _this3.templateParser.getTemplatedItems(listItemMarkup);
+                    var templateItems = _this4.templateParser.getTemplatedItems(listItemMarkup);
 
                     templateItems.forEach(function (templateItem) {
-                        var itemVal = _this3.options.highlightMatch && templateItem === _this3.options.searchBy ? _this3.highlightMatches(item[templateItem]) : item[templateItem];
-                        markup = _this3.templateParser.replaceHandlebars(markup, templateItem, itemVal);
+                        var itemVal = _this4.options.highlightMatch && templateItem === _this4.options.searchBy ? _this4.highlightMatches(item[templateItem]) : item[templateItem];
+                        markup = _this4.templateParser.replaceHandlebars(markup, templateItem, itemVal);
                     });
                 } else {
-                    var suggestion = _this3.options.highlightMatch ? _this3.highlightMatches(item) : item;
-                    markup = _this3.templateParser.replaceHandlebars(markup, _this3.options.searchBy, suggestion);
-                    markup = _this3.templateParser.replaceHandlebars(markup, "url", "#");
+                    var suggestion = _this4.options.highlightMatch ? _this4.highlightMatches(item) : item;
+                    markup = _this4.templateParser.replaceHandlebars(markup, _this4.options.searchBy, suggestion);
+                    markup = _this4.templateParser.replaceHandlebars(markup, "url", "#");
                 }
 
                 var markupDom = $(markup);
-                _this3.templateParser.getConditionals().forEach(function (conditional) {
+                _this4.templateParser.getConditionals().forEach(function (conditional) {
                     var expression = markupDom.find('#' + conditional.id).attr('sb-show');
 
-                    if (!_this3.displayEl(expression)) {
+                    if (!_this4.displayEl(expression)) {
                         markupDom.find('#' + conditional.id).css('display', 'none');
                     }
                 });
@@ -567,7 +832,7 @@ var SuggestionList = function () {
 
             var suggestionMarkup = this.templateParser.replaceHandlebars(template, "suggestion_list", listMarkup);
 
-            this.$suggestionBox.html(suggestionMarkup);
+            this.$menu.html(suggestionMarkup);
         }
     }, {
         key: 'displayEl',
@@ -575,7 +840,7 @@ var SuggestionList = function () {
             try {
                 return new Function("return " + expression + "? true : false")();
             } catch (e) {
-                console.log('%c[suggestion-box: warn]: Invalid "sb-show" expression in template. Remember to wrap any strings in quotes even if they are template items.', 'color: #f00');
+                _util2.default.logger(this.options.debug, 'Invalid "sb-show" expression in template. Remember to wrap any strings in quotes even if they are template items.', 'warn');
             }
         }
     }, {
@@ -595,70 +860,10 @@ var SuggestionList = function () {
     }, {
         key: 'select',
         value: function select(position, scroll) {
-            this.selectedHref = this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ") a").attr('href');
-            this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ")").addClass('selected');
+            _get(SuggestionList.prototype.__proto__ || Object.getPrototypeOf(SuggestionList.prototype), 'select', this).call(this, position, scroll);
 
             var value = this.typeahead.getTypeahead(position);
             this.typeahead.updateTypeahead(value, this.suggestions.getSuggestions()[position]);
-
-            if (scroll) {
-                this.doScroll();
-            }
-        }
-    }, {
-        key: 'isOpen',
-        value: function isOpen() {
-            return this.$suggestionBox.css('display') !== 'none';
-        }
-
-        /**
-         * Scrolls the suggestion box to the given position
-         * @param to
-         */
-
-    }, {
-        key: 'doScroll',
-        value: function doScroll() {
-            this.autoScrolled = true;
-
-            if (this.selectedLi > -1) {
-                var selection = this.$suggestionBox.find('#suggestion-list > li:eq(' + this.selectedLi + ')').position();
-
-                var pos = selection ? selection.top - this.$suggestionBox.find('#suggestion-list > li:eq(0)').position().top : 0;
-            }
-
-            // find scroll position at to and set scroll bars to it
-            var scrollTo = this.selectedLi > -1 ? pos : 0;
-            this.$suggestionBox.scrollTop(scrollTo);
-        }
-
-        /**
-         * Unselects the suggestion at the given position
-         * @param position
-         */
-
-    }, {
-        key: 'unselect',
-        value: function unselect(position) {
-            this.$suggestionBox.find("#suggestion-list > li:eq(" + position + ")").removeClass('selected');
-        }
-
-        /**
-         * Events for the mouse moving inside the suggestion box
-         * @param e
-         */
-
-    }, {
-        key: 'mousemoveEvents',
-        value: function mousemoveEvents(e) {
-            if (this.isSuggestion(e) && !this.autoScrolled) {
-                this.unselect(this.selectedLi);
-                this.selectedLi = this.getSelectionMouseIsOver(e);
-                this.select(this.selectedLi);
-            }
-
-            this.mouseHover = true;
-            this.autoScrolled = false;
         }
 
         /**
@@ -668,7 +873,7 @@ var SuggestionList = function () {
     }, {
         key: 'moveDown',
         value: function moveDown(scroll) {
-            var listSize = this.$suggestionBox.find('#suggestion-list > li').length;
+            var listSize = this.$menu.find('#suggestion-list > li').length;
 
             if (!this.isOpen() && this.suggestions.getSuggestions().length > 0) {
                 this.updateSuggestions(this.anubis.getSearch(), false);
@@ -700,7 +905,7 @@ var SuggestionList = function () {
                 this.select(this.selectedLi);
             } else if (this.selectedLi == -1) {
                 this.unselect(this.selectedLi);
-                this.selectedLi = this.$suggestionBox.find('#suggestion-list > li').length - 1;
+                this.selectedLi = this.$menu.find('#suggestion-list > li').length - 1;
                 this.select(this.selectedLi);
             } else {
                 this.unselect(0);
@@ -713,20 +918,6 @@ var SuggestionList = function () {
         }
 
         /**
-         * Returns the index of the list item the mouse is currently hovering over
-         * @param e
-         * @returns {Number}
-         */
-
-    }, {
-        key: 'getSelectionMouseIsOver',
-        value: function getSelectionMouseIsOver(e) {
-            var $parentLi = $(e.target).parents('li');
-
-            return $parentLi.parent().children().index($parentLi);
-        }
-
-        /**
          * Events for when the mouse leaves the suggestion box
          * @param e
          */
@@ -734,6 +925,8 @@ var SuggestionList = function () {
     }, {
         key: 'mouseoutEvents',
         value: function mouseoutEvents(e) {
+            _get(SuggestionList.prototype.__proto__ || Object.getPrototypeOf(SuggestionList.prototype), 'mouseoutEvents', this).call(this, e);
+
             if (this.isSuggestion(e) && !this.autoScrolled) {
                 this.unselect(this.selectedLi);
                 this.resetSelection();
@@ -745,30 +938,6 @@ var SuggestionList = function () {
         }
 
         /**
-         * Events for clicks inside the suggestion box
-         * @param e
-         */
-
-    }, {
-        key: 'clickEvents',
-        value: function clickEvents(e) {
-            if (this.isSuggestion(e)) {
-                e.preventDefault();
-                this.doClick(e);
-            }
-        }
-
-        /*
-         * Returns true if the mouse is over the dropdown list
-         */
-
-    }, {
-        key: 'isHovering',
-        value: function isHovering() {
-            return this.mouseHover;
-        }
-
-        /**
          * Performs the click action, this can be called for any event you want to recreate a click action for.
          * @param e
          */
@@ -776,66 +945,25 @@ var SuggestionList = function () {
     }, {
         key: 'doClick',
         value: function doClick(e) {
-            e.preventDefault();
-            if (this.pending) {
-                this.selectionMade = true;
-            }
+            _get(SuggestionList.prototype.__proto__ || Object.getPrototypeOf(SuggestionList.prototype), 'doClick', this).call(this, e);
 
             var suggestion = this.suggestions.getSuggestions()[this.selectedLi];
-            var selectedEl = this.$suggestionBox.find('#suggestion-list > li:eq(' + this.selectedLi + ')');
+            var selectedEl = this.$menu.find('#suggestion-list > li:eq(' + this.selectedLi + ')');
 
             // TODO: Make sure this callback works for non-object arrays!
-
             this.options.onClick(suggestion[this.options.searchBy], suggestion, e, this.inputEl, selectedEl);
             this.hide();
 
             this.typeahead.removeTypeahead();
         }
-    }, {
-        key: 'simulateClick',
-        value: function simulateClick() {
-            if (this.selectedLi > -1) {
-                this.$suggestionBox.find('.selected a').click();
-            }
-        }
-
-        /**
-         * Is the given event made on a suggestion?
-         * @param e
-         * @returns {boolean}
-         */
-
-    }, {
-        key: 'isSuggestion',
-        value: function isSuggestion(e) {
-            return $(e.target).parents('a').length > 0 || e.target.nodeName === 'A';
-        }
-
-        /**
-         * Resets any selected suggestions
-         */
-
-    }, {
-        key: 'resetSelection',
-        value: function resetSelection() {
-            this.selectedHref = '#';
-            this.selectedLi = -1;
-            // remove all selected on reset
-            this.$suggestionBox.find('#suggestion-list > li').removeClass('selected');
-        }
-    }, {
-        key: 'setRandId',
-        value: function setRandId() {
-            this.Id = 'suggestion-box-' + Math.floor(Math.random() * 10000000);
-        }
     }]);
 
     return SuggestionList;
-}();
+}(_Dropdown3.default);
 
 exports.default = SuggestionList;
 
-},{"./Anubis":1,"./TemplateParser":4,"./util":11}],3:[function(require,module,exports){
+},{"./Dropdown":2,"./util":12}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -885,7 +1013,7 @@ var Suggestions = function () {
 
 exports.default = Suggestions;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1071,7 +1199,7 @@ var TemplateParser = function () {
 
 exports.default = TemplateParser;
 
-},{"./util.js":11}],5:[function(require,module,exports){
+},{"./util.js":12}],6:[function(require,module,exports){
 "use strict";
 
 var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -1169,7 +1297,7 @@ var Typeahead = function () {
 
 exports.default = Typeahead;
 
-},{"./util.js":11}],6:[function(require,module,exports){
+},{"./util.js":12}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1182,10 +1310,10 @@ exports.default = {
     'ESCAPE_KEY': 27
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
 
-var _suggestionBox = require('./suggestion-box.js');
+var _suggestionBox = require('./suggestionBox.js');
 
 var _suggestionBox2 = _interopRequireDefault(_suggestionBox);
 
@@ -1209,7 +1337,7 @@ function _interopRequireDefault(obj) {
     };
 })(jQuery);
 
-},{"./suggestion-box.js":9}],8:[function(require,module,exports){
+},{"./suggestionBox.js":10}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1259,7 +1387,7 @@ exports.default = {
     //height: 50
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1423,6 +1551,7 @@ var SuggestionBox = function () {
             template = !template ? _template2.default : template;
             return new _TemplateParser2.default(template, this.options.debug);
         }
+
         /**
          *  Returns the Anubis object
          */
@@ -1494,7 +1623,6 @@ var SuggestionBox = function () {
         key: 'updateTypeahead',
         value: function updateTypeahead() {
             if (this.context.val() !== "") {
-                this.typeahead.removeTypeahead();
                 var selectedIndex = this.suggestionList.getSelectedItemIndex();
 
                 this.typeahead.setCurrentInput(this.context.val());
@@ -1645,7 +1773,7 @@ var SuggestionBox = function () {
 
 exports.default = SuggestionBox;
 
-},{"./Anubis.js":1,"./SuggestionList.js":2,"./Suggestions.js":3,"./TemplateParser.js":4,"./Typeahead.js":5,"./constants/keys.js":6,"./options.js":8,"./template.js":10,"./util.js":11}],10:[function(require,module,exports){
+},{"./Anubis.js":1,"./SuggestionList.js":3,"./Suggestions.js":4,"./TemplateParser.js":5,"./Typeahead.js":6,"./constants/keys.js":7,"./options.js":9,"./template.js":11,"./util.js":12}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1655,7 +1783,7 @@ var template = '<div>' + '<ul id="suggestion-list" class="suggestion-box-list">'
 
 exports.default = template;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1758,6 +1886,6 @@ var Util = function () {
 
 exports.default = Util;
 
-},{}]},{},[7]);
+},{}]},{},[8]);
 
 //# sourceMappingURL=main.js.map
