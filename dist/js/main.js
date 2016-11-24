@@ -1,33 +1,15 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 
-var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
-    return typeof obj === "undefined" ? "undefined" : _typeof2(obj);
-} : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof2(obj);
-};
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Anubis = function () {
     function Anubis(searchBy, filter, sort, param) {
@@ -196,29 +178,15 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _util = require('./util.js');
 
 var _util2 = _interopRequireDefault(_util);
 
-function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /*
  * Class to build the dropdown $menu
@@ -241,6 +209,7 @@ var Dropdown = function () {
     /*
      * Builds the HTML for the suggestion list and binds the events
      */
+
 
     _createClass(Dropdown, [{
         key: 'buildDom',
@@ -380,13 +349,6 @@ var Dropdown = function () {
             return $(event.target).parents('a').length > 0 || event.target.nodeName === 'A';
         }
     }, {
-        key: 'simulateClick',
-        value: function simulateClick() {
-            if (this.selectedLi > -1) {
-                this.$menu.find('.selected a').click();
-            }
-        }
-    }, {
         key: 'resetSelection',
         value: function resetSelection() {
             this.selectedLi = -1;
@@ -454,43 +416,15 @@ exports.default = Dropdown;
 },{"./util.js":12}],3:[function(require,module,exports){
 'use strict';
 
-var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
-    return typeof obj === "undefined" ? "undefined" : _typeof2(obj);
-} : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof2(obj);
-};
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _get = function get(object, property, receiver) {
-    if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
-        var parent = Object.getPrototypeOf(object);if (parent === null) {
-            return undefined;
-        } else {
-            return get(parent, property, receiver);
-        }
-    } else if ("value" in desc) {
-        return desc.value;
-    } else {
-        var getter = desc.get;if (getter === undefined) {
-            return undefined;
-        }return getter.call(receiver);
-    }
-};
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 var _Dropdown2 = require('./Dropdown');
 
@@ -500,27 +434,13 @@ var _util = require('./util');
 
 var _util2 = _interopRequireDefault(_util);
 
-function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _possibleConstructorReturn(self, call) {
-    if (!self) {
-        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }return call && ((typeof call === "undefined" ? "undefined" : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
-}
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-        throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof2(superClass)));
-    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-}
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
 / @class SuggestionListDropdown - builds the SuggestionList Dom object
@@ -529,27 +449,16 @@ function _inherits(subClass, superClass) {
 var SuggestionList = function (_Dropdown) {
     _inherits(SuggestionList, _Dropdown);
 
-    function SuggestionList(inputEl, templateParser, options, anubis, typeahead, suggestions) {
+    function SuggestionList(inputEl, templateParser, options, typeahead, suggestions) {
         _classCallCheck(this, SuggestionList);
 
         var _this = _possibleConstructorReturn(this, (SuggestionList.__proto__ || Object.getPrototypeOf(SuggestionList)).call(this, options));
 
         _this.inputEl = inputEl;
         _this.templateParser = templateParser;
-        _this.anubis = anubis;
         _this.typeahead = typeahead;
         _this.suggestions = suggestions;
-
-        // Get the fatch options
-        _this.perpetualFetch = _this.options.fetchEvery !== -1 ? true : false;
-        _this.fetchRate = _this.options.fetchAfter;
-        _this.endFetch = false;
-
-        // Sets up the border radius defaults so we can change the border radius back when menu closes
-        _this.radiusDefaults = {
-            bottomLeft: _util2.default.getCssValue(_this.inputEl, 'border-bottom-right-radius'),
-            bottomRight: _util2.default.getCssValue(_this.inputEl, 'border-bottom-right-radius')
-        };
+        _this.suggestionChosen = false;
         return _this;
     }
 
@@ -557,6 +466,7 @@ var SuggestionList = function (_Dropdown) {
      * Reset the template by creating a new Template object, this is necassary because template
      * Parser automtically parses the node tree, so it doesn't have to be done multiple times.
      */
+
 
     _createClass(SuggestionList, [{
         key: 'setTemplate',
@@ -568,134 +478,16 @@ var SuggestionList = function (_Dropdown) {
         value: function setOptions(options) {
             this.options = options;
         }
-
-        /*
-         * Updates the suggestion list
-         * @param search - The search string for finding suggestions
-         * @param forceFetch -   set to true to fetch suggestions regardless of input (used internally for prefetching)
-         */
-
-    }, {
-        key: 'updateSuggestions',
-        value: function updateSuggestions(search, forceFetch) {
-            var _this2 = this;
-
-            this.anubis.setSearch(search);
-
-            if (search == "" && !forceFetch) {
-                this.anubis.clearLastSearch();
-                this.hide();
-            } else {
-                if (this.options.url.length > 0 && !this.pending && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0) && !this.endFetch || this.perpetualFetch) {
-
-                    this.anubis.setSearch(search);
-                    this.pending = true;
-                    this.inputEl.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
-
-                    setTimeout(function () {
-                        _this2.loadSuggestionData(forceFetch);
-                    }, this.fetchRate);
-
-                    this.endFetch = this.options.fetchOnce;
-
-                    if (this.perpetualFetch) {
-                        // make sure we continue to filter
-                        this.show();
-                        this.fetchRate = this.options.fetchEvery;
-                    }
-                } else {
-                    this.show();
-                }
-            }
-        }
-
-        /**
-         * Clears the last suggestion and updates the suggestions list, useful for `ctrl+v` paste
-         * when a user highlights the current text and pastes new text over the top.
-         * @param search - The new search for the suggestion list
-         */
-
-    }, {
-        key: 'clearAndUpdate',
-        value: function clearAndUpdate(search) {
-            this.hide();
-            this.anubis.clearLastSearch();
-            this.updateSuggestions(search, false);
-        }
-
-        /*
-         * loads the suggestion data from the server
-         * @param forceFetch - set to true to force the fetch (used for prefetch when search value is empty)
-         */
-
-    }, {
-        key: 'loadSuggestionData',
-        value: function loadSuggestionData(forceFetch) {
-            // Don't bother fetching data we already have again
-            if (this.anubis.getLastSearch() !== this.anubis.getSearch() || forceFetch) {
-                this.anubis.fetchSuggestions(this.options.url, this._fetchSuggestionsCallback());
-            } else {
-                this.inputEl.css('background', "");
-            }
-        }
-
-        /**
-         * The actions to perform when data has been successfullt fetched from the server
-         */
-
-    }, {
-        key: '_fetchSuggestionsCallback',
-        value: function _fetchSuggestionsCallback() {
-            var _this3 = this;
-
-            return function (data) {
-                _this3.anubis.setData(data);
-
-                // Only show if a selection was not made while wating for a response
-                if (!_this3.selectionMade && _this3.anubis.getSearch().length > 0) {
-                    _this3.show();
-                } else {
-                    _this3.hide();
-                }
-
-                _this3.selectionMade = false;
-                _this3.pending = false;
-
-                _this3.inputEl.css('background', "");
-            };
-        }
-
-        /* 
-         * Update the position of the suggestionList 
-         */
-
     }, {
         key: 'updatePosition',
-        value: function updatePosition() {
-            // Calculates the vertical padding and broder for the input box so the list isn't placed over the top.
-            var borders = _util2.default.calculateVerticalBorderWidth(this.inputEl);
-            var padding = _util2.default.calculateVerticalPadding(this.inputEl);
-            var offset = this.inputEl.offset();
-
+        value: function updatePosition(left, top) {
             this.$menu.css({
                 'position': 'absolute',
                 'zIndex': this.options.zIndex,
-                'left': offset.left + this.options.leftOffset,
-                'top': offset.top + (this.inputEl.height() + borders + padding + this.options.topOffset)
+                'left': left,
+                'top': top
             });
         }
-
-        // This should be the show() method without actually displaying the box, which shoul dbe done from suggestionBox class
-
-    }, {
-        key: 'setSuggestions',
-        value: function setSuggestions(suggestions) {}
-
-        // This should be the hide() method without actually hiding the box, the dropdown shoul not be responsibnle for how it is displayed.
-
-    }, {
-        key: 'reset',
-        value: function reset() {}
 
         /*
          * Show the suggestion box
@@ -704,7 +496,6 @@ var SuggestionList = function (_Dropdown) {
     }, {
         key: 'show',
         value: function show() {
-            this.suggestions.setSuggestions(this.anubis.getSuggestions());
 
             // Don't reset if a suggestion is still available at the index it's annoying when trying to select while data is loading
             if (this.suggestions.getSuggestions().length < this.selectedLi) {
@@ -712,41 +503,14 @@ var SuggestionList = function (_Dropdown) {
             }
 
             this.renderSuggestionsList();
-            // Reset election after page loaded
+            // Reset selection after page loaded
             if (this.selectedLi > -1) {
                 this.select(this.selectedLi);
             }
 
-            if (this.suggestions.getSuggestions().length > 0) {
-
-                this.updatePosition();
-                this.setWidth();
-                this.typeahead.updateTypeaheadPosition(this.inputEl);
-
-                if (this.options.adjustBorderRadius) {
-                    this._applyBorderRadius(0, 0);
-                }
-
-                if (this.$menu.css('display') === 'none') {
-                    this.$menu.fadeIn();
-                }
-            } else if (this.options.showNoSuggestionsMessage) {
-                // SHOW NO SUGGESTIONS FOUND MESSAGE
-            } else {
-                this.hide();
+            if (this.$menu.css('display') === 'none') {
+                this.$menu.fadeIn();
             }
-        }
-
-        /*
-         * Applies the give border-radius to the search input, used when diosplaying suggestion list
-         * with an input that has a border radius.
-         */
-
-    }, {
-        key: '_applyBorderRadius',
-        value: function _applyBorderRadius(left, right) {
-            this.inputEl.css('border-bottom-left-radius', left);
-            this.inputEl.css('border-bottom-right-radius', right);
         }
 
         /**
@@ -755,22 +519,10 @@ var SuggestionList = function (_Dropdown) {
 
     }, {
         key: 'setWidth',
-        value: function setWidth() {
-            var searchBoxWidth = this.getSearchBoxWidth() + this.options.widthAdjustment;
+        value: function setWidth(searchBoxWidth) {
             var width = {};
             width[this.options.widthType] = searchBoxWidth;
             this.$menu.css(width);
-        }
-
-        /**
-         * Returns the width of the search box
-         * @returns {number}
-         */
-
-    }, {
-        key: 'getSearchBoxWidth',
-        value: function getSearchBoxWidth() {
-            return this.inputEl.width() + _util2.default.getCssValue(this.inputEl, 'border-left-width') + _util2.default.getCssValue(this.inputEl, 'border-right-width') + _util2.default.getCssValue(this.inputEl, 'padding-left') + _util2.default.getCssValue(this.inputEl, 'padding-right');
         }
 
         /*
@@ -781,10 +533,55 @@ var SuggestionList = function (_Dropdown) {
         key: 'hide',
         value: function hide() {
             this.selectedLi = -1;
-            this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
             this.$menu.css('display', 'none');
-            this.typeahead.removeTypeahead();
-            this.$menu.css('display');
+        }
+    }, {
+        key: '_buildMarkupForObjectList',
+        value: function _buildMarkupForObjectList(templateItems, item, markup) {
+            var _this2 = this;
+
+            templateItems.forEach(function (templateItem) {
+                var itemVal = _this2.options.highlightMatch && templateItem === _this2.options.searchBy ? _this2.highlightMatches(item[templateItem]) : item[templateItem];
+                markup = _this2.templateParser.replaceHandlebars(markup, templateItem, itemVal);
+            });
+
+            return markup;
+        }
+    }, {
+        key: '_buildSuggestionListMarkup',
+        value: function _buildSuggestionListMarkup(markup, listMarkup) {
+            var _this3 = this;
+
+            var markupDom = $(markup);
+            this.templateParser.getConditionals().forEach(function (conditional) {
+                var expression = markupDom.find('#' + conditional.id).attr('sb-show');
+
+                if (!_this3.displayEl(expression)) {
+                    markupDom.find('#' + conditional.id).css('display', 'none');
+                }
+            });
+
+            listMarkup += "<li>";
+            listMarkup += markupDom[0].outerHTML;
+            listMarkup += "</li>";
+
+            return listMarkup;
+        }
+    }, {
+        key: '_buildMarkup',
+        value: function _buildMarkup(listItemMarkup, item) {
+            var markup = listItemMarkup;
+
+            if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) == "object") {
+                var templateItems = this.templateParser.getTemplatedItems(listItemMarkup);
+                markup = this._buildMarkupForObjectList(templateItems, item, markup);
+            } else {
+                var suggestion = this.options.highlightMatch ? this.highlightMatches(item) : item;
+                markup = this.templateParser.replaceHandlebars(markup, this.options.searchBy, suggestion);
+                markup = this.templateParser.replaceHandlebars(markup, "url", "#");
+            }
+
+            return markup;
         }
     }, {
         key: 'renderSuggestionsList',
@@ -794,46 +591,21 @@ var SuggestionList = function (_Dropdown) {
             var suggestions = this.suggestions.getSuggestions().slice(0, this.options.results);
 
             var template = this.templateParser.getParsedTemplate();
-            template = this.templateParser.replaceHandlebars(template, "header", this.options.heading);
-
             var listItemMarkup = this.templateParser.getListItemMarkup();
-
             var listMarkup = "";
 
             suggestions.forEach(function (item) {
-                var markup = listItemMarkup;
-
-                if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) == "object") {
-                    var templateItems = _this4.templateParser.getTemplatedItems(listItemMarkup);
-
-                    templateItems.forEach(function (templateItem) {
-                        var itemVal = _this4.options.highlightMatch && templateItem === _this4.options.searchBy ? _this4.highlightMatches(item[templateItem]) : item[templateItem];
-                        markup = _this4.templateParser.replaceHandlebars(markup, templateItem, itemVal);
-                    });
-                } else {
-                    var suggestion = _this4.options.highlightMatch ? _this4.highlightMatches(item) : item;
-                    markup = _this4.templateParser.replaceHandlebars(markup, _this4.options.searchBy, suggestion);
-                    markup = _this4.templateParser.replaceHandlebars(markup, "url", "#");
-                }
-
-                var markupDom = $(markup);
-                _this4.templateParser.getConditionals().forEach(function (conditional) {
-                    var expression = markupDom.find('#' + conditional.id).attr('sb-show');
-
-                    if (!_this4.displayEl(expression)) {
-                        markupDom.find('#' + conditional.id).css('display', 'none');
-                    }
-                });
-
-                listMarkup += "<li>";
-                listMarkup += markupDom[0].outerHTML;
-                listMarkup += "</li>";
+                var markup = _this4._buildMarkup(listItemMarkup, item);
+                listMarkup = _this4._buildSuggestionListMarkup(markup, listMarkup);
             });
 
             var suggestionMarkup = this.templateParser.replaceHandlebars(template, "suggestion_list", listMarkup);
 
             this.$menu.html(suggestionMarkup);
         }
+    }, {
+        key: '_renderObjectList',
+        value: function _renderObjectList() {}
     }, {
         key: 'displayEl',
         value: function displayEl(expression) {
@@ -843,18 +615,24 @@ var SuggestionList = function (_Dropdown) {
                 _util2.default.logger(this.options.debug, 'Invalid "sb-show" expression in template. Remember to wrap any strings in quotes even if they are template items.', 'warn');
             }
         }
+
+        /*
+         * Highlights parts of the suggestion that match the given input and pattern
+         * @param string suggestion
+         */
+
     }, {
         key: 'highlightMatches',
         value: function highlightMatches(suggestion) {
             // Replace all 
-            var filterPattern = this.templateParser.replaceHandlebars(this.options.filter, "INPUT", this.anubis.getSearch());
+            var filterPattern = this.templateParser.replaceHandlebars(this.options.filter, "INPUT", this.inputEl.val());
             return suggestion.replace(new RegExp(filterPattern, 'gi'), '<b>$&</b>');
         }
 
         /**
          * Selects the suggestion at the given position
-         * @param position
-         * @param scroll
+         * @param int position
+         * @param bool scroll
          */
 
     }, {
@@ -868,6 +646,7 @@ var SuggestionList = function (_Dropdown) {
 
         /**
          * Moves the selection down to the next suggestion
+         * @param bool scroll
          */
 
     }, {
@@ -876,7 +655,6 @@ var SuggestionList = function (_Dropdown) {
             var listSize = this.$menu.find('#suggestion-list > li').length;
 
             if (!this.isOpen() && this.suggestions.getSuggestions().length > 0) {
-                this.updateSuggestions(this.anubis.getSearch(), false);
                 this.show();
             } else if (this.selectedLi === listSize - 1) {
                 this.unselect(this.selectedLi);
@@ -894,6 +672,7 @@ var SuggestionList = function (_Dropdown) {
 
         /**
          * Moves the selection up to the previous suggestions
+         * @param bool scroll
          */
 
     }, {
@@ -939,22 +718,46 @@ var SuggestionList = function (_Dropdown) {
 
         /**
          * Performs the click action, this can be called for any event you want to recreate a click action for.
-         * @param e
+         * @param Event event
          */
 
     }, {
         key: 'doClick',
-        value: function doClick(e) {
-            _get(SuggestionList.prototype.__proto__ || Object.getPrototypeOf(SuggestionList.prototype), 'doClick', this).call(this, e);
+        value: function doClick(event) {
+            _get(SuggestionList.prototype.__proto__ || Object.getPrototypeOf(SuggestionList.prototype), 'doClick', this).call(this, event);
 
             var suggestion = this.suggestions.getSuggestions()[this.selectedLi];
             var selectedEl = this.$menu.find('#suggestion-list > li:eq(' + this.selectedLi + ')');
 
             // TODO: Make sure this callback works for non-object arrays!
-            this.options.onClick(suggestion[this.options.searchBy], suggestion, e, this.inputEl, selectedEl);
+            this.options.onClick(suggestion[this.options.searchBy], suggestion, event, this.inputEl, selectedEl);
             this.hide();
 
+            this.setIsSuggestionChosen(true);
+
             this.typeahead.removeTypeahead();
+        }
+
+        /**
+         * Returns true if a suggestion has been chosen, this flag is used during ajax calls so the menu
+         *  isn't shown when new options are loaded from the server after the user has chosen an suggestion.
+         */
+
+    }, {
+        key: 'isSuggestionChosen',
+        value: function isSuggestionChosen() {
+            return this.suggestionChosen;
+        }
+
+        /**
+         * Set the suggestionChosen flag
+         * @param bool suggestionChosen 
+         */
+
+    }, {
+        key: 'setIsSuggestionChosen',
+        value: function setIsSuggestionChosen(suggestionChosen) {
+            this.suggestionChosen = suggestionChosen;
         }
     }]);
 
@@ -970,33 +773,18 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _createClass = function () {
-	function defineProperties(target, props) {
-		for (var i = 0; i < props.length; i++) {
-			var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-		}
-	}return function (Constructor, protoProps, staticProps) {
-		if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-	};
-}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _classCallCheck(instance, Constructor) {
-	if (!(instance instanceof Constructor)) {
-		throw new TypeError("Cannot call a class as a function");
-	}
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Suggestions = function () {
 	function Suggestions() {
 		_classCallCheck(this, Suggestions);
+
+		this.suggestions = [];
 	}
 
 	_createClass(Suggestions, [{
-		key: "contructor",
-		value: function contructor() {
-			this.suggestions = [];
-		}
-	}, {
 		key: "setSuggestions",
 		value: function setSuggestions(suggestions) {
 			this.suggestions = suggestions;
@@ -1020,29 +808,15 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _util = require('./util.js');
 
 var _util2 = _interopRequireDefault(_util);
 
-function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var TemplateParser = function () {
     function TemplateParser(template, debug) {
@@ -1202,41 +976,21 @@ exports.default = TemplateParser;
 },{"./util.js":12}],6:[function(require,module,exports){
 "use strict";
 
-var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
-    return typeof obj === "undefined" ? "undefined" : _typeof2(obj);
-} : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof2(obj);
-};
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _util = require("./util.js");
 
 var _util2 = _interopRequireDefault(_util);
 
-function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Typeahead = function () {
     function Typeahead(suggestions, searchBy) {
@@ -1317,9 +1071,7 @@ var _suggestionBox = require('./suggestionBox.js');
 
 var _suggestionBox2 = _interopRequireDefault(_suggestionBox);
 
-function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 (function ($) {
     $.fn.suggestionBox = function (options) {
@@ -1394,15 +1146,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _SuggestionList = require('./SuggestionList.js');
 
@@ -1440,15 +1184,9 @@ var _template = require('./template.js');
 
 var _template2 = _interopRequireDefault(_template);
 
-function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var SuggestionBox = function () {
     function SuggestionBox(options, context) {
@@ -1457,11 +1195,15 @@ var SuggestionBox = function () {
         this.context = context;
 
         this.search = this.context.val();
-        this.suggestions = [];
 
         this._defaults = JSON.parse(JSON.stringify(_options2.default));
 
         this.options = $.extend(_options2.default, options);
+
+        this.perpetualFetch = this.options.fetchEvery !== -1 ? true : false;
+        this.fetchRate = this.options.fetchAfter;
+        this.endFetch = false;
+        this.pending = false;
 
         this._checkFilterForTypeahead();
         // load default template into options 
@@ -1470,8 +1212,9 @@ var SuggestionBox = function () {
         this._initAnubis();
 
         this.suggestions = new _Suggestions2.default();
+
         this.typeahead = new _Typeahead2.default(this.suggestions, this.options.searchBy);
-        this.suggestionList = new _SuggestionList2.default(this.context, this.templateParser, this.options, this.anubis, this.typeahead, this.suggestions);
+        this.suggestionList = new _SuggestionList2.default(this.context, this.templateParser, this.options, this.typeahead, this.suggestions);
 
         this.context.on('keyup', this._keyupEvents.bind(this));
         this.context.on('blur', this._blurEvents.bind(this));
@@ -1485,6 +1228,11 @@ var SuggestionBox = function () {
 
         this.context.attr('autocomplete', 'off');
 
+        this.radiusDefaults = {
+            bottomLeft: _util2.default.getCssValue(this.context, 'border-bottom-right-radius'),
+            bottomRight: _util2.default.getCssValue(this.context, 'border-bottom-right-radius')
+        };
+
         // Preload the loading image if it has been supplied so it loads faster!
         if (this.options.loadImage) {
             $('<img/>')[0].src = this.options.loadImage;
@@ -1492,11 +1240,152 @@ var SuggestionBox = function () {
 
         // If we are prefetching our data
         if (this.options.prefetch) {
-            this.suggestionList.updateSuggestions(this.context.val(), true);
+            this.updateSuggestions(this.context.val(), true);
         }
     }
 
+    /*
+     * Updates the suggestion list
+     * @param search - The search string for finding suggestions
+     * @param forceFetch -   set to true to fetch suggestions regardless of input (used internally for prefetching)
+     */
+
+
     _createClass(SuggestionBox, [{
+        key: 'updateSuggestions',
+        value: function updateSuggestions(search, forceFetch) {
+            var _this = this;
+
+            this.anubis.setSearch(search);
+
+            if (search == "" && !forceFetch) {
+                this.anubis.clearLastSearch();
+                this.hideSuggestions();
+            } else {
+                if (this.options.url.length > 0 && !this.pending && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0) && !this.endFetch || this.perpetualFetch) {
+
+                    this.anubis.setSearch(search);
+                    this.pending = true;
+                    this.context.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
+
+                    setTimeout(function () {
+                        _this.loadSuggestionData(forceFetch);
+                    }, this.fetchRate);
+
+                    this.endFetch = this.options.fetchOnce;
+
+                    if (this.perpetualFetch) {
+                        // make sure we continue to filter
+                        this.suggestionList.show();
+                        this.fetchRate = this.options.fetchEvery;
+                    }
+                } else {
+                    this.showSuggestions();
+                }
+            }
+        }
+
+        /*
+         * loads the suggestion data from the server
+         * @param forceFetch - set to true to force the fetch (used for prefetch when search value is empty)
+         */
+
+    }, {
+        key: 'loadSuggestionData',
+        value: function loadSuggestionData(forceFetch) {
+            // Don't bother fetching data we already have again
+            if (this.anubis.getLastSearch() !== this.anubis.getSearch() || forceFetch) {
+                this.anubis.fetchSuggestions(this.options.url, this._fetchSuggestionsCallback());
+            } else {
+                this.context.css('background', "");
+                this.pending = false;
+            }
+        }
+    }, {
+        key: 'showSuggestions',
+        value: function showSuggestions() {
+            // Set the suggesation (SuggestionList holds a reference to this object)
+            this.suggestions.setSuggestions(this.anubis.getSuggestions());
+
+            if (this.suggestions.getSuggestions().length > 0) {
+
+                var borders = _util2.default.calculateVerticalBorderWidth(this.context);
+                var padding = _util2.default.calculateVerticalPadding(this.context);
+                var offset = this.context.offset();
+
+                this.suggestionList.updatePosition(offset.left + this.options.leftOffset, offset.top + (this.context.height() + borders + padding + this.options.topOffset));
+                this.suggestionList.setWidth(this.getSearchBoxWidth() + this.options.widthAdjustment);
+
+                this.typeahead.updateTypeaheadPosition(this.context);
+
+                if (this.options.adjustBorderRadius) {
+                    this._applyBorderRadius(0, 0);
+                }
+
+                this.suggestionList.show();
+            } else {
+                this.hideSuggestions();
+            }
+        }
+
+        /**
+         * Returns the width of the search box
+         * @returns {number}
+         */
+
+    }, {
+        key: 'getSearchBoxWidth',
+        value: function getSearchBoxWidth() {
+            return this.context.width() + _util2.default.getCssValue(this.context, 'border-left-width') + _util2.default.getCssValue(this.context, 'border-right-width') + _util2.default.getCssValue(this.context, 'padding-left') + _util2.default.getCssValue(this.context, 'padding-right');
+        }
+    }, {
+        key: 'hideSuggestions',
+        value: function hideSuggestions() {
+            console.log('hide');
+            this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
+            this.typeahead.removeTypeahead();
+            this.suggestionList.hide();
+            this.suggestions.setSuggestions([]);
+        }
+
+        /**
+         * The actions to perform when data has been successfully fetched from the server
+         */
+
+    }, {
+        key: '_fetchSuggestionsCallback',
+        value: function _fetchSuggestionsCallback() {
+            var _this2 = this;
+
+            return function (data) {
+                _this2.anubis.setData(data);
+
+                // Only show if a selection was not made while wating for a response
+                if (!_this2.suggestionList.isSuggestionChosen() && _this2.anubis.getSearch().length > 0) {
+                    _this2.showSuggestions();
+                } else {
+                    _this2.hideSuggestions();
+                }
+
+                _this2.suggestionList.setIsSuggestionChosen(false);
+                _this2.pending = false;
+
+                _this2.context.css('background', "");
+            };
+        }
+
+        /*
+         * Applies the give border-radius to the search input, used when diosplaying suggestion list
+         * with an input that has a border radius.
+         */
+
+    }, {
+        key: '_applyBorderRadius',
+        value: function _applyBorderRadius(left, right) {
+            this.context.css('border-bottom-left-radius', left);
+            this.context.css('border-bottom-right-radius', right);
+        }
+    }, {
         key: '_checkFilterForTypeahead',
         value: function _checkFilterForTypeahead() {
             if (this.options.filter !== "^{{INPUT}}" && this.options.typeahead) {
@@ -1614,10 +1503,24 @@ var SuggestionBox = function () {
                 $("head").append('<style id="suggestion-box-dynamic-typeahead">#suggestion-box-typeahead::after{left:' + left + 'px;top:' + top + 'px;}</style>');
             }
         }
+
+        /**
+         * Clears the last suggestion and updates the suggestions list, useful for `ctrl+v` paste
+         * when a user highlights the current text and pastes new text over the top.
+         * @param search - The new search for the suggestion list
+         */
+
+    }, {
+        key: 'clearAndUpdate',
+        value: function clearAndUpdate(search) {
+            this.hideSuggestions();
+            this.anubis.clearLastSearch();
+            this.updateSuggestions(search, false);
+        }
     }, {
         key: 'getSuggestions',
         value: function getSuggestions() {
-            this.suggestionList.updateSuggestions(this.context.val(), false);
+            this.updateSuggestions(this.context.val(), false);
         }
     }, {
         key: 'updateTypeahead',
@@ -1695,6 +1598,7 @@ var SuggestionBox = function () {
             if (!this._isReservedKey(e)) {
                 this.getSuggestions();
                 this.updateTypeahead();
+                this.suggestionList.setIsSuggestionChosen(false);
             }
         }
     }, {
@@ -1704,7 +1608,9 @@ var SuggestionBox = function () {
             if (e.which == _keys2.default.DOWN_ARROW_KEY) {
                 e.preventDefault();
                 this.suggestionList.moveDown(true);
+                this.getSuggestions();
                 this.updateTypeahead();
+                this.showSuggestions();
             }
             if (this.suggestionList.isOpen()) {
                 if (e.which == _keys2.default.UP_ARROW_KEY) {
@@ -1714,12 +1620,12 @@ var SuggestionBox = function () {
                 }
                 if (e.which === _keys2.default.ENTER_KEY) {
                     e.preventDefault();
-                    this.suggestionList.simulateClick();
+                    this.suggestionList.doClick(e);
                 }
                 if (e.which == _keys2.default.ESCAPE_KEY) {
                     e.preventDefault();
                     this.context.css('background', "");
-                    this.suggestionList.hide();
+                    this.hideSuggestions();
                 }
             }
         }
@@ -1743,7 +1649,7 @@ var SuggestionBox = function () {
         value: function _blurEvents() {
             if (!this.suggestionList.isHovering()) {
                 this.context.css('background', "");
-                this.suggestionList.hide();
+                this.hideSuggestions();
             }
         }
 
@@ -1754,11 +1660,11 @@ var SuggestionBox = function () {
     }, {
         key: '_pasteEvents',
         value: function _pasteEvents() {
-            var _this = this;
+            var _this3 = this;
 
             // Simulate keyup after 200ms otherwise the value of the search box will not be available
             setTimeout(function () {
-                _this.suggestionList.clearAndUpdate(_this.context.val());
+                _this3.clearAndUpdate(_this3.context.val());
             }, 200);
         }
     }, {
@@ -1790,21 +1696,9 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Util = function () {
     function Util() {

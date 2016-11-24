@@ -129,11 +129,6 @@ class Dropdown {
         return $(event.target).parents('a').length > 0 || event.target.nodeName === 'A';
     }
 
-    simulateClick() {
-        if (this.selectedLi > -1) {
-            this.$menu.find('.selected a').click();
-        }
-    }
 
     resetSelection() {
         this.selectedLi = -1;

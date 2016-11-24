@@ -14,12 +14,15 @@ class SuggestionBox {
         this.context = context;
 
         this.search = this.context.val();
-        this.suggestions = [];
 
         this._defaults = JSON.parse(JSON.stringify(defaultOptions))
 
         this.options = $.extend(defaultOptions, options);
 
+        this.perpetualFetch = (this.options.fetchEvery !== -1) ? true : false;
+        this.fetchRate = this.options.fetchAfter;
+        this.endFetch = false;
+        this.pending = false;
 
         this._checkFilterForTypeahead();
         // load default template into options 
@@ -28,8 +31,9 @@ class SuggestionBox {
         this._initAnubis();
 
         this.suggestions = new Suggestions();
+
         this.typeahead = new Typeahead(this.suggestions, this.options.searchBy);
-        this.suggestionList = new SuggestionList(this.context, this.templateParser, this.options, this.anubis, this.typeahead, this.suggestions);
+        this.suggestionList = new SuggestionList(this.context, this.templateParser, this.options, this.typeahead, this.suggestions);
 
 
         this.context.on('keyup', this._keyupEvents.bind(this));
@@ -45,6 +49,11 @@ class SuggestionBox {
 
         this.context.attr('autocomplete', 'off');
 
+        this.radiusDefaults = {
+            bottomLeft: Util.getCssValue(this.context, 'border-bottom-right-radius'),
+            bottomRight: Util.getCssValue(this.context, 'border-bottom-right-radius')
+        }
+
         // Preload the loading image if it has been supplied so it loads faster!
         if (this.options.loadImage) {
             $('<img/>')[0].src = this.options.loadImage;
@@ -52,8 +61,136 @@ class SuggestionBox {
 
         // If we are prefetching our data
         if (this.options.prefetch) {
-            this.suggestionList.updateSuggestions(this.context.val(), true);
+            this.updateSuggestions(this.context.val(), true);
         }
+    }
+
+    /*
+     * Updates the suggestion list
+     * @param search - The search string for finding suggestions
+     * @param forceFetch -   set to true to fetch suggestions regardless of input (used internally for prefetching)
+     */
+    updateSuggestions(search, forceFetch) {
+        this.anubis.setSearch(search);
+
+        if (search == "" && !forceFetch) {
+            this.anubis.clearLastSearch();
+            this.hideSuggestions();
+        } else {
+            if ((this.options.url.length > 0 && (!this.pending) && (this.anubis.getLastSearch().length > search.length || this.anubis.getLastSearch().length === 0) && !this.endFetch) || this.perpetualFetch) {
+
+                this.anubis.setSearch(search);
+                this.pending = true;
+                this.context.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
+
+                setTimeout(() => {
+                    this.loadSuggestionData(forceFetch);
+                }, this.fetchRate);
+
+                this.endFetch = this.options.fetchOnce;
+
+                if (this.perpetualFetch) {
+                    // make sure we continue to filter
+                    this.suggestionList.show();
+                    this.fetchRate = this.options.fetchEvery;
+                }
+
+            } else {
+                this.showSuggestions();
+            }
+        }
+    }
+
+    /*
+     * loads the suggestion data from the server
+     * @param forceFetch - set to true to force the fetch (used for prefetch when search value is empty)
+     */
+    loadSuggestionData(forceFetch) {
+        // Don't bother fetching data we already have again
+        if (this.anubis.getLastSearch() !== this.anubis.getSearch() || forceFetch) {
+            this.anubis.fetchSuggestions(this.options.url, this._fetchSuggestionsCallback());
+        } else {
+            this.context.css('background', "");
+            this.pending = false;
+        }
+    }
+
+    showSuggestions() {
+        // Set the suggesation (SuggestionList holds a reference to this object)
+        this.suggestions.setSuggestions(this.anubis.getSuggestions());
+
+        if (this.suggestions.getSuggestions().length > 0) {
+
+            let borders = Util.calculateVerticalBorderWidth(this.context);
+            let padding = Util.calculateVerticalPadding(this.context);
+            let offset = this.context.offset();
+
+            this.suggestionList.updatePosition((offset.left) + this.options.leftOffset, (offset.top) + (this.context.height() + borders + padding + this.options.topOffset));
+            this.suggestionList.setWidth(this.getSearchBoxWidth() + this.options.widthAdjustment);
+
+            this.typeahead.updateTypeaheadPosition(this.context);
+
+            if (this.options.adjustBorderRadius) {
+                this._applyBorderRadius(0, 0);
+            }
+
+            this.suggestionList.show();
+        } else {
+            this.hideSuggestions();
+        }
+    }
+
+    /**
+     * Returns the width of the search box
+     * @returns {number}
+     */
+    getSearchBoxWidth() {
+        return (
+            this.context.width() +
+            Util.getCssValue(this.context, 'border-left-width') +
+            Util.getCssValue(this.context, 'border-right-width') +
+            Util.getCssValue(this.context, 'padding-left') +
+            Util.getCssValue(this.context, 'padding-right')
+        );
+    }
+
+
+    hideSuggestions() {
+        console.log('hide');
+        this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
+        this.typeahead.removeTypeahead();
+        this.suggestionList.hide();
+        this.suggestions.setSuggestions([]);
+    }
+
+    /**
+     * The actions to perform when data has been successfully fetched from the server
+     */
+    _fetchSuggestionsCallback() {
+        return (data) => {
+            this.anubis.setData(data);
+
+            // Only show if a selection was not made while wating for a response
+            if (!this.suggestionList.isSuggestionChosen() && this.anubis.getSearch().length > 0) {
+                this.showSuggestions();
+            } else {
+                this.hideSuggestions();
+            }
+
+            this.suggestionList.setIsSuggestionChosen(false);
+            this.pending = false;
+
+            this.context.css('background', "");
+        }
+    }
+
+    /*
+     * Applies the give border-radius to the search input, used when diosplaying suggestion list
+     * with an input that has a border radius.
+     */
+    _applyBorderRadius(left, right) {
+        this.context.css('border-bottom-left-radius', left);
+        this.context.css('border-bottom-right-radius', right);
     }
 
     _checkFilterForTypeahead() {
@@ -157,9 +294,20 @@ class SuggestionBox {
         }
     }
 
+    /**
+     * Clears the last suggestion and updates the suggestions list, useful for `ctrl+v` paste
+     * when a user highlights the current text and pastes new text over the top.
+     * @param search - The new search for the suggestion list
+     */
+    clearAndUpdate(search) {
+        this.hideSuggestions();
+        this.anubis.clearLastSearch();
+        this.updateSuggestions(search, false);
+    }
+
 
     getSuggestions() {
-        this.suggestionList.updateSuggestions(this.context.val(), false);
+        this.updateSuggestions(this.context.val(), false);
     }
 
     updateTypeahead() {
@@ -227,7 +375,7 @@ class SuggestionBox {
         if (!this._isReservedKey(e)) {
             this.getSuggestions();
             this.updateTypeahead();
-
+            this.suggestionList.setIsSuggestionChosen(false);
         }
     }
 
@@ -238,7 +386,9 @@ class SuggestionBox {
         if (e.which == keys.DOWN_ARROW_KEY) {
             e.preventDefault();
             this.suggestionList.moveDown(true);
+            this.getSuggestions();
             this.updateTypeahead();
+            this.showSuggestions();
         }
         if (this.suggestionList.isOpen()) {
             if (e.which == keys.UP_ARROW_KEY) {
@@ -248,12 +398,12 @@ class SuggestionBox {
             }
             if (e.which === keys.ENTER_KEY) {
                 e.preventDefault();
-                this.suggestionList.simulateClick();
+                this.suggestionList.doClick(e);
             }
             if (e.which == keys.ESCAPE_KEY) {
                 e.preventDefault();
                 this.context.css('background', "");
-                this.suggestionList.hide();
+                this.hideSuggestions();
             }
         }
     }
@@ -271,7 +421,7 @@ class SuggestionBox {
     _blurEvents() {
         if (!this.suggestionList.isHovering()) {
             this.context.css('background', "");
-            this.suggestionList.hide();
+            this.hideSuggestions();
         }
     }
 
@@ -281,7 +431,7 @@ class SuggestionBox {
     _pasteEvents() {
         // Simulate keyup after 200ms otherwise the value of the search box will not be available
         setTimeout(() => {
-            this.suggestionList.clearAndUpdate(this.context.val());
+            this.clearAndUpdate(this.context.val());
         }, 200);
     }
 

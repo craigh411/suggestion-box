@@ -1,6 +1,6 @@
 class Suggestions {
 	
-	contructor(){
+	constructor(){
 	  this.suggestions = [];
 	}
 

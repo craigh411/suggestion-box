@@ -41,7 +41,7 @@
         </div>
     </template> -->
 
-    <template id="suggestion-box-template">
+<!--     <template id="suggestion-box-template">
         <div>
             <ul id="suggestion-list">
                 <li>
@@ -63,7 +63,7 @@
                 </li>
             </ul>
         </div>
-    </template>
+    </template> -->
 
     <script>
     $(document).ready(function() {
@@ -88,20 +88,20 @@
             height: 250,
             widthAdjustment: -10,
             leftOffset: 5,
-            //url: 'php/results.php',
-            template: '#suggestion-box-template',
-            url: 'data/users.json',
-            searchBy: 'name',
+            url: 'php/results.php',
+            //template: '#suggestion-box-template',
+            //url: 'data/users.json',
+            //searchBy: 'name',
             typeahead: true,
             highlightMatch: true,
             filter: '^{{INPUT}}',
-            fetchAfter: 0,
-            fetchOnce: true,
-            prefetch: true,
+            fetchAfter: 2000,
+            //fetchOnce: true,
+            //prefetch: true,
             adjustBorderRadius: false,
-            sort: (a, b) => {
-                return a.name.localeCompare(b.name);
-            },
+           // sort: (a, b) => {
+                //return a.name.localeCompare(b.name);
+            //},
             topOffset: 10
         });
 
