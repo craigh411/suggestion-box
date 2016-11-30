@@ -30,6 +30,11 @@ var Anubis = function () {
             this.debug = debug;
         }
     }, {
+        key: "getDebug",
+        value: function getDebug() {
+            return this.debug;
+        }
+    }, {
         key: "setData",
         value: function setData(data) {
             this.data = data;
@@ -158,6 +163,8 @@ var Anubis = function () {
             });
 
             if (this.xhr && this.debug) {
+                $.trigger('anubis.ajax-error', data);
+
                 this.xhr.fail(function (data) {
                     console.log('[Ajax Error]:');
                     console.log(data);
@@ -443,8 +450,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
-/ @class SuggestionListDropdown - builds the SuggestionList Dom object
-*/
+ * @Class SuggestionList - builds the SuggestionList Dom object
+ */
 
 var SuggestionList = function (_Dropdown) {
     _inherits(SuggestionList, _Dropdown);
@@ -534,6 +541,7 @@ var SuggestionList = function (_Dropdown) {
         value: function hide() {
             this.selectedLi = -1;
             this.$menu.css('display', 'none');
+            $.event.trigger(this.options.customEvents.close);
         }
     }, {
         key: '_buildMarkupForObjectList',
@@ -603,9 +611,6 @@ var SuggestionList = function (_Dropdown) {
 
             this.$menu.html(suggestionMarkup);
         }
-    }, {
-        key: '_renderObjectList',
-        value: function _renderObjectList() {}
     }, {
         key: 'displayEl',
         value: function displayEl(expression) {
@@ -729,10 +734,12 @@ var SuggestionList = function (_Dropdown) {
             var suggestion = this.suggestions.getSuggestions()[this.selectedLi];
             var selectedEl = this.$menu.find('#suggestion-list > li:eq(' + this.selectedLi + ')');
 
-            // TODO: Make sure this callback works for non-object arrays!
-            this.options.onClick(suggestion[this.options.searchBy], suggestion, event, this.inputEl, selectedEl);
+            var value = (typeof suggestion === 'undefined' ? 'undefined' : _typeof(suggestion)) === "object" ? suggestion[this.options.searchBy] : suggestion;
+
+            this.options.onClick(value, suggestion, event, this.inputEl, selectedEl);
             this.hide();
 
+            // Set the isSuggestionChosen flag to true when a suggestion is selected
             this.setIsSuggestionChosen(true);
 
             this.typeahead.removeTypeahead();
@@ -1061,7 +1068,8 @@ exports.default = {
     'ENTER_KEY': 13,
     'UP_ARROW_KEY': 38,
     'DOWN_ARROW_KEY': 40,
-    'ESCAPE_KEY': 27
+    'ESCAPE_KEY': 27,
+    'CTRL_KEY': 17
 };
 
 },{}],8:[function(require,module,exports){
@@ -1122,21 +1130,17 @@ exports.default = {
     paramName: 'search',
     scrollable: false,
     debug: false,
-    ajaxError: function ajaxError() {},
-    ajaxSuccess: function ajaxSuccess() {},
-    loading: function loading() {},
-    completed: function completed() {},
     onClick: function onClick(value, obj, event, inputEl, selectedEl) {
         inputEl.val(value);
-        /*        console.log(value);
-                console.log(obj);
-                console.log(event);
-                console.log(inputEl);
-                console.log(selectedEl);*/
     },
-    onShow: function onShow() {},
-    onHide: function onHide() {}
-    //height: 50
+    //height: 50,
+    customEvents: {
+        close: 'suggestion-list.close',
+        show: 'suggestion-list.show',
+        loading: 'suggestion-box.loading',
+        'ajax-error': 'suggestion-box.ajax.error',
+        'ajax-success': 'suggestion-box.ajax.success'
+    }
 };
 
 },{}],10:[function(require,module,exports){
@@ -1190,6 +1194,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var SuggestionBox = function () {
     function SuggestionBox(options, context) {
+        var _this = this;
+
         _classCallCheck(this, SuggestionBox);
 
         this.context = context;
@@ -1242,6 +1248,18 @@ var SuggestionBox = function () {
         if (this.options.prefetch) {
             this.updateSuggestions(this.context.val(), true);
         }
+
+        $(document).on('suggestion-list.close', function () {
+            _util2.default.applyBorderRadius(_this.context, _this.radiusDefaults.bottomLeft, _this.radiusDefaults.bottomRight);
+        });
+
+        $(document).on(this.options.customEvents.loading, function (e, status) {
+            if (status === true) {
+                _this.context.css('background', "url('" + _this.options.loadImage + "') no-repeat 99% 50%");
+            } else {
+                _this.context.css('background', "");
+            }
+        });
     }
 
     /*
@@ -1254,7 +1272,7 @@ var SuggestionBox = function () {
     _createClass(SuggestionBox, [{
         key: 'updateSuggestions',
         value: function updateSuggestions(search, forceFetch) {
-            var _this = this;
+            var _this2 = this;
 
             this.anubis.setSearch(search);
 
@@ -1266,17 +1284,17 @@ var SuggestionBox = function () {
 
                     this.anubis.setSearch(search);
                     this.pending = true;
-                    this.context.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
-
+                    //   this.context.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
+                    $.event.trigger(this.options.customEvents.loading, true);
                     setTimeout(function () {
-                        _this.loadSuggestionData(forceFetch);
+                        _this2.loadSuggestionData(forceFetch);
                     }, this.fetchRate);
 
                     this.endFetch = this.options.fetchOnce;
 
                     if (this.perpetualFetch) {
                         // make sure we continue to filter
-                        this.suggestionList.show();
+                        this.showSuggestions();
                         this.fetchRate = this.options.fetchEvery;
                     }
                 } else {
@@ -1301,12 +1319,18 @@ var SuggestionBox = function () {
                 this.pending = false;
             }
         }
+
+        /*
+         * Show the suggestions list
+         */
+
     }, {
         key: 'showSuggestions',
         value: function showSuggestions() {
             // Set the suggesation (SuggestionList holds a reference to this object)
             this.suggestions.setSuggestions(this.anubis.getSuggestions());
 
+            // Don't show an empty list
             if (this.suggestions.getSuggestions().length > 0) {
 
                 var borders = _util2.default.calculateVerticalBorderWidth(this.context);
@@ -1319,7 +1343,7 @@ var SuggestionBox = function () {
                 this.typeahead.updateTypeaheadPosition(this.context);
 
                 if (this.options.adjustBorderRadius) {
-                    this._applyBorderRadius(0, 0);
+                    _util2.default.applyBorderRadius(this.context, 0, 0);
                 }
 
                 this.suggestionList.show();
@@ -1338,11 +1362,14 @@ var SuggestionBox = function () {
         value: function getSearchBoxWidth() {
             return this.context.width() + _util2.default.getCssValue(this.context, 'border-left-width') + _util2.default.getCssValue(this.context, 'border-right-width') + _util2.default.getCssValue(this.context, 'padding-left') + _util2.default.getCssValue(this.context, 'padding-right');
         }
+
+        /**
+         * Hides the suggestion list
+         */
+
     }, {
         key: 'hideSuggestions',
         value: function hideSuggestions() {
-            console.log('hide');
-            this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
             this.typeahead.removeTypeahead();
             this.suggestionList.hide();
             this.suggestions.setSuggestions([]);
@@ -1355,22 +1382,22 @@ var SuggestionBox = function () {
     }, {
         key: '_fetchSuggestionsCallback',
         value: function _fetchSuggestionsCallback() {
-            var _this2 = this;
+            var _this3 = this;
 
             return function (data) {
-                _this2.anubis.setData(data);
+                _this3.anubis.setData(data);
 
                 // Only show if a selection was not made while wating for a response
-                if (!_this2.suggestionList.isSuggestionChosen() && _this2.anubis.getSearch().length > 0) {
-                    _this2.showSuggestions();
+                if (!_this3.suggestionList.isSuggestionChosen() && _this3.anubis.getSearch().length > 0) {
+                    _this3.showSuggestions();
                 } else {
-                    _this2.hideSuggestions();
+                    _this3.hideSuggestions();
                 }
 
-                _this2.suggestionList.setIsSuggestionChosen(false);
-                _this2.pending = false;
+                _this3.suggestionList.setIsSuggestionChosen(false);
+                _this3.pending = false;
 
-                _this2.context.css('background', "");
+                $.event.trigger(_this3.options.customEvents.loading, [false]);
             };
         }
 
@@ -1385,6 +1412,11 @@ var SuggestionBox = function () {
             this.context.css('border-bottom-left-radius', left);
             this.context.css('border-bottom-right-radius', right);
         }
+
+        /*
+         * Checks that the filter pattern is suitable for uisng typeahed and throw out a warning if it is not.
+         */
+
     }, {
         key: '_checkFilterForTypeahead',
         value: function _checkFilterForTypeahead() {
@@ -1433,6 +1465,12 @@ var SuggestionBox = function () {
             // so re-overwrite the ones set here to the orignal defaults.
             $.extend(_options2.default, this._defaults);
         }
+
+        /*
+         * Returns the template as a string
+         * @return {String}
+         */
+
     }, {
         key: '_buildTemplate',
         value: function _buildTemplate() {
@@ -1442,7 +1480,8 @@ var SuggestionBox = function () {
         }
 
         /**
-         *  Returns the Anubis object
+         * Returns the Anubis object
+         * @return {Anubis}
          */
 
     }, {
@@ -1450,6 +1489,12 @@ var SuggestionBox = function () {
         value: function getAnubis() {
             return this.anubis;
         }
+
+        /**
+         * Sets the Anubis object
+         * @param {Anubis} anubis
+         */
+
     }, {
         key: 'setAnubis',
         value: function setAnubis(anubis) {
@@ -1485,6 +1530,11 @@ var SuggestionBox = function () {
         value: function setTemplateParser(templateParser) {
             this.templateParser = templateParser;
         }
+
+        /**
+         * Instantiates the Anubis object with basic setup.
+         */
+
     }, {
         key: '_initAnubis',
         value: function _initAnubis() {
@@ -1493,6 +1543,11 @@ var SuggestionBox = function () {
             this.anubis.setData(this.options.data);
             this.anubis.setDebug(this.options.debug);
         }
+
+        /**
+         * Creates the typeahead Markup and injects it into the page
+         */
+
     }, {
         key: '_initTypeahead',
         value: function _initTypeahead() {
@@ -1513,15 +1568,15 @@ var SuggestionBox = function () {
     }, {
         key: 'clearAndUpdate',
         value: function clearAndUpdate(search) {
-            this.hideSuggestions();
+            this.suggestions.setSuggestions([]);
             this.anubis.clearLastSearch();
             this.updateSuggestions(search, false);
         }
-    }, {
-        key: 'getSuggestions',
-        value: function getSuggestions() {
-            this.updateSuggestions(this.context.val(), false);
-        }
+
+        /*
+         * Updates the typeahead
+         */
+
     }, {
         key: 'updateTypeahead',
         value: function updateTypeahead() {
@@ -1534,12 +1589,23 @@ var SuggestionBox = function () {
                 this.typeahead.updateTypeahead(value, this.context.val());
             }
         }
+
+        /**
+         * Set method for setting data option (automagically called via set())
+         */
+
     }, {
         key: '_setData',
         value: function _setData(data) {
             this.options.data = data;
             this.anubis.setData(data);
+            //this.getSuggestions();
         }
+
+        /**
+         * Set method for setting search option (automagically called via set())
+         */
+
     }, {
         key: '_setSearchBy',
         value: function _setSearchBy(searchBy) {
@@ -1548,6 +1614,11 @@ var SuggestionBox = function () {
 
             this.typeahead.setSearchBy(searchBy);
         }
+
+        /**
+         * Set method for setting filter option (automagically called via set())
+         */
+
     }, {
         key: '_setFilter',
         value: function _setFilter(filter) {
@@ -1555,12 +1626,22 @@ var SuggestionBox = function () {
             this.anubis.setFilter(filter);
             this._checkFilterForTypeahead();
         }
+
+        /**
+         * Set method for setting sort option (automagically called via set())
+         */
+
     }, {
         key: '_setSort',
         value: function _setSort(sort) {
             this.options.sort = sort;
             this.anubis.setSort(sort);
         }
+
+        /**
+         * Set method for setting template option (automagically called via set())
+         */
+
     }, {
         key: '_setTemplate',
         value: function _setTemplate(template) {
@@ -1568,12 +1649,23 @@ var SuggestionBox = function () {
             this.templateParser = this._buildTemplate();
             this.suggestionList.setTemplate(this.templateParser);
         }
+
+        /**
+         * Set method for setting debug option (automagically called via set())
+         */
+
     }, {
         key: '_setDebug',
         value: function _setDebug(debug) {
             this.options.debug = debug;
             this.templateParser.setDebug(debug);
+            this.anubis.setDebug(debug);
         }
+
+        /**
+         * The set method for setting options after SUggestionBox has been instantiated
+         */
+
     }, {
         key: 'set',
         value: function set(name, value) {
@@ -1587,6 +1679,11 @@ var SuggestionBox = function () {
                 this._checkFilterForTypeahead();
             }
         }
+
+        /**
+         * Returns the options object
+         */
+
     }, {
         key: 'getOptions',
         value: function getOptions() {
@@ -1608,8 +1705,9 @@ var SuggestionBox = function () {
             if (e.which == _keys2.default.DOWN_ARROW_KEY) {
                 e.preventDefault();
                 this.suggestionList.moveDown(true);
-                this.getSuggestions();
                 this.updateTypeahead();
+
+                this.getSuggestions();
                 this.showSuggestions();
             }
             if (this.suggestionList.isOpen()) {
@@ -1624,10 +1722,15 @@ var SuggestionBox = function () {
                 }
                 if (e.which == _keys2.default.ESCAPE_KEY) {
                     e.preventDefault();
-                    this.context.css('background', "");
+                    $.event.trigger(this.options.customEvents.loading, false);
                     this.hideSuggestions();
                 }
             }
+        }
+    }, {
+        key: 'getSuggestions',
+        value: function getSuggestions() {
+            this.updateSuggestions(this.context.val(), false);
         }
 
         /**
@@ -1637,7 +1740,8 @@ var SuggestionBox = function () {
     }, {
         key: '_focusEvents',
         value: function _focusEvents() {
-            this.getSuggestions();
+            this.anubis.setSearch(this.context.val());
+            this.showSuggestions();
         }
 
         /**
@@ -1648,7 +1752,7 @@ var SuggestionBox = function () {
         key: '_blurEvents',
         value: function _blurEvents() {
             if (!this.suggestionList.isHovering()) {
-                this.context.css('background', "");
+                $.event.trigger(this.options.customEvents.loading, false);
                 this.hideSuggestions();
             }
         }
@@ -1660,11 +1764,11 @@ var SuggestionBox = function () {
     }, {
         key: '_pasteEvents',
         value: function _pasteEvents() {
-            var _this3 = this;
+            var _this4 = this;
 
             // Simulate keyup after 200ms otherwise the value of the search box will not be available
             setTimeout(function () {
-                _this3.clearAndUpdate(_this3.context.val());
+                _this4.clearAndUpdate(_this4.context.val());
             }, 200);
         }
     }, {
@@ -1744,6 +1848,18 @@ var Util = function () {
                     console.log('[suggestion-box ' + type + '] ' + message);
                 }
             }
+        }
+
+        /*
+         * Applies the give border-radius to the search input, used when diosplaying suggestion list
+         * with an input that has a border radius.
+         */
+
+    }, {
+        key: 'applyBorderRadius',
+        value: function applyBorderRadius(el, left, right) {
+            el.css('border-bottom-left-radius', left);
+            el.css('border-bottom-right-radius', right);
         }
 
         /**

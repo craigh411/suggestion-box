@@ -33,6 +33,16 @@ class Util {
         }
     }
 
+
+    /*
+     * Applies the give border-radius to the search input, used when diosplaying suggestion list
+     * with an input that has a border radius.
+     */
+    static applyBorderRadius(el, left, right) {
+        el.css('border-bottom-left-radius', left);
+        el.css('border-bottom-right-radius', right);
+    }
+
     /**
      * Returns true if the given search is found in the given object;
      */

@@ -35,6 +35,12 @@ describe('Anubis', function() {
         expect(anubis.getParam()).toBe('foo');
     });
 
+    it('should set the debug flag', function() {
+        anubis.setDebug(true);
+        expect(anubis.getDebug()).toBeTruthy();
+    });
+
+
     it('should escape regex when setting the search', function() {
         anubis.setSearch('^foo\/$');
         expect(anubis.getSearch()).toBe('\\^foo\\/\\$');

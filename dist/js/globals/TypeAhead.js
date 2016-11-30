@@ -1,63 +1,47 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 
-var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
-    return typeof obj === "undefined" ? "undefined" : _typeof2(obj);
-} : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof2(obj);
-};
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _util = require("./util.js");
 
 var _util2 = _interopRequireDefault(_util);
 
-function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Typeahead = function () {
-    function Typeahead(anubis, searchBy) {
+    function Typeahead(suggestions, searchBy) {
         _classCallCheck(this, Typeahead);
 
-        this.anubis = anubis;
+        this.suggestions = suggestions;
         this.searchBy = searchBy;
     }
 
     _createClass(Typeahead, [{
+        key: "setCurrentInput",
+        value: function setCurrentInput(currentInput) {
+            this.currentInput = currentInput;
+        }
+    }, {
         key: "getTypeahead",
         value: function getTypeahead(selectedItemIndex) {
-            var currentInput = this.anubis.getSearch();
             // If the suggestion box has an item selected get the item at that index instead.
             var index = selectedItemIndex > -1 ? selectedItemIndex : 0;
-            var suggestion = this.anubis.getSuggestions()[index] || "";
+            var suggestion = this.suggestions.getSuggestions()[index] || "";
 
             suggestion = (typeof suggestion === "undefined" ? "undefined" : _typeof(suggestion)) == "object" ? suggestion[this.searchBy] : suggestion;
 
-            var regex = new RegExp("^" + currentInput, "i");
+            var regex = new RegExp("^" + this.currentInput, "i");
             // Simply match the case of the typeahead to the case the user typed
-            var typeahead = suggestion.replace(regex, currentInput);
+            var typeahead = suggestion.replace(regex, this.currentInput);
 
             return typeahead;
         }
@@ -104,21 +88,9 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Util = function () {
     function Util() {
@@ -153,6 +125,29 @@ var Util = function () {
         key: 'copyArray',
         value: function copyArray(arr) {
             return arr.splice(0);
+        }
+    }, {
+        key: 'logger',
+        value: function logger(debug, message, type) {
+            if (debug) {
+                if (type === 'error') {
+                    console.log('%c[Suggestion-Box Error] ' + message, 'color: #f00');
+                } else {
+                    console.log('[suggestion-box ' + type + '] ' + message);
+                }
+            }
+        }
+
+        /*
+         * Applies the give border-radius to the search input, used when diosplaying suggestion list
+         * with an input that has a border radius.
+         */
+
+    }, {
+        key: 'applyBorderRadius',
+        value: function applyBorderRadius(el, left, right) {
+            el.css('border-bottom-left-radius', left);
+            el.css('border-bottom-right-radius', right);
         }
 
         /**

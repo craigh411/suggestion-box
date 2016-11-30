@@ -27,15 +27,18 @@ elixir(function(mix) {
 
 // Build all files individually
 
-/*elixir(function(mix) {
+elixir(function(mix) {
    mix.browserifyuglify('Typeahead.js', './dist/js/globals/Typeahead.js', './src/js/globals');
-});*/
+});
 elixir(function(mix) {
    mix.browserifyuglify('TemplateParser.js', './dist/js/globals/TemplateParser.js', './src/js/globals');
 });
-/*elixir(function(mix) {
+elixir(function(mix) {
+   mix.browserifyuglify('Anubis.js', './dist/js/globals/Anubis.js', './src/js/globals');
+});
+elixir(function(mix) {
     mix.browserify('main.js', './dist/js/globals/main.js', './src/js/globals');
-});*/
+});
 
 /**
  * Run tests using karma once and exit

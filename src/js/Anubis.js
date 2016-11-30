@@ -14,6 +14,10 @@ class Anubis {
         this.debug = debug;
     }
 
+    getDebug() {
+        return this.debug;
+    }
+
     setData(data) {
         this.data = data;
     }
@@ -121,6 +125,8 @@ class Anubis {
 
 
         if (this.xhr && this.debug) {
+            $.trigger('anubis.ajax-error', data);
+            
             this.xhr.fail((data) => {
                 console.log('[Ajax Error]:');
                 console.log(data);

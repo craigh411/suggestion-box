@@ -63,7 +63,20 @@ class SuggestionBox {
         if (this.options.prefetch) {
             this.updateSuggestions(this.context.val(), true);
         }
+
+        $(document).on('suggestion-list.close', () => {
+            Util.applyBorderRadius(this.context, this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
+        });
+
+        $(document).on(this.options.customEvents.loading, (e, status) => {
+            if (status === true) {
+                this.context.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
+            } else {
+                this.context.css('background', "");
+            }
+        });
     }
+
 
     /*
      * Updates the suggestion list
@@ -81,8 +94,8 @@ class SuggestionBox {
 
                 this.anubis.setSearch(search);
                 this.pending = true;
-                this.context.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
-
+                //   this.context.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
+                $.event.trigger(this.options.customEvents.loading, true);
                 setTimeout(() => {
                     this.loadSuggestionData(forceFetch);
                 }, this.fetchRate);
@@ -91,7 +104,7 @@ class SuggestionBox {
 
                 if (this.perpetualFetch) {
                     // make sure we continue to filter
-                    this.suggestionList.show();
+                    this.showSuggestions();
                     this.fetchRate = this.options.fetchEvery;
                 }
 
@@ -115,10 +128,14 @@ class SuggestionBox {
         }
     }
 
+    /*
+     * Show the suggestions list
+     */
     showSuggestions() {
         // Set the suggesation (SuggestionList holds a reference to this object)
         this.suggestions.setSuggestions(this.anubis.getSuggestions());
 
+        // Don't show an empty list
         if (this.suggestions.getSuggestions().length > 0) {
 
             let borders = Util.calculateVerticalBorderWidth(this.context);
@@ -131,7 +148,7 @@ class SuggestionBox {
             this.typeahead.updateTypeaheadPosition(this.context);
 
             if (this.options.adjustBorderRadius) {
-                this._applyBorderRadius(0, 0);
+                Util.applyBorderRadius(this.context, 0, 0);
             }
 
             this.suggestionList.show();
@@ -154,10 +171,10 @@ class SuggestionBox {
         );
     }
 
-
+    /**
+     * Hides the suggestion list
+     */
     hideSuggestions() {
-        console.log('hide');
-        this._applyBorderRadius(this.radiusDefaults.bottomLeft, this.radiusDefaults.bottomRight);
         this.typeahead.removeTypeahead();
         this.suggestionList.hide();
         this.suggestions.setSuggestions([]);
@@ -167,6 +184,7 @@ class SuggestionBox {
      * The actions to perform when data has been successfully fetched from the server
      */
     _fetchSuggestionsCallback() {
+
         return (data) => {
             this.anubis.setData(data);
 
@@ -180,7 +198,7 @@ class SuggestionBox {
             this.suggestionList.setIsSuggestionChosen(false);
             this.pending = false;
 
-            this.context.css('background', "");
+            $.event.trigger(this.options.customEvents.loading, [false]);
         }
     }
 
@@ -193,6 +211,9 @@ class SuggestionBox {
         this.context.css('border-bottom-right-radius', right);
     }
 
+    /*
+     * Checks that the filter pattern is suitable for uisng typeahed and throw out a warning if it is not.
+     */
     _checkFilterForTypeahead() {
         if (this.options.filter !== "^{{INPUT}}" && this.options.typeahead) {
             Util.logger(this.options.debug, 'Using a custom filter pattern with the typeahed option can cause unexpected results', 'warn');
@@ -237,6 +258,10 @@ class SuggestionBox {
         $.extend(defaultOptions, this._defaults);
     }
 
+    /*
+     * Returns the template as a string
+     * @return {String}
+     */
     _buildTemplate() {
         let template = (Util.isId(this.options.template)) ? $(this.options.template).html() : this.options.template;
         template = (!template) ? defaultTemplate : template;
@@ -244,12 +269,17 @@ class SuggestionBox {
     }
 
     /**
-     *  Returns the Anubis object
+     * Returns the Anubis object
+     * @return {Anubis}
      */
     getAnubis() {
         return this.anubis;
     }
 
+    /**
+     * Sets the Anubis object
+     * @param {Anubis} anubis
+     */
     setAnubis(anubis) {
         this.anubis = anubis;
     }
@@ -278,6 +308,9 @@ class SuggestionBox {
         this.templateParser = templateParser;
     }
 
+    /**
+     * Instantiates the Anubis object with basic setup.
+     */
     _initAnubis() {
         this.anubis = new Anubis(this.options.searchBy, this.options.filter, this.options.sort, this.options.paramName);
 
@@ -285,6 +318,9 @@ class SuggestionBox {
         this.anubis.setDebug(this.options.debug);
     }
 
+    /**
+     * Creates the typeahead Markup and injects it into the page
+     */
     _initTypeahead() {
         if (this.options.typeahead) {
             this.context.wrap('<div id="suggestion-box-typeahead" data-placeholder=""></div>');
@@ -300,16 +336,14 @@ class SuggestionBox {
      * @param search - The new search for the suggestion list
      */
     clearAndUpdate(search) {
-        this.hideSuggestions();
+        this.suggestions.setSuggestions([]);
         this.anubis.clearLastSearch();
         this.updateSuggestions(search, false);
     }
 
-
-    getSuggestions() {
-        this.updateSuggestions(this.context.val(), false);
-    }
-
+    /*
+     * Updates the typeahead
+     */
     updateTypeahead() {
         if (this.context.val() !== "") {
             let selectedIndex = this.suggestionList.getSelectedItemIndex();
@@ -321,11 +355,18 @@ class SuggestionBox {
         }
     }
 
+    /**
+     * Set method for setting data option (automagically called via set())
+     */
     _setData(data) {
         this.options.data = data;
         this.anubis.setData(data);
+        //this.getSuggestions();
     }
 
+    /**
+     * Set method for setting search option (automagically called via set())
+     */
     _setSearchBy(searchBy) {
         this.options.searchBy = searchBy;
         this.anubis.setSearchBy(searchBy);
@@ -333,28 +374,44 @@ class SuggestionBox {
         this.typeahead.setSearchBy(searchBy)
     }
 
+    /**
+     * Set method for setting filter option (automagically called via set())
+     */
     _setFilter(filter) {
         this.options.filter = filter;
         this.anubis.setFilter(filter);
         this._checkFilterForTypeahead();
     }
 
+    /**
+     * Set method for setting sort option (automagically called via set())
+     */
     _setSort(sort) {
         this.options.sort = sort;
         this.anubis.setSort(sort);
     }
 
+    /**
+     * Set method for setting template option (automagically called via set())
+     */
     _setTemplate(template) {
         this.options.template = template;
         this.templateParser = this._buildTemplate();
         this.suggestionList.setTemplate(this.templateParser);
     }
 
+    /**
+     * Set method for setting debug option (automagically called via set())
+     */
     _setDebug(debug) {
         this.options.debug = debug;
         this.templateParser.setDebug(debug);
+        this.anubis.setDebug(debug);
     }
 
+    /**
+     * The set method for setting options after SUggestionBox has been instantiated
+     */
     set(name, value) {
         // check if a function exists to set this option, and map the request, otherwise just set it as normal
         let funcName = '_set' + name.charAt(0).toUpperCase() + name.slice(1);
@@ -367,6 +424,9 @@ class SuggestionBox {
         }
     }
 
+    /**
+     * Returns the options object
+     */
     getOptions() {
         return this.options;
     }
@@ -379,15 +439,14 @@ class SuggestionBox {
         }
     }
 
-
-
     _keydownEvents(e) {
 
         if (e.which == keys.DOWN_ARROW_KEY) {
             e.preventDefault();
             this.suggestionList.moveDown(true);
-            this.getSuggestions();
             this.updateTypeahead();
+
+            this.getSuggestions();
             this.showSuggestions();
         }
         if (this.suggestionList.isOpen()) {
@@ -402,17 +461,23 @@ class SuggestionBox {
             }
             if (e.which == keys.ESCAPE_KEY) {
                 e.preventDefault();
-                this.context.css('background', "");
+                $.event.trigger(this.options.customEvents.loading, false);
                 this.hideSuggestions();
             }
         }
+    }
+
+    getSuggestions() {
+        this.updateSuggestions(this.context.val(), false);
     }
 
     /**
      * Events for when the search box is focused
      */
     _focusEvents() {
-        this.getSuggestions();
+        this.anubis.setSearch(this.context.val());
+        this.showSuggestions();
+
     }
 
     /**
@@ -420,7 +485,7 @@ class SuggestionBox {
      */
     _blurEvents() {
         if (!this.suggestionList.isHovering()) {
-            this.context.css('background', "");
+            $.event.trigger(this.options.customEvents.loading, false);
             this.hideSuggestions();
         }
     }
@@ -429,6 +494,7 @@ class SuggestionBox {
      * Events for when text is pasted in to the search box
      */
     _pasteEvents() {
+
         // Simulate keyup after 200ms otherwise the value of the search box will not be available
         setTimeout(() => {
             this.clearAndUpdate(this.context.val());

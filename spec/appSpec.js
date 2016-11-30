@@ -147,7 +147,7 @@ describe("Suggestion Box", function() {
             $search = $('#search');
             suggestionBox = $search.suggestionBox();
 
-            anubis = jasmine.createSpyObj('Anubis', ['setData', 'setSearchBy', 'setSort', 'setFilter']);
+            anubis = jasmine.createSpyObj('Anubis', ['setData', 'setSearchBy', 'setSort', 'setFilter', 'setDebug']);
             suggestionList = jasmine.createSpyObj('SuggestionList', ['setTemplate', 'destroy', 'buildDom']);
             typeahead = jasmine.createSpyObj('Typeahead', ['setSearchBy']);
             templateParser = jasmine.createSpyObj('TemplateParser', ['setDebug']);
@@ -324,11 +324,319 @@ describe("Suggestion Box", function() {
         it('should set the debug option', function() {
             suggestionBox.set('debug', true);
             expect(templateParser.setDebug).toHaveBeenCalled();
+            expect(anubis.setDebug).toHaveBeenCalled();
             expect(suggestionBox.getOptions().debug).toBeTruthy();
         });
     });
 
+    describe('when suggestion is chosen', function() {
 
+        var $suggestionBox;
+        var $search;
+        var suggestionBox;
+
+        beforeEach(function() {
+            $body = $('body');
+            $body.append('<input type="text" id="search" />');
+            $search = $('#search');
+            suggestionBox = $search.suggestionBox();
+
+            $suggestionBox = $(".suggestion-box");
+
+        });
+
+        afterEach(function() {
+            $(".suggestion-box").remove();
+            $('#search').remove();
+            suggestionBox.destroy();
+        });
+
+        it('should return the suggestion value', function() {
+            spyOn(console, 'log')
+
+            suggestionBox.set('data', ['foo', 'bar', 'baz'])
+            suggestionBox.set('onClick', function(value) {
+                console.log(value);
+            });
+
+            $search.val('f');
+            $search.focus();
+            suggestionBox.getSuggestionList().select(0);
+
+            $suggestionBox.find('li:eq(0) > a').mousemove();
+            $suggestionBox.find('li:eq(0) > a').click();
+
+            expect(console.log).toHaveBeenCalledWith('foo');
+
+        });
+
+
+        it('should return the suggestion value when suggestion is an object', function() {
+            spyOn(console, 'log')
+
+            suggestionBox.set('data', [{ 'suggestion': 'foo' }])
+            suggestionBox.set('onClick', function(value) {
+                console.log(value);
+            });
+
+            $search.val('f');
+            $search.focus();
+            suggestionBox.getSuggestionList().select(0);
+
+            $suggestionBox.find('li:eq(0) > a').mousemove();
+            $suggestionBox.find('li:eq(0) > a').click();
+
+            expect(console.log).toHaveBeenCalledWith('foo');
+        });
+
+        it('should return the suggestion as an object', function() {
+            this.suggestion = "";
+            var self = this;
+
+            suggestionBox.set('data', [{ 'suggestion': 'foo' }])
+            suggestionBox.set('onClick', function(value, suggestion) {
+                self.suggestion = suggestion;
+            });
+
+            $search.val('f');
+            $search.focus();
+            suggestionBox.getSuggestionList().select(0);
+
+            $suggestionBox.find('li:eq(0) > a').mousemove();
+            $suggestionBox.find('li:eq(0) > a').click();
+
+            expect(typeof this.suggestion).toBe('object');
+            expect(this.suggestion.suggestion).toBe('foo');
+        });
+
+        it('should return the Event object', function() {
+            this.event = "";
+            var self = this;
+
+            suggestionBox.set('data', [{ 'suggestion': 'foo' }])
+            suggestionBox.set('onClick', function(value, suggestion, event) {
+                self.event = event;
+            });
+
+            $search.val('f');
+            $search.focus();
+            suggestionBox.getSuggestionList().select(0);
+
+            $suggestionBox.find('li:eq(0) > a').mousemove();
+            $suggestionBox.find('li:eq(0) > a').click();
+
+            expect(typeof this.event).toBe('object');
+            expect(this.event.type).toBe('click');
+        });
+
+        it('should return the input element', function() {
+            this.input = "";
+            var self = this;
+
+            suggestionBox.set('data', [{ 'suggestion': 'foo' }])
+            suggestionBox.set('onClick', function(value, suggestion, event, input) {
+                self.input = input;
+            });
+
+            $search.val('f');
+            $search.focus();
+            suggestionBox.getSuggestionList().select(0);
+
+            $suggestionBox.find('li:eq(0) > a').mousemove();
+            $suggestionBox.find('li:eq(0) > a').click();
+
+            expect(this.input.attr('id')).toBe('search');
+        });
+
+        it('should return the selected element', function() {
+            this.selected = "";
+            var self = this;
+
+            suggestionBox.set('data', [{ 'suggestion': 'foo' }])
+            suggestionBox.set('onClick', function(value, suggestion, event, input, selected) {
+                self.selected = selected;
+            });
+
+            $search.val('f');
+            $search.focus();
+            suggestionBox.getSuggestionList().select(0);
+
+            $suggestionBox.find('li:eq(0) > a').mousemove();
+            $suggestionBox.find('li:eq(0) > a').click();
+
+            expect(this.selected.attr('class')).toBe('selected');
+
+            //  console.log(suggestionBox._fetchSuggestionsCallback()('foobarbaz'));
+        });
+
+    });
+
+    describe('has url set', function() {
+
+        var $suggestionBox;
+        var $search;
+        var suggestionBox;
+
+        beforeEach(function() {
+            jasmine.clock().install();
+            $body = $('body');
+            $body.append('<input type="text" id="search" />');
+            $search = $('#search');
+
+
+        });
+
+        afterEach(function() {
+            $(".suggestion-box").remove();
+            $('#search').remove();
+            suggestionBox.destroy();
+            jasmine.clock().uninstall();
+        });
+
+        it('should prefetch data from the given url', function() {
+            spyOn($, 'ajax');
+
+            suggestionBox = $search.suggestionBox({
+                url: "/foo",
+                prefetch: true,
+                fetchAfter: 0
+            });
+
+            jasmine.clock().tick(10);
+
+            expect($.ajax.calls.mostRecent().args[0].url).toBe('/foo');
+        });
+
+        it('should fetch the data when search string length is less than previously search string', function() {
+            spyOn($, 'ajax');
+
+            suggestionBox = $search.suggestionBox({
+                url: "/foobar",
+                fetchAfter: 0
+            });
+
+            // initial search string
+            $search.val('fo');
+            $search.keyup();
+            jasmine.clock().tick(10);
+            // Just invoke this manually, suggestionBox does it internally after an ajax call, 
+            // but jasmine doesn't invoke the callback even with async flag set 
+            // there may be a cleaner solution, which is worth investigating later.
+            suggestionBox._fetchSuggestionsCallback()();
+
+            // remove one character (now it's less than previous search)
+            $search.val('f');
+            $search.keyup();
+            jasmine.clock().tick(10);
+
+            expect($.ajax.calls.count()).toEqual(2);
+        });
+
+
+        it('should not fetch the data when search string length is greater than previous search string', function() {
+            spyOn($, 'ajax');
+
+            suggestionBox = $search.suggestionBox({
+                url: "/foobar",
+                fetchAfter: 0
+            });
+
+            // initial search string
+            $search.val('f');
+            $search.keyup();
+            jasmine.clock().tick(10);
+            // Just invoke this manually, suggestionBox does it internally after an ajax call, 
+            // but jasmine doesn't invoke the callback even with async flag set 
+            // there may be a cleaner solution, which is worth investigating later.
+            suggestionBox._fetchSuggestionsCallback()();
+
+            // add one character (now it's greater than previous search)
+            $search.val('fo');
+            $search.keyup();
+            jasmine.clock().tick(10);
+
+            expect($.ajax.calls.count()).toEqual(1);
+        });
+
+        it('should use the internal filter when search string length is greater than previous search string', function() {
+            var anubis = jasmine.createSpyObj('Anubis', ['fetchSuggestions', 'getSuggestions', 'getLastSearch', 'setSearch', 'getSearch', 'setData']);
+
+            // How everything would be set internally after fetching data for "f"
+            anubis.getLastSearch.and.returnValue('f');
+            anubis.getSuggestions.and.returnValue(['foo']);
+            // The current search, we are mocking the input "fo" which should trigger the filter
+            anubis.getSearch.and.returnValue('fo');
+
+            suggestionBox = $search.suggestionBox({
+                url: "/foobar",
+                fetchAfter: 0
+            });
+            suggestionBox.setAnubis(anubis);
+
+
+            // add one character (now it's greater than previous search)
+            $search.val('fo');
+            $search.keyup();
+
+            // getSuggestion() is simply an alias for filterData, which is what is called internally
+            expect(anubis.getSuggestions).toHaveBeenCalled();
+            expect(anubis.fetchSuggestions).not.toHaveBeenCalled();
+        });
+
+
+        it('should fetch the data once', function() {
+            spyOn($, 'ajax');
+
+            suggestionBox = $search.suggestionBox({
+                url: "/foobar",
+                fetchAfter: 0,
+                fetchOnce: true
+            });
+
+
+            $search.val('fo');
+            $search.keyup();
+            jasmine.clock().tick(10);
+            // Just invoke this manually, suggestionBox does it internally after an ajax call, 
+            // but jasmine doesn't invoke the callback even with async flag set
+            // there may be a cleaner solution, which is worth investigating later.
+            suggestionBox._fetchSuggestionsCallback()();
+
+            $search.val('f');
+            $search.keyup();
+            jasmine.clock().tick(10);
+
+            expect($.ajax.calls.count()).toEqual(1);
+
+        });
+
+        it('should fetch the data everytime the user adds input', function() {
+            spyOn($, 'ajax');
+
+            suggestionBox = $search.suggestionBox({
+                url: "/foobar",
+                fetchAfter: 0,
+                fetchEvery: 5
+            });
+
+
+            $search.val('f');
+            $search.keyup();
+            jasmine.clock().tick(10);
+            suggestionBox._fetchSuggestionsCallback()();
+
+            $search.val('fo');
+            $search.keyup();
+            jasmine.clock().tick(10);
+
+            $search.val('foo');
+            $search.keyup();
+            jasmine.clock().tick(10);
+
+            expect($.ajax.calls.count()).toEqual(3);
+
+        });
+    });
 
     describe('is open', function() {
         var $search;
@@ -475,11 +783,9 @@ describe("Suggestion Box", function() {
 
     })
 
-    describe('has url set', function() {
 
-    })
 
-    describe('not yet classified', function() {
+    describe('drodown menu', function() {
         var suggestionBox;
 
         beforeEach(function() {
@@ -626,7 +932,7 @@ describe("Suggestion Box", function() {
         });
 
 
-        it('should  move down with the down arrow key', function() {
+        it('should move down with the down arrow key', function() {
             var $search = $('#search');
             var data = ['foo', 'foobar'];
             suggestionBox = $search.suggestionBox({ data: data });
@@ -638,6 +944,118 @@ describe("Suggestion Box", function() {
             e.which = 40;
             $search.trigger(e);
             expect($('.suggestion-box').find('li:eq(0)').hasClass('selected')).toBeTruthy();
+        });
+
+        it('should move down with the down arrow key', function() {
+            var $search = $('#search');
+            var data = ['foo', 'foobar'];
+            suggestionBox = $search.suggestionBox({ data: data });
+
+            $search.val('f');
+            $search.focus();
+
+            // down, down arrow
+            var e = $.Event('keydown');
+            e.which = 40;
+            $search.trigger(e);
+            $search.trigger(e);
+
+            // up arrow
+            e.which = 38;
+            $search.trigger(e);
+
+            expect($('.suggestion-box').find('li:eq(0)').hasClass('selected')).toBeTruthy();
+        });
+
+        it('should allow the user to switch from mouse to keys without loss of selection', function() {
+            var $search = $('#search');
+            var data = ['foo', 'foobar', 'fun', 'far'];
+            suggestionBox = $search.suggestionBox({ data: data });
+
+            $search.val('f');
+            $search.focus();
+
+            $suggestionBox = $('.suggestion-box');
+            $suggestionBox.find('li:eq(1) a').mousemove();
+
+            var e = $.Event('keydown');
+            e.which = 40;
+            $search.trigger(e);
+
+            expect($('.suggestion-box').find('li:eq(2)').hasClass('selected')).toBeTruthy();
+        });
+
+        it('should reset the selection on down arrow at end of list and restart at top', function() {
+            var $search = $('#search');
+            var data = ['foo', 'foobar', 'fun', 'far'];
+            suggestionBox = $search.suggestionBox({ data: data });
+
+            $search.val('f');
+            $search.focus();
+
+            $suggestionBox = $('.suggestion-box');
+            $suggestionBox.find('li:eq(3) a').mousemove();
+
+            var e = $.Event('keydown');
+            e.which = 40;
+            $search.trigger(e);
+
+            var e = $.Event('keydown');
+            e.which = 40;
+            $search.trigger(e);
+
+            expect($('.suggestion-box').find('li:eq(0)').hasClass('selected')).toBeTruthy();
+        });
+
+        it('should reset the selection on up arrow at end of list and restart at end of list', function() {
+            var $search = $('#search');
+            var data = ['foo', 'foobar', 'fun', 'far'];
+            suggestionBox = $search.suggestionBox({ data: data });
+
+            $search.val('f');
+            $search.focus();
+
+            $suggestionBox = $('.suggestion-box');
+            $suggestionBox.find('li:eq(0) a').mousemove();
+
+            var e = $.Event('keydown');
+            e.which = 38;
+            $search.trigger(e);
+
+            var e = $.Event('keydown');
+            e.which = 38;
+            $search.trigger(e);
+
+            expect($('.suggestion-box').find('li:eq(3)').hasClass('selected')).toBeTruthy();
+        });
+
+
+        it('should scroll with the arrow keys', function() {
+            var $search = $('#search');
+            var data = ['foo', 'foobar', 'fun', 'far'];
+            suggestionBox = $search.suggestionBox({
+                data: data,
+                height: 10,
+                scrollable: true
+            });
+
+
+            $search.val('f');
+            $search.focus();
+
+            var e = $.Event('keydown');
+            e.which = 40;
+            $search.trigger(e);
+            $search.trigger(e);
+
+            var $suggestionBox = $(".suggestion-box");
+            expect($suggestionBox.scrollTop() > 0).toBeTruthy();
+
+            e.which = 38;
+            $search.trigger(e);
+            $search.trigger(e);
+
+            expect($suggestionBox.scrollTop() === 0).toBeTruthy();
         });
     });
 });

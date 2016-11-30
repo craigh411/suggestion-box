@@ -2,8 +2,8 @@ import Dropdown from './Dropdown';
 import Util from './util';
 
 /*
-/ @class SuggestionListDropdown - builds the SuggestionList Dom object
-*/
+ * @Class SuggestionList - builds the SuggestionList Dom object
+ */
 
 class SuggestionList extends Dropdown {
 
@@ -77,6 +77,7 @@ class SuggestionList extends Dropdown {
     hide() {
         this.selectedLi = -1;
         this.$menu.css('display', 'none');
+        $.event.trigger(this.options.customEvents.close)
     }
 
 
@@ -137,10 +138,6 @@ class SuggestionList extends Dropdown {
         var suggestionMarkup = this.templateParser.replaceHandlebars(template, "suggestion_list", listMarkup);
 
         this.$menu.html(suggestionMarkup);
-
-    }
-
-    _renderObjectList() {
 
     }
 
@@ -250,10 +247,12 @@ class SuggestionList extends Dropdown {
         let suggestion = this.suggestions.getSuggestions()[this.selectedLi];
         let selectedEl = this.$menu.find('#suggestion-list > li:eq(' + this.selectedLi + ')');
 
-        // TODO: Make sure this callback works for non-object arrays!
-        this.options.onClick(suggestion[this.options.searchBy], suggestion, event, this.inputEl, selectedEl);
+        let value = (typeof suggestion === "object") ? suggestion[this.options.searchBy] : suggestion;
+
+        this.options.onClick(value, suggestion, event, this.inputEl, selectedEl);
         this.hide();
 
+        // Set the isSuggestionChosen flag to true when a suggestion is selected
         this.setIsSuggestionChosen(true);
 
         this.typeahead.removeTypeahead();

@@ -19,10 +19,10 @@
     <script src="../dist/js/main.js"></script>
 
     <style>
-    .suggestion-box {
+/*    .suggestion-box {
         border: 1px solid #ccc;
         border-radius: 10px;
-    }
+    }*/
     </style>
 </head>
 
@@ -41,7 +41,7 @@
         </div>
     </template> -->
 
-<!--     <template id="suggestion-box-template">
+    <template id="suggestion-box-template">
         <div>
             <ul id="suggestion-list">
                 <li>
@@ -63,7 +63,7 @@
                 </li>
             </ul>
         </div>
-    </template> -->
+    </template>
 
     <script>
     $(document).ready(function() {
@@ -80,22 +80,55 @@
  /*       var country = $('#countries').suggestionBox({data: countries});
         var search = $('#search').suggestionBox({data: countries});*/
 
-
         var suggestionBox = $('#search').suggestionBox({
-           // data: countries
+            results: 10,
+            scrollable: true,
+            height: 250,
+            url: 'php/results.php',
+            typeahead: true,
+            highlightMatch: true,
+            fetchAfter: 1000,
+            fetchEvery: 2000
+        });
+
+/*        var suggestionBox = $('#search').suggestionBox({
             results: 10,
             scrollable: true,
             height: 250,
             widthAdjustment: -10,
             leftOffset: 5,
             url: 'php/results.php',
+            template: '#suggestion-box-template',
+            url: 'data/users.json',
+            searchBy: 'name',
+            typeahead: true,
+            highlightMatch: true,
+            filter: '^{{INPUT}}',
+            fetchAfter: 2000,
+            fetchOnce: true,
+            prefetch: true,
+            adjustBorderRadius: false,
+           sort: (a, b) => {
+                return a.name.localeCompare(b.name);
+            },
+            topOffset: 10
+        });*/
+
+/*        var suggestionBox = $('#search').suggestionBox({
+            //data: countries,
+            results: 10,
+            scrollable: true,
+            height: 250,
+            widthAdjustment: -10,
+            leftOffset: 5,
+            //url: 'php/results.php',
             //template: '#suggestion-box-template',
             //url: 'data/users.json',
             //searchBy: 'name',
             typeahead: true,
             highlightMatch: true,
             filter: '^{{INPUT}}',
-            fetchAfter: 2000,
+            //fetchAfter: 2000,
             //fetchOnce: true,
             //prefetch: true,
             adjustBorderRadius: false,
@@ -104,7 +137,7 @@
             //},
             topOffset: 10
         });
-
+suggestionBox.set('data', countries);*/
 /*        suggestionBox.destroy();
         $('#search').suggestionBox({data: ['foo']});*/
 

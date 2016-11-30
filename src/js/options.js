@@ -25,19 +25,15 @@ export default {
     paramName: 'search',
     scrollable: false,
     debug: false,
-    ajaxError: () => {},
-    ajaxSuccess: () => {},
-    loading: () => {},
-    completed: () => {},
     onClick: (value, obj, event, inputEl, selectedEl) => {
-        inputEl.val(value);
-        /*        console.log(value);
-                console.log(obj);
-                console.log(event);
-                console.log(inputEl);
-                console.log(selectedEl);*/
-    },
-    onShow: () => {},
-    onHide: () => {}
-        //height: 50
+            inputEl.val(value);
+        },
+        //height: 50,
+    customEvents: {
+        close: 'suggestion-list.close',
+        show: 'suggestion-list.show',
+        loading: 'suggestion-box.loading',
+        'ajax-error': 'suggestion-box.ajax.error',
+        'ajax-success': 'suggestion-box.ajax.success'
+    }
 };

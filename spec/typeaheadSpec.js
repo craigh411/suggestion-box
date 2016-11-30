@@ -1,26 +1,28 @@
 describe("Typeahead", function() {
 
-    var anubis;
+    var suggestions;
 
     beforeEach(function() {
-        anubis = jasmine.createSpyObj('Anubis', ['getSearch', 'getSuggestions']);
-        anubis.getSuggestions.and.returnValue(['foo']);
+        suggestions = jasmine.createSpyObj('Suggestions', ['getSuggestions']);
+        suggestions.getSuggestions.and.returnValue(['foo']);
     });
 
     it('should return the typeahead value', function() {
 
-        var typeahead = new Typeahead(anubis);
+        var typeahead = new Typeahead(suggestions);
+        typeahead.setCurrentInput('foo');
+        
         var value = typeahead.getTypeahead(0);
 
-        expect(anubis.getSearch).toHaveBeenCalled();
-        expect(anubis.getSuggestions).toHaveBeenCalled();
+
+        expect(suggestions.getSuggestions).toHaveBeenCalled();
         expect(value).toBe('foo');
     })
 
     it('should match the case of the input', function() {
-        var typeahead = new Typeahead(anubis);
-        // The typeahead gets the user input from anubis getSearch() method, so let's just mock that
-        anubis.getSearch.and.returnValue(['FoO']);
+
+        var typeahead = new Typeahead(suggestions);
+        typeahead.setCurrentInput('FoO');
 
         var value = typeahead.getTypeahead(0);
         expect(value).toBe('FoO');
@@ -28,8 +30,8 @@ describe("Typeahead", function() {
 
 
     it('should get the typeahead when suggestions are objects', function() {
-        var typeahead = new Typeahead(anubis, 'suggestion');
-        anubis.getSuggestions.and.returnValue([{ 'suggestion': 'foo' }]);
+        var typeahead = new Typeahead(suggestions, 'suggestion');
+        suggestions.getSuggestions.and.returnValue([{ 'suggestion': 'foo' }]);
 
         var value = typeahead.getTypeahead(0);
         expect(value).toBe('foo');
