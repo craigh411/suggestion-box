@@ -12,7 +12,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Anubis = function () {
-    function Anubis(searchBy, filter, sort, param) {
+    function Anubis(searchBy, filter, sort, param, ajaxErrorEvent) {
         _classCallCheck(this, Anubis);
 
         this.searchBy = searchBy;
@@ -20,21 +20,11 @@ var Anubis = function () {
         this.sort = sort;
         this.search = "";
         this.param = param || 'search';
-        this.debug = false; // flag for showing debug messages from ajax call
         this.lastSearch = "";
+        this.ajaxErrorEvent = ajaxErrorEvent || 'suggestion-box.ajax.error';
     }
 
     _createClass(Anubis, [{
-        key: "setDebug",
-        value: function setDebug(debug) {
-            this.debug = debug;
-        }
-    }, {
-        key: "getDebug",
-        value: function getDebug() {
-            return this.debug;
-        }
-    }, {
         key: "setData",
         value: function setData(data) {
             this.data = data;
@@ -143,14 +133,22 @@ var Anubis = function () {
             }
         }
 
-        // Fetches suggestions from the given url
+        /* 
+         * Fetches suggestions from the given url
+         * @param {string} url - The url to retrieve suggestion data from
+         * @param {function} callback - The actions to perform on successfull fetch
+         */
 
     }, {
         key: "fetchSuggestions",
         value: function fetchSuggestions(url, callback) {
+            var _this2 = this;
+
             this.lastSearch = this.search;
 
+            // Kill any current ajax connections.
             this.killCurrentFetch();
+            // Set up the search param
             var request = {};
             request[this.param] = this.search;
 
@@ -162,12 +160,10 @@ var Anubis = function () {
                 success: callback
             });
 
-            if (this.xhr && this.debug) {
-                $.trigger('anubis.ajax-error', data);
-
+            if (this.xhr) {
                 this.xhr.fail(function (data) {
-                    console.log('[Ajax Error]:');
-                    console.log(data);
+                    // fire an ajax error event on failure with the error data
+                    $.event.trigger(_this2.ajaxErrorEvent, data);
                 });
             }
         }

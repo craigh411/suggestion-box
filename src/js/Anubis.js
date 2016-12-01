@@ -1,21 +1,13 @@
 class Anubis {
 
-    constructor(searchBy, filter, sort, param) {
+    constructor(searchBy, filter, sort, param, ajaxErrorEvent) {
         this.searchBy = searchBy;
         this.filter = filter;
         this.sort = sort;
         this.search = "";
         this.param = param || 'search';
-        this.debug = false; // flag for showing debug messages from ajax call
         this.lastSearch = "";
-    }
-
-    setDebug(debug) {
-        this.debug = debug;
-    }
-
-    getDebug() {
-        return this.debug;
+        this.ajaxErrorEvent = ajaxErrorEvent || 'suggestion-box.ajax.error';
     }
 
     setData(data) {
@@ -107,11 +99,17 @@ class Anubis {
         }
     }
 
-    // Fetches suggestions from the given url
+    /* 
+     * Fetches suggestions from the given url
+     * @param {string} url - The url to retrieve suggestion data from
+     * @param {function} callback - The actions to perform on successfull fetch
+     */
     fetchSuggestions(url, callback) {
         this.lastSearch = this.search;
 
+        // Kill any current ajax connections.
         this.killCurrentFetch();
+        // Set up the search param
         let request = {};
         request[this.param] = this.search;
 
@@ -124,16 +122,13 @@ class Anubis {
         });
 
 
-        if (this.xhr && this.debug) {
-            $.trigger('anubis.ajax-error', data);
-            
+        if (this.xhr) {
             this.xhr.fail((data) => {
-                console.log('[Ajax Error]:');
-                console.log(data);
+                // fire an ajax error event on failure with the error data
+                $.event.trigger(this.ajaxErrorEvent, data);
             });
         }
     }
-
 }
 
 export default Anubis;

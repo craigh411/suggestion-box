@@ -147,7 +147,7 @@ describe("Suggestion Box", function() {
             $search = $('#search');
             suggestionBox = $search.suggestionBox();
 
-            anubis = jasmine.createSpyObj('Anubis', ['setData', 'setSearchBy', 'setSort', 'setFilter', 'setDebug']);
+            anubis = jasmine.createSpyObj('Anubis', ['setData', 'setSearchBy', 'setSort', 'setFilter']);
             suggestionList = jasmine.createSpyObj('SuggestionList', ['setTemplate', 'destroy', 'buildDom']);
             typeahead = jasmine.createSpyObj('Typeahead', ['setSearchBy']);
             templateParser = jasmine.createSpyObj('TemplateParser', ['setDebug']);
@@ -324,7 +324,6 @@ describe("Suggestion Box", function() {
         it('should set the debug option', function() {
             suggestionBox.set('debug', true);
             expect(templateParser.setDebug).toHaveBeenCalled();
-            expect(anubis.setDebug).toHaveBeenCalled();
             expect(suggestionBox.getOptions().debug).toBeTruthy();
         });
     });

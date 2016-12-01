@@ -153,6 +153,7 @@ class SuggestionBox {
 
             this.suggestionList.show();
         } else {
+            $.event.trigger(this.options.customEvents.noSuggestions)
             this.hideSuggestions();
         }
     }
@@ -199,6 +200,7 @@ class SuggestionBox {
             this.pending = false;
 
             $.event.trigger(this.options.customEvents.loading, [false]);
+            $.event.trigger(this.options.customEvents.ajaxSuccess, [data]);
         }
     }
 
@@ -312,10 +314,8 @@ class SuggestionBox {
      * Instantiates the Anubis object with basic setup.
      */
     _initAnubis() {
-        this.anubis = new Anubis(this.options.searchBy, this.options.filter, this.options.sort, this.options.paramName);
-
+        this.anubis = new Anubis(this.options.searchBy, this.options.filter, this.options.sort, this.options.paramName, this.options.customEvents.ajaxError);
         this.anubis.setData(this.options.data);
-        this.anubis.setDebug(this.options.debug);
     }
 
     /**
@@ -406,7 +406,6 @@ class SuggestionBox {
     _setDebug(debug) {
         this.options.debug = debug;
         this.templateParser.setDebug(debug);
-        this.anubis.setDebug(debug);
     }
 
     /**
@@ -440,13 +439,13 @@ class SuggestionBox {
     }
 
     _keydownEvents(e) {
-
         if (e.which == keys.DOWN_ARROW_KEY) {
             e.preventDefault();
+
+            this.anubis.setSearch(this.context.val());
+
             this.suggestionList.moveDown(true);
             this.updateTypeahead();
-
-            this.getSuggestions();
             this.showSuggestions();
         }
         if (this.suggestionList.isOpen()) {

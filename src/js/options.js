@@ -17,8 +17,6 @@ export default {
     prefetch: false,
     results: 10,
     widthType: 'width', // Pass a css width attr (i.e. 'width', 'min-width')
-    showNoSuggestionsMessage: false,
-    noSuggestionsMessage: 'No Suggestions Found',
     filter: "^{{INPUT}}",
     typeahead: false,
     highlightMatch: false,
@@ -33,7 +31,8 @@ export default {
         close: 'suggestion-list.close',
         show: 'suggestion-list.show',
         loading: 'suggestion-box.loading',
-        'ajax-error': 'suggestion-box.ajax.error',
-        'ajax-success': 'suggestion-box.ajax.success'
+        ajaxError: 'suggestion-box.ajax.error',
+        ajaxSuccess: 'suggestion-box.ajax.success',
+        noSuggestions : 'suggestion-box.no-suggestions'
     }
 };

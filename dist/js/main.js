@@ -12,7 +12,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Anubis = function () {
-    function Anubis(searchBy, filter, sort, param) {
+    function Anubis(searchBy, filter, sort, param, ajaxErrorEvent) {
         _classCallCheck(this, Anubis);
 
         this.searchBy = searchBy;
@@ -20,21 +20,11 @@ var Anubis = function () {
         this.sort = sort;
         this.search = "";
         this.param = param || 'search';
-        this.debug = false; // flag for showing debug messages from ajax call
         this.lastSearch = "";
+        this.ajaxErrorEvent = ajaxErrorEvent || 'suggestion-box.ajax.error';
     }
 
     _createClass(Anubis, [{
-        key: "setDebug",
-        value: function setDebug(debug) {
-            this.debug = debug;
-        }
-    }, {
-        key: "getDebug",
-        value: function getDebug() {
-            return this.debug;
-        }
-    }, {
         key: "setData",
         value: function setData(data) {
             this.data = data;
@@ -143,14 +133,22 @@ var Anubis = function () {
             }
         }
 
-        // Fetches suggestions from the given url
+        /* 
+         * Fetches suggestions from the given url
+         * @param {string} url - The url to retrieve suggestion data from
+         * @param {function} callback - The actions to perform on successfull fetch
+         */
 
     }, {
         key: "fetchSuggestions",
         value: function fetchSuggestions(url, callback) {
+            var _this2 = this;
+
             this.lastSearch = this.search;
 
+            // Kill any current ajax connections.
             this.killCurrentFetch();
+            // Set up the search param
             var request = {};
             request[this.param] = this.search;
 
@@ -162,12 +160,10 @@ var Anubis = function () {
                 success: callback
             });
 
-            if (this.xhr && this.debug) {
-                $.trigger('anubis.ajax-error', data);
-
+            if (this.xhr) {
                 this.xhr.fail(function (data) {
-                    console.log('[Ajax Error]:');
-                    console.log(data);
+                    // fire an ajax error event on failure with the error data
+                    $.event.trigger(_this2.ajaxErrorEvent, data);
                 });
             }
         }
@@ -659,9 +655,10 @@ var SuggestionList = function (_Dropdown) {
         value: function moveDown(scroll) {
             var listSize = this.$menu.find('#suggestion-list > li').length;
 
-            if (!this.isOpen() && this.suggestions.getSuggestions().length > 0) {
-                this.show();
-            } else if (this.selectedLi === listSize - 1) {
+            /*        if (!this.isOpen() && this.suggestions.getSuggestions().length > 0) {
+                        //this.show();
+                        console.log('show!')
+                    } else */if (this.selectedLi === listSize - 1) {
                 this.unselect(this.selectedLi);
                 this.resetSelection();
             } else {
@@ -1122,8 +1119,6 @@ exports.default = {
     prefetch: false,
     results: 10,
     widthType: 'width', // Pass a css width attr (i.e. 'width', 'min-width')
-    showNoSuggestionsMessage: false,
-    noSuggestionsMessage: 'No Suggestions Found',
     filter: "^{{INPUT}}",
     typeahead: false,
     highlightMatch: false,
@@ -1138,8 +1133,9 @@ exports.default = {
         close: 'suggestion-list.close',
         show: 'suggestion-list.show',
         loading: 'suggestion-box.loading',
-        'ajax-error': 'suggestion-box.ajax.error',
-        'ajax-success': 'suggestion-box.ajax.success'
+        ajaxError: 'suggestion-box.ajax.error',
+        ajaxSuccess: 'suggestion-box.ajax.success',
+        noSuggestions: 'suggestion-box.no-suggestions'
     }
 };
 
@@ -1348,6 +1344,7 @@ var SuggestionBox = function () {
 
                 this.suggestionList.show();
             } else {
+                $.event.trigger(this.options.customEvents.noSuggestions);
                 this.hideSuggestions();
             }
         }
@@ -1398,6 +1395,7 @@ var SuggestionBox = function () {
                 _this3.pending = false;
 
                 $.event.trigger(_this3.options.customEvents.loading, [false]);
+                $.event.trigger(_this3.options.customEvents.ajaxSuccess, [data]);
             };
         }
 
@@ -1538,10 +1536,8 @@ var SuggestionBox = function () {
     }, {
         key: '_initAnubis',
         value: function _initAnubis() {
-            this.anubis = new _Anubis2.default(this.options.searchBy, this.options.filter, this.options.sort, this.options.paramName);
-
+            this.anubis = new _Anubis2.default(this.options.searchBy, this.options.filter, this.options.sort, this.options.paramName, this.options.customEvents.ajaxError);
             this.anubis.setData(this.options.data);
-            this.anubis.setDebug(this.options.debug);
         }
 
         /**
@@ -1659,7 +1655,6 @@ var SuggestionBox = function () {
         value: function _setDebug(debug) {
             this.options.debug = debug;
             this.templateParser.setDebug(debug);
-            this.anubis.setDebug(debug);
         }
 
         /**
@@ -1701,13 +1696,13 @@ var SuggestionBox = function () {
     }, {
         key: '_keydownEvents',
         value: function _keydownEvents(e) {
-
             if (e.which == _keys2.default.DOWN_ARROW_KEY) {
                 e.preventDefault();
+
+                this.anubis.setSearch(this.context.val());
+
                 this.suggestionList.moveDown(true);
                 this.updateTypeahead();
-
-                this.getSuggestions();
                 this.showSuggestions();
             }
             if (this.suggestionList.isOpen()) {

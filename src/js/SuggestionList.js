@@ -180,9 +180,10 @@ class SuggestionList extends Dropdown {
     moveDown(scroll) {
         var listSize = this.$menu.find('#suggestion-list > li').length;
 
-        if (!this.isOpen() && this.suggestions.getSuggestions().length > 0) {
-            this.show();
-        } else if (this.selectedLi === (listSize - 1)) {
+/*        if (!this.isOpen() && this.suggestions.getSuggestions().length > 0) {
+            //this.show();
+            console.log('show!')
+        } else */if (this.selectedLi === (listSize - 1)) {
             this.unselect(this.selectedLi);
             this.resetSelection();
         } else {
