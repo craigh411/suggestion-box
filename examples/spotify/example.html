@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Suggestion Box Example</title>
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <link rel="stylesheet" href="../../dist/css/suggestion-box.min.css" />
+    <link rel="stylesheet" href="css/jquery.equalizer.css" />
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="js/jquery.reverseorder.js"></script>
+    <script type="text/javascript" src="js/jquery.equalizer.js"></script>
+
+    <script src="../../dist/js/main.js"></script>
+
+    <style>
+    #suggestion-list > li {
+        border-bottom: 1px solid #ccc;
+        overflow: hidden;
+        height: 85px;
+    }
+    
+    .artwork {
+        float: left;
+        margin-right: 10px;
+        width: 64px;
+        height: 64px;
+        border: 1px solid #ccc;
+    }
+    
+    body {
+        background: #000;
+        color: #fff;
+    }
+    
+    #results {
+        margin-top: 20px;
+    }
+    
+    #album_artwork {
+        width: 200px;
+        height: 200px;
+        border: 1px solid #fff;
+        margin-bottom: 20px;
+    }
+    
+    #header {
+        margin-bottom: 10px;
+    }
+    
+    #tracklist {
+        padding-top: 20px;
+    }
+    
+    h1 {
+        font-size: 1.4em;
+    }
+    
+    h2 {
+        font-size: 1.2em;
+    }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+    	Powered By
+        <img src="images/spotify_logo_RGB_White.png" style="height:75px;margin-bottom:15px;margin-top:15px;margin-left:5px;" />
+
+        <h1>Search for an Album</h1>
+
+        <form id="search-form">
+            <input type="text" id="search" value="" class="form-control" placeholder="Type an Album Name" />
+        </form>
+        <hr />
+        <div id="results">
+            <div id="header">
+                <div class="pull-left col-md-3" style="padding:1px;">
+                    <img src="" id="album_artwork">
+                </div>
+                <div style="pull-left col-md-5">
+                    <h1 id="artist"></h1>
+                    <h2 id="album"></h2>
+                </div>
+            </div>
+            <div id="tracklist">
+
+                <table class="table table-bordered" style="color:black;background:white;">
+                    <thead>
+                        <tr>
+                            <th style="width:5%;"></th>
+                            <th>Track</th>
+                            <th style="width:10%;">Duration</th>
+                            <th style="width:5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <template id="spotify-suggestion-list">
+        <div>
+            <ul id="suggestion-list">
+                <li>
+                    <a href="#">
+                        <div class="artwork" style="background:url('{{images[2].url}}') no-repeat center center;background-size: contain;"></div>
+
+                        <div style="float:left;">
+                            <strong>{{artists[0].name}} <span sb-show="'{{artists[1].name}}'!== ''"> & {{artists[1].name}}</span></strong>
+                            <br />
+                            <strong>{{name}}</strong>
+                            <br />{{type}}</div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </template>
+
+    <script type="text/javascript">
+    var suggestionBox = $("#search").suggestionBox({
+        template: "#spotify-suggestion-list",
+        url: "https://api.spotify.com/v1/search",
+        paramName: "q",
+        customParams: {
+            type: 'album'
+        },
+        fetchEvery: 2000,
+        dataRoot: 'albums.items',
+        searchBy: 'artists.name',
+        height: 340,
+        scrollable: true,
+        filter: "{{INPUT}}",
+        debug: true,
+        onClick: function(val, obj) {
+            let id = obj.id;
+            $.ajax({
+                url: 'https://api.spotify.com/v1/albums/' + id,
+                success: function(response) {
+                    console.log(response);
+                    $("#album_artwork").attr("src", response.images[0].url);
+                    $("#artist").html(response.artists[0].name);
+                    $("#album").html(response.name);
+                    $("#tracklist > table > tbody").html(buildTracklist(response.tracks.items));
+                    addEqs(response.tracks.items);
+                }
+            });
+        }
+    });
+    $(document).on('suggestion-box.ajax.error', function(e, data) {
+        console.log(data);
+    });
+    $(document).on('suggestion-box.ajax.success', function(e, data) {
+        console.log(data);
+    });
+
+    function addEqs(tracklist) {
+        for (var i = 0; i < tracklist.length; i++) {
+            addEq(tracklist[i].duration_ms);
+        }
+    }
+
+    function addEq(id) {
+        $('#' + id).equalizer({
+            color: "#1DB954",
+            width: 25,
+            bars: 5,
+            height: 25,
+            components: 5,
+            frequency: 6,
+            refreshTime: 50
+        });
+    }
+
+    function buildTr(track, duration, url) {
+        return '<tr  style="height:25px;">' +
+            '<td><audio src="' + url + '" id="' + duration + '"></audio> <i class="fa fa-play-circle" aria-hidden="true" onclick="play(' + duration + ')" style="cursor:pointer;" id="play_' + duration + '"></i></td>' +
+            '<td>' + track + '</td>' +
+            '<td><div style="">' + millisToMinutes(duration) + '</td>' +
+            '<td><div class="' + duration + ' equalizer"></div></td>' +
+            '</tr>';
+    }
+
+    function buildTracklist(tracklist) {
+        let tbody = "";
+        for (var i = 0; i < tracklist.length; i++) {
+            tbody += buildTr(tracklist[i].name, tracklist[i].duration_ms, tracklist[i].preview_url);
+        }
+        return tbody;
+    }
+
+    function millisToMinutes(millis) {
+        var minutes = Math.floor(millis / 60000);
+        var seconds = ((millis % 60000) / 1000).toFixed(0);
+        return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+    }
+    var playing = "";
+
+    function play(id) {
+        stop();
+        if (playing !== id) {
+            playing = id;
+            document.getElementById(id).play();
+            $('#play_' + id).removeClass("fa-play-circle")
+            $('#play_' + id).addClass("fa-stop-circle")
+        } else {
+            playing = "";
+        }
+    }
+
+    function stop() {
+        if (playing !== "") {
+            let mediaEl = document.getElementById(playing);
+            if (mediaEl) {
+                mediaEl.pause()
+                mediaEl.currentTime = 0;
+                $('#play_' + playing).removeClass("fa-stop-circle")
+                $('#play_' + playing).addClass("fa-play-circle")
+            }
+        }
+    }
+    </script>
+</body>
+
+</html>
