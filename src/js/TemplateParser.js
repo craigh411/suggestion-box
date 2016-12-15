@@ -7,9 +7,12 @@ class TemplateParser {
         this.template = template;
         this.nodes = [];
         this.conditionals = [];
+        this.concats = [];
+        this.getLasts = [];
 
         this._getNodes();
-        this._getConditionals()
+        //this._getConditionals();
+        this._getCustomAttributes();
         this._getTemplateForListItem();
         this._removeListItemMarkup();
         this._removeRootElement();
@@ -47,7 +50,7 @@ class TemplateParser {
 
     // returns an arroy of names for items that are inside handlebars
     getTemplatedItems(str) {
-        let regex = new RegExp("@?{{\\s?[a-z0-9_-]+\\s?}}", "ig");
+        let regex = new RegExp("@?{{\\s?[a-z0-9_\\-\\[\\]\\.]+\\s?}}", "ig");
         let items = str.match(regex);
 
         let itemNames = [];
@@ -61,16 +64,46 @@ class TemplateParser {
         return itemNames;
     }
 
-    _getConditionals() {
+
+
+    _setId(node) {
+        let id = $(node).attr('id') || 'sb' + Math.floor(Math.random() * 10000000);
+
+        // Add the id to the template
+        this.template = this.template.replace($(node)[0].outerHTML, $(node).attr('id', id)[0].outerHTML);
+
+        return id;
+    }
+
+    _getCustomAttributes() {
         this.nodes.forEach((node) => {
             if (node.attributes.length > 0) {
                 for (var i = 0; i < node.attributes.length; i++) {
-                    if (node.attributes[i].nodeName === "sb-show") {
-                        let id = $(node).attr('id') || 'sb' + Math.floor(Math.random() * 10000000);
+                    switch (node.attributes[i].nodeName) {
+                        case "sb-show":
+                            this.conditionals.push({ 'id': this._setId(node) });
+                            break;
+                        case "sb-concat": // not implemented
+                            this.concats.push({ 'id': this._setId(node) });
+                            break;
+                        case "sb-last": // not implemented
+                            this.lasts.push({ 'id': this._setId(node) });
+                            break;
+                    }
+                }
+            }
+        });
+    }
 
+    _getLasts() {
+        this.nodes.forEach((node) => {
+            if (node.attributes.length > 0) {
+                for (var i = 0; i < node.attributes.length; i++) {
+                    if (node.attributes[i].nodeName === "sb-last") {
+                        let id = $(node).attr('id') || 'sb' + Math.floor(Math.random() * 10000000);
                         // Add the id to the template
                         this.template = this.template.replace($(node)[0].outerHTML, $(node).attr('id', id)[0].outerHTML);
-                        this.conditionals.push({ 'id': id });
+                        this.lasts.push({ 'id': id });
                     }
                 }
             }
@@ -115,6 +148,8 @@ class TemplateParser {
     }
 
     replaceHandlebars(str, name, replace) {
+        // this should now be a UTIL
+        name = name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
         return str.replace(new RegExp("@?{{\\s?" + name + "\\s?}}", "gi"), replace);
     }
@@ -127,7 +162,7 @@ class TemplateParser {
         return this.listItem;
     }
 
-    setDebug(debug){
+    setDebug(debug) {
         this.debug = debug;
     }
 }

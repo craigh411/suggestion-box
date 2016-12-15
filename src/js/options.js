@@ -20,7 +20,9 @@ export default {
     filter: "^{{INPUT}}",
     typeahead: false,
     highlightMatch: false,
-    paramName: 'search',
+    paramName: 'search', // change to searchParam
+    customParams: {},
+    dataRoot: "", // The root array from the given data (e.g. artists.items) should point to an array of objects
     scrollable: false,
     debug: false,
     onClick: (value, obj, event, inputEl, selectedEl) => {

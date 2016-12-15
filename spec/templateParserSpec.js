@@ -13,7 +13,6 @@ describe('TemplateParser', function() {
         var templateParser = new TemplateParser(template);
 
         expect(templateParser.getListItemMarkup()).toBe("foo");
-        console.log(templateParser.getParsedTemplate());
     });
 
     it('should replace the markup for a list item with moustaches', function() {
@@ -133,5 +132,12 @@ describe('TemplateParser', function() {
         expect(console.log).toHaveBeenCalled(); 
     });
 
+    it('should warn when top level e when template does not have 1 root element and debug mode is true', function() {
+        var template = '<div></div><div></div>';
+        spyOn(console, 'log');
+
+        var templateParser = new TemplateParser(template, template);
+        expect(console.log).toHaveBeenCalled(); 
+    });
 
 });

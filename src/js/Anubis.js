@@ -1,16 +1,36 @@
+import Util from './util.js';
+
 class Anubis {
 
-    constructor(searchBy, filter, sort, param, ajaxErrorEvent) {
+    constructor(searchBy, filter, sort, param, customParams, root, ajaxErrorEvent) {
         this.searchBy = searchBy;
         this.filter = filter;
         this.sort = sort;
         this.search = "";
+        this.customParams = customParams || {};
         this.param = param || 'search';
         this.lastSearch = "";
+        this.root = root || "";
         this.ajaxErrorEvent = ajaxErrorEvent || 'suggestion-box.ajax.error';
     }
 
+    setDataRoot(root) {
+        this.root = root;
+    }
+
+    getDataRoot() {
+        return this.root;
+    }
+
     setData(data) {
+        if (this.root.length > 0) {
+            let dataRoot = this.root.split(".");
+            // Set the data at the given root
+            for (var i = 0; i < dataRoot.length; i++) {
+                data = (data[dataRoot[i]]) ? data[dataRoot[i]] : [];
+            }
+        }
+
         this.data = data;
     }
 
@@ -24,6 +44,14 @@ class Anubis {
 
     getSearchBy() {
         return this.searchBy;
+    }
+
+    setCustomParams(params) {
+        this.customParams = params;
+    }
+
+    getCustomParams() {
+        return this.customParams;
     }
 
     getSuggestions() {
@@ -56,6 +84,13 @@ class Anubis {
         return this.sort;
     }
 
+    getSearchParam() {
+        let searchBy = this.searchBy.split(".");
+        return (typeof searchBy === "String") ? searchBy : searchBy[searchBy.length - 1];
+    }
+
+
+
     filterData() {
         let filterPattern = this.filter.replace('{{INPUT}}', this.search);
         let regex = new RegExp(filterPattern, "i");
@@ -64,7 +99,19 @@ class Anubis {
 
         if (this.data && this.search.length > 0) {
             results = $.grep(this.data, item => {
-                return (typeof item === "object") ? regex.test(item[this.searchBy]) : regex.test(item);
+                if (typeof item === "object") {
+                    let searchData = Util.getValueByStringAttributes(this.searchBy, item);
+
+                    for (var i = 0; i <= searchData.length; i++) {
+                        if (regex.test(searchData[i])) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                return regex.test(item);
             });
         }
 
@@ -110,7 +157,7 @@ class Anubis {
         // Kill any current ajax connections.
         this.killCurrentFetch();
         // Set up the search param
-        let request = {};
+        let request = this.customParams;
         request[this.param] = this.search;
 
         this.xhr = $.ajax({

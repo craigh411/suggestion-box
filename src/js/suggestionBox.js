@@ -69,8 +69,9 @@ class SuggestionBox {
         });
 
         $(document).on(this.options.customEvents.loading, (e, status) => {
-            if (status === true) {
+            if (status === true) { 
                 this.context.css('background', "url('" + this.options.loadImage + "') no-repeat 99% 50%");
+                this.context.css('backgroundColor', "#fff");
             } else {
                 this.context.css('background', "");
             }
@@ -188,6 +189,7 @@ class SuggestionBox {
 
         return (data) => {
             this.anubis.setData(data);
+            let thedata = this.anubis.getData();
 
             // Only show if a selection was not made while wating for a response
             if (!this.suggestionList.isSuggestionChosen() && this.anubis.getSearch().length > 0) {
@@ -314,7 +316,7 @@ class SuggestionBox {
      * Instantiates the Anubis object with basic setup.
      */
     _initAnubis() {
-        this.anubis = new Anubis(this.options.searchBy, this.options.filter, this.options.sort, this.options.paramName, this.options.customEvents.ajaxError);
+        this.anubis = new Anubis(this.options.searchBy, this.options.filter, this.options.sort, this.options.paramName, this.options.customParams, this.options.dataRoot,this.options.customEvents.ajaxError);
         this.anubis.setData(this.options.data);
     }
 

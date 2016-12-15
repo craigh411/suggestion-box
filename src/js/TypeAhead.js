@@ -19,8 +19,9 @@ class Typeahead {
         suggestion = (typeof suggestion == "object") ? suggestion[this.searchBy] : suggestion;
 
         let regex = new RegExp("^" + this.currentInput, "i");
+
         // Simply match the case of the typeahead to the case the user typed
-        let typeahead = suggestion.replace(regex, this.currentInput);
+        let typeahead = (suggestion === undefined) ? "" : suggestion.replace(regex, this.currentInput);
 
         return typeahead;
     }

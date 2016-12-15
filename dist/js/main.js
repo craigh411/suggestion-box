@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -9,80 +9,122 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _util = require('./util.js');
+
+var _util2 = _interopRequireDefault(_util);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Anubis = function () {
-    function Anubis(searchBy, filter, sort, param, ajaxErrorEvent) {
+    function Anubis(searchBy, filter, sort, param, customParams, root, ajaxErrorEvent) {
         _classCallCheck(this, Anubis);
 
         this.searchBy = searchBy;
         this.filter = filter;
         this.sort = sort;
         this.search = "";
+        this.customParams = customParams || {};
         this.param = param || 'search';
         this.lastSearch = "";
+        this.root = root || "";
         this.ajaxErrorEvent = ajaxErrorEvent || 'suggestion-box.ajax.error';
     }
 
     _createClass(Anubis, [{
-        key: "setData",
+        key: 'setDataRoot',
+        value: function setDataRoot(root) {
+            this.root = root;
+        }
+    }, {
+        key: 'getDataRoot',
+        value: function getDataRoot() {
+            return this.root;
+        }
+    }, {
+        key: 'setData',
         value: function setData(data) {
+            if (this.root.length > 0) {
+                var dataRoot = this.root.split(".");
+                // Set the data at the given root
+                for (var i = 0; i < dataRoot.length; i++) {
+                    data = data[dataRoot[i]] ? data[dataRoot[i]] : [];
+                }
+            }
+
             this.data = data;
         }
     }, {
-        key: "getData",
+        key: 'getData',
         value: function getData() {
             return this.data;
         }
     }, {
-        key: "setSearchBy",
+        key: 'setSearchBy',
         value: function setSearchBy(searchBy) {
             this.searchBy = searchBy;
         }
     }, {
-        key: "getSearchBy",
+        key: 'getSearchBy',
         value: function getSearchBy() {
             return this.searchBy;
         }
     }, {
-        key: "getSuggestions",
+        key: 'setCustomParams',
+        value: function setCustomParams(params) {
+            this.customParams = params;
+        }
+    }, {
+        key: 'getCustomParams',
+        value: function getCustomParams() {
+            return this.customParams;
+        }
+    }, {
+        key: 'getSuggestions',
         value: function getSuggestions() {
             return this.filterData();
         }
     }, {
-        key: "setSearch",
+        key: 'setSearch',
         value: function setSearch(search) {
             // Escape any regex patterns as search string
             var santizedSearch = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
             this.search = santizedSearch;
         }
     }, {
-        key: "getSearch",
+        key: 'getSearch',
         value: function getSearch() {
             return this.search;
         }
     }, {
-        key: "setFilter",
+        key: 'setFilter',
         value: function setFilter(filter) {
             this.filter = filter;
         }
     }, {
-        key: "getFilter",
+        key: 'getFilter',
         value: function getFilter() {
             return this.filter;
         }
     }, {
-        key: "setSort",
+        key: 'setSort',
         value: function setSort(sort) {
             this.sort = sort;
         }
     }, {
-        key: "getSort",
+        key: 'getSort',
         value: function getSort() {
             return this.sort;
         }
     }, {
-        key: "filterData",
+        key: 'getSearchParam',
+        value: function getSearchParam() {
+            var searchBy = this.searchBy.split(".");
+            return typeof searchBy === "String" ? searchBy : searchBy[searchBy.length - 1];
+        }
+    }, {
+        key: 'filterData',
         value: function filterData() {
             var _this = this;
 
@@ -92,7 +134,19 @@ var Anubis = function () {
 
             if (this.data && this.search.length > 0) {
                 results = $.grep(this.data, function (item) {
-                    return (typeof item === "undefined" ? "undefined" : _typeof(item)) === "object" ? regex.test(item[_this.searchBy]) : regex.test(item);
+                    if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) === "object") {
+                        var searchData = _util2.default.getValueByStringAttributes(_this.searchBy, item);
+
+                        for (var i = 0; i <= searchData.length; i++) {
+                            if (regex.test(searchData[i])) {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    }
+
+                    return regex.test(item);
                 });
             }
 
@@ -101,32 +155,32 @@ var Anubis = function () {
             return results;
         }
     }, {
-        key: "sortData",
+        key: 'sortData',
         value: function sortData(data) {
             return data.sort(this.sort);
         }
     }, {
-        key: "getParam",
+        key: 'getParam',
         value: function getParam() {
             return this.param;
         }
     }, {
-        key: "setParam",
+        key: 'setParam',
         value: function setParam(param) {
             this.param = param;
         }
     }, {
-        key: "getLastSearch",
+        key: 'getLastSearch',
         value: function getLastSearch() {
             return this.lastSearch;
         }
     }, {
-        key: "clearLastSearch",
+        key: 'clearLastSearch',
         value: function clearLastSearch() {
             this.lastSearch = "";
         }
     }, {
-        key: "killCurrentFetch",
+        key: 'killCurrentFetch',
         value: function killCurrentFetch() {
             if (this.xhr != undefined) {
                 this.xhr.abort();
@@ -140,7 +194,7 @@ var Anubis = function () {
          */
 
     }, {
-        key: "fetchSuggestions",
+        key: 'fetchSuggestions',
         value: function fetchSuggestions(url, callback) {
             var _this2 = this;
 
@@ -149,7 +203,7 @@ var Anubis = function () {
             // Kill any current ajax connections.
             this.killCurrentFetch();
             // Set up the search param
-            var request = {};
+            var request = this.customParams;
             request[this.param] = this.search;
 
             this.xhr = $.ajax({
@@ -174,7 +228,7 @@ var Anubis = function () {
 
 exports.default = Anubis;
 
-},{}],2:[function(require,module,exports){
+},{"./util.js":12}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -540,13 +594,41 @@ var SuggestionList = function (_Dropdown) {
             $.event.trigger(this.options.customEvents.close);
         }
     }, {
+        key: '_getItemVal',
+        value: function _getItemVal(templateItem, item) {
+
+            templateItem = templateItem.split('[');
+            var itemVal = "";
+
+            if (templateItem.length === 1) {
+                itemVal = item[templateItem[0]];
+            } else {
+                var attr = templateItem[1].split(".");
+                var index = templateItem[1].replace(']', '');
+
+                if (attr[1] === undefined) {
+                    itemVal = item[templateItem[0]][index] === undefined ? "" : item[templateItem[0]][index];
+                } else {
+                    index = index.replace('.' + attr[1], '');
+                    if (item[templateItem[0]][index]) {
+                        itemVal = item[templateItem[0]][index][attr[1]] === undefined ? "" : item[templateItem[0]][index][attr[1]];
+                    } else {
+                        itemVal = "";
+                    }
+                }
+            }
+
+            return this.options.highlightMatch ? this.highlightMatches(itemVal) : itemVal;
+        }
+    }, {
         key: '_buildMarkupForObjectList',
         value: function _buildMarkupForObjectList(templateItems, item, markup) {
             var _this2 = this;
 
             templateItems.forEach(function (templateItem) {
-                var itemVal = _this2.options.highlightMatch && templateItem === _this2.options.searchBy ? _this2.highlightMatches(item[templateItem]) : item[templateItem];
-                markup = _this2.templateParser.replaceHandlebars(markup, templateItem, itemVal);
+                _this2._getItemVal(templateItem, item);
+                // let itemVal = (this.options.highlightMatch && templateItem === this.options.searchBy) ? this.highlightMatches(item[templateItem]) : item[templateItem];
+                markup = _this2.templateParser.replaceHandlebars(markup, templateItem, _this2._getItemVal(templateItem, item));
             });
 
             return markup;
@@ -627,6 +709,7 @@ var SuggestionList = function (_Dropdown) {
         value: function highlightMatches(suggestion) {
             // Replace all 
             var filterPattern = this.templateParser.replaceHandlebars(this.options.filter, "INPUT", this.inputEl.val());
+
             return suggestion.replace(new RegExp(filterPattern, 'gi'), '<b>$&</b>');
         }
 
@@ -655,10 +738,7 @@ var SuggestionList = function (_Dropdown) {
         value: function moveDown(scroll) {
             var listSize = this.$menu.find('#suggestion-list > li').length;
 
-            /*        if (!this.isOpen() && this.suggestions.getSuggestions().length > 0) {
-                        //this.show();
-                        console.log('show!')
-                    } else */if (this.selectedLi === listSize - 1) {
+            if (this.selectedLi === listSize - 1) {
                 this.unselect(this.selectedLi);
                 this.resetSelection();
             } else {
@@ -739,6 +819,7 @@ var SuggestionList = function (_Dropdown) {
             // Set the isSuggestionChosen flag to true when a suggestion is selected
             this.setIsSuggestionChosen(true);
 
+            this.typeahead.setCurrentInput(value);
             this.typeahead.removeTypeahead();
         }
 
@@ -830,9 +911,12 @@ var TemplateParser = function () {
         this.template = template;
         this.nodes = [];
         this.conditionals = [];
+        this.concats = [];
+        this.getLasts = [];
 
         this._getNodes();
-        this._getConditionals();
+        //this._getConditionals();
+        this._getCustomAttributes();
         this._getTemplateForListItem();
         this._removeListItemMarkup();
         this._removeRootElement();
@@ -874,7 +958,7 @@ var TemplateParser = function () {
     }, {
         key: 'getTemplatedItems',
         value: function getTemplatedItems(str) {
-            var regex = new RegExp("@?{{\\s?[a-z0-9_-]+\\s?}}", "ig");
+            var regex = new RegExp("@?{{\\s?[a-z0-9_\\-\\[\\]\\.]+\\s?}}", "ig");
             var items = str.match(regex);
 
             var itemNames = [];
@@ -888,19 +972,53 @@ var TemplateParser = function () {
             return itemNames;
         }
     }, {
-        key: '_getConditionals',
-        value: function _getConditionals() {
+        key: '_setId',
+        value: function _setId(node) {
+            var id = $(node).attr('id') || 'sb' + Math.floor(Math.random() * 10000000);
+
+            // Add the id to the template
+            this.template = this.template.replace($(node)[0].outerHTML, $(node).attr('id', id)[0].outerHTML);
+
+            return id;
+        }
+    }, {
+        key: '_getCustomAttributes',
+        value: function _getCustomAttributes() {
             var _this = this;
 
             this.nodes.forEach(function (node) {
                 if (node.attributes.length > 0) {
                     for (var i = 0; i < node.attributes.length; i++) {
-                        if (node.attributes[i].nodeName === "sb-show") {
-                            var id = $(node).attr('id') || 'sb' + Math.floor(Math.random() * 10000000);
+                        switch (node.attributes[i].nodeName) {
+                            case "sb-show":
+                                _this.conditionals.push({ 'id': _this._setId(node) });
+                                break;
+                            case "sb-concat":
+                                // not implemented
+                                _this.concats.push({ 'id': _this._setId(node) });
+                                break;
+                            case "sb-last":
+                                // not implemented
+                                _this.lasts.push({ 'id': _this._setId(node) });
+                                break;
+                        }
+                    }
+                }
+            });
+        }
+    }, {
+        key: '_getLasts',
+        value: function _getLasts() {
+            var _this2 = this;
 
+            this.nodes.forEach(function (node) {
+                if (node.attributes.length > 0) {
+                    for (var i = 0; i < node.attributes.length; i++) {
+                        if (node.attributes[i].nodeName === "sb-last") {
+                            var id = $(node).attr('id') || 'sb' + Math.floor(Math.random() * 10000000);
                             // Add the id to the template
-                            _this.template = _this.template.replace($(node)[0].outerHTML, $(node).attr('id', id)[0].outerHTML);
-                            _this.conditionals.push({ 'id': id });
+                            _this2.template = _this2.template.replace($(node)[0].outerHTML, $(node).attr('id', id)[0].outerHTML);
+                            _this2.lasts.push({ 'id': id });
                         }
                     }
                 }
@@ -925,7 +1043,7 @@ var TemplateParser = function () {
     }, {
         key: '_getNodes',
         value: function _getNodes(node) {
-            var _this2 = this;
+            var _this3 = this;
 
             if (!node) {
                 var html = $.parseHTML($.trim(this.template));
@@ -934,8 +1052,8 @@ var TemplateParser = function () {
 
             $.each(node.childNodes, function (i, el) {
                 if (el.childNodes.length > 0) {
-                    _this2.nodes.push(el);
-                    _this2._getNodes(el);
+                    _this3.nodes.push(el);
+                    _this3._getNodes(el);
                 }
             });
         }
@@ -952,6 +1070,8 @@ var TemplateParser = function () {
     }, {
         key: 'replaceHandlebars',
         value: function replaceHandlebars(str, name, replace) {
+            // this should now be a UTIL
+            name = name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
             return str.replace(new RegExp("@?{{\\s?" + name + "\\s?}}", "gi"), replace);
         }
@@ -1019,8 +1139,9 @@ var Typeahead = function () {
             suggestion = (typeof suggestion === "undefined" ? "undefined" : _typeof(suggestion)) == "object" ? suggestion[this.searchBy] : suggestion;
 
             var regex = new RegExp("^" + this.currentInput, "i");
+
             // Simply match the case of the typeahead to the case the user typed
-            var typeahead = suggestion.replace(regex, this.currentInput);
+            var typeahead = suggestion === undefined ? "" : suggestion.replace(regex, this.currentInput);
 
             return typeahead;
         }
@@ -1122,7 +1243,9 @@ exports.default = {
     filter: "^{{INPUT}}",
     typeahead: false,
     highlightMatch: false,
-    paramName: 'search',
+    paramName: 'search', // change to searchParam
+    customParams: {},
+    dataRoot: "", // The root array from the given data (e.g. artists.items) should point to an array of objects
     scrollable: false,
     debug: false,
     onClick: function onClick(value, obj, event, inputEl, selectedEl) {
@@ -1252,6 +1375,7 @@ var SuggestionBox = function () {
         $(document).on(this.options.customEvents.loading, function (e, status) {
             if (status === true) {
                 _this.context.css('background', "url('" + _this.options.loadImage + "') no-repeat 99% 50%");
+                _this.context.css('backgroundColor', "#fff");
             } else {
                 _this.context.css('background', "");
             }
@@ -1383,6 +1507,7 @@ var SuggestionBox = function () {
 
             return function (data) {
                 _this3.anubis.setData(data);
+                var thedata = _this3.anubis.getData();
 
                 // Only show if a selection was not made while wating for a response
                 if (!_this3.suggestionList.isSuggestionChosen() && _this3.anubis.getSearch().length > 0) {
@@ -1536,7 +1661,7 @@ var SuggestionBox = function () {
     }, {
         key: '_initAnubis',
         value: function _initAnubis() {
-            this.anubis = new _Anubis2.default(this.options.searchBy, this.options.filter, this.options.sort, this.options.paramName, this.options.customEvents.ajaxError);
+            this.anubis = new _Anubis2.default(this.options.searchBy, this.options.filter, this.options.sort, this.options.paramName, this.options.customParams, this.options.dataRoot, this.options.customEvents.ajaxError);
             this.anubis.setData(this.options.data);
         }
 
@@ -1857,6 +1982,59 @@ var Util = function () {
             el.css('border-bottom-right-radius', right);
         }
 
+        /*
+         * Retuns the value at the given attribute. An attribute can look like: 'artists[0].name'
+         * @param {string} attrs - The string attributes you want to get the value for.
+         * @param {array} data - the data to search
+         * @retun {array} - An array of results for the given query
+         */
+
+    }, {
+        key: 'getValueByStringAttributes',
+        value: function (_getValueByStringAttributes) {
+            function getValueByStringAttributes(_x, _x2) {
+                return _getValueByStringAttributes.apply(this, arguments);
+            }
+
+            getValueByStringAttributes.toString = function () {
+                return _getValueByStringAttributes.toString();
+            };
+
+            return getValueByStringAttributes;
+        }(function (attrs, data) {
+            attrs = Array.isArray(attrs) ? attrs : attrs.split(".");
+            if (data !== undefined) {
+                for (var i = 0; i < attrs.length; i++) {
+                    if (Array.isArray(data)) {
+                        var vals = [];
+                        for (var j = 0; j < data.length; j++) {
+                            var value = data[j][attrs[i]]; // The value at the given array
+                            if (attrs.length - 1 > i) {
+                                // Recursively retrieve values at the next key and add them to the array
+                                vals = vals.concat(getValueByStringAttributes(attrs[i + 1], value));
+                            } else {
+                                // We have no more keys for this object, so add this to the array
+                                vals.push(data[j][attrs[i]]);
+                            }
+                        }
+                        return vals;
+                    } else {
+                        var arrayItem = attrs[i].split('[');
+                        if (arrayItem.length === 1) {
+                            data = data[arrayItem[0]];
+                        } else {
+                            var index = arrayItem[1].replace(']', '');
+                            var attr = arrayItem[0];
+
+                            data = data[attr][index];
+                        }
+                    }
+                }
+            }
+
+            return Array.isArray(data) ? data : [data];
+        })
+
         /**
          * Returns true if the given search is found in the given object;
          */
@@ -1878,11 +2056,6 @@ var Util = function () {
         key: 'isId',
         value: function isId(str) {
             return str.charAt(0) == "#";
-        }
-    }, {
-        key: 'logError',
-        value: function logError(error) {
-            console.log(error);
         }
     }]);
 

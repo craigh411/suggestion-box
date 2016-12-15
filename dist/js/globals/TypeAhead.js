@@ -40,8 +40,9 @@ var Typeahead = function () {
             suggestion = (typeof suggestion === "undefined" ? "undefined" : _typeof(suggestion)) == "object" ? suggestion[this.searchBy] : suggestion;
 
             var regex = new RegExp("^" + this.currentInput, "i");
+
             // Simply match the case of the typeahead to the case the user typed
-            var typeahead = suggestion.replace(regex, this.currentInput);
+            var typeahead = suggestion === undefined ? "" : suggestion.replace(regex, this.currentInput);
 
             return typeahead;
         }
@@ -150,6 +151,59 @@ var Util = function () {
             el.css('border-bottom-right-radius', right);
         }
 
+        /*
+         * Retuns the value at the given attribute. An attribute can look like: 'artists[0].name'
+         * @param {string} attrs - The string attributes you want to get the value for.
+         * @param {array} data - the data to search
+         * @retun {array} - An array of results for the given query
+         */
+
+    }, {
+        key: 'getValueByStringAttributes',
+        value: function (_getValueByStringAttributes) {
+            function getValueByStringAttributes(_x, _x2) {
+                return _getValueByStringAttributes.apply(this, arguments);
+            }
+
+            getValueByStringAttributes.toString = function () {
+                return _getValueByStringAttributes.toString();
+            };
+
+            return getValueByStringAttributes;
+        }(function (attrs, data) {
+            attrs = Array.isArray(attrs) ? attrs : attrs.split(".");
+            if (data !== undefined) {
+                for (var i = 0; i < attrs.length; i++) {
+                    if (Array.isArray(data)) {
+                        var vals = [];
+                        for (var j = 0; j < data.length; j++) {
+                            var value = data[j][attrs[i]]; // The value at the given array
+                            if (attrs.length - 1 > i) {
+                                // Recursively retrieve values at the next key and add them to the array
+                                vals = vals.concat(getValueByStringAttributes(attrs[i + 1], value));
+                            } else {
+                                // We have no more keys for this object, so add this to the array
+                                vals.push(data[j][attrs[i]]);
+                            }
+                        }
+                        return vals;
+                    } else {
+                        var arrayItem = attrs[i].split('[');
+                        if (arrayItem.length === 1) {
+                            data = data[arrayItem[0]];
+                        } else {
+                            var index = arrayItem[1].replace(']', '');
+                            var attr = arrayItem[0];
+
+                            data = data[attr][index];
+                        }
+                    }
+                }
+            }
+
+            return Array.isArray(data) ? data : [data];
+        })
+
         /**
          * Returns true if the given search is found in the given object;
          */
@@ -171,11 +225,6 @@ var Util = function () {
         key: 'isId',
         value: function isId(str) {
             return str.charAt(0) == "#";
-        }
-    }, {
-        key: 'logError',
-        value: function logError(error) {
-            console.log(error);
         }
     }]);
 

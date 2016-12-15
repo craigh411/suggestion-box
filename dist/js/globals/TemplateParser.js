@@ -23,9 +23,12 @@ var TemplateParser = function () {
         this.template = template;
         this.nodes = [];
         this.conditionals = [];
+        this.concats = [];
+        this.getLasts = [];
 
         this._getNodes();
-        this._getConditionals();
+        //this._getConditionals();
+        this._getCustomAttributes();
         this._getTemplateForListItem();
         this._removeListItemMarkup();
         this._removeRootElement();
@@ -67,7 +70,7 @@ var TemplateParser = function () {
     }, {
         key: 'getTemplatedItems',
         value: function getTemplatedItems(str) {
-            var regex = new RegExp("@?{{\\s?[a-z0-9_-]+\\s?}}", "ig");
+            var regex = new RegExp("@?{{\\s?[a-z0-9_\\-\\[\\]\\.]+\\s?}}", "ig");
             var items = str.match(regex);
 
             var itemNames = [];
@@ -81,19 +84,53 @@ var TemplateParser = function () {
             return itemNames;
         }
     }, {
-        key: '_getConditionals',
-        value: function _getConditionals() {
+        key: '_setId',
+        value: function _setId(node) {
+            var id = $(node).attr('id') || 'sb' + Math.floor(Math.random() * 10000000);
+
+            // Add the id to the template
+            this.template = this.template.replace($(node)[0].outerHTML, $(node).attr('id', id)[0].outerHTML);
+
+            return id;
+        }
+    }, {
+        key: '_getCustomAttributes',
+        value: function _getCustomAttributes() {
             var _this = this;
 
             this.nodes.forEach(function (node) {
                 if (node.attributes.length > 0) {
                     for (var i = 0; i < node.attributes.length; i++) {
-                        if (node.attributes[i].nodeName === "sb-show") {
-                            var id = $(node).attr('id') || 'sb' + Math.floor(Math.random() * 10000000);
+                        switch (node.attributes[i].nodeName) {
+                            case "sb-show":
+                                _this.conditionals.push({ 'id': _this._setId(node) });
+                                break;
+                            case "sb-concat":
+                                // not implemented
+                                _this.concats.push({ 'id': _this._setId(node) });
+                                break;
+                            case "sb-last":
+                                // not implemented
+                                _this.lasts.push({ 'id': _this._setId(node) });
+                                break;
+                        }
+                    }
+                }
+            });
+        }
+    }, {
+        key: '_getLasts',
+        value: function _getLasts() {
+            var _this2 = this;
 
+            this.nodes.forEach(function (node) {
+                if (node.attributes.length > 0) {
+                    for (var i = 0; i < node.attributes.length; i++) {
+                        if (node.attributes[i].nodeName === "sb-last") {
+                            var id = $(node).attr('id') || 'sb' + Math.floor(Math.random() * 10000000);
                             // Add the id to the template
-                            _this.template = _this.template.replace($(node)[0].outerHTML, $(node).attr('id', id)[0].outerHTML);
-                            _this.conditionals.push({ 'id': id });
+                            _this2.template = _this2.template.replace($(node)[0].outerHTML, $(node).attr('id', id)[0].outerHTML);
+                            _this2.lasts.push({ 'id': id });
                         }
                     }
                 }
@@ -118,7 +155,7 @@ var TemplateParser = function () {
     }, {
         key: '_getNodes',
         value: function _getNodes(node) {
-            var _this2 = this;
+            var _this3 = this;
 
             if (!node) {
                 var html = $.parseHTML($.trim(this.template));
@@ -127,8 +164,8 @@ var TemplateParser = function () {
 
             $.each(node.childNodes, function (i, el) {
                 if (el.childNodes.length > 0) {
-                    _this2.nodes.push(el);
-                    _this2._getNodes(el);
+                    _this3.nodes.push(el);
+                    _this3._getNodes(el);
                 }
             });
         }
@@ -145,6 +182,8 @@ var TemplateParser = function () {
     }, {
         key: 'replaceHandlebars',
         value: function replaceHandlebars(str, name, replace) {
+            // this should now be a UTIL
+            name = name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
             return str.replace(new RegExp("@?{{\\s?" + name + "\\s?}}", "gi"), replace);
         }
@@ -244,6 +283,59 @@ var Util = function () {
             el.css('border-bottom-right-radius', right);
         }
 
+        /*
+         * Retuns the value at the given attribute. An attribute can look like: 'artists[0].name'
+         * @param {string} attrs - The string attributes you want to get the value for.
+         * @param {array} data - the data to search
+         * @retun {array} - An array of results for the given query
+         */
+
+    }, {
+        key: 'getValueByStringAttributes',
+        value: function (_getValueByStringAttributes) {
+            function getValueByStringAttributes(_x, _x2) {
+                return _getValueByStringAttributes.apply(this, arguments);
+            }
+
+            getValueByStringAttributes.toString = function () {
+                return _getValueByStringAttributes.toString();
+            };
+
+            return getValueByStringAttributes;
+        }(function (attrs, data) {
+            attrs = Array.isArray(attrs) ? attrs : attrs.split(".");
+            if (data !== undefined) {
+                for (var i = 0; i < attrs.length; i++) {
+                    if (Array.isArray(data)) {
+                        var vals = [];
+                        for (var j = 0; j < data.length; j++) {
+                            var value = data[j][attrs[i]]; // The value at the given array
+                            if (attrs.length - 1 > i) {
+                                // Recursively retrieve values at the next key and add them to the array
+                                vals = vals.concat(getValueByStringAttributes(attrs[i + 1], value));
+                            } else {
+                                // We have no more keys for this object, so add this to the array
+                                vals.push(data[j][attrs[i]]);
+                            }
+                        }
+                        return vals;
+                    } else {
+                        var arrayItem = attrs[i].split('[');
+                        if (arrayItem.length === 1) {
+                            data = data[arrayItem[0]];
+                        } else {
+                            var index = arrayItem[1].replace(']', '');
+                            var attr = arrayItem[0];
+
+                            data = data[attr][index];
+                        }
+                    }
+                }
+            }
+
+            return Array.isArray(data) ? data : [data];
+        })
+
         /**
          * Returns true if the given search is found in the given object;
          */
@@ -265,11 +357,6 @@ var Util = function () {
         key: 'isId',
         value: function isId(str) {
             return str.charAt(0) == "#";
-        }
-    }, {
-        key: 'logError',
-        value: function logError(error) {
-            console.log(error);
         }
     }]);
 

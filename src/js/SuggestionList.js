@@ -80,11 +80,39 @@ class SuggestionList extends Dropdown {
         $.event.trigger(this.options.customEvents.close)
     }
 
+    _getItemVal(templateItem, item) {
+
+        
+        templateItem = templateItem.split('[');
+        let itemVal = "";
+
+        if (templateItem.length === 1) {
+            itemVal = item[templateItem[0]];
+        } else {
+            let attr = templateItem[1].split(".");
+            let index = templateItem[1].replace(']', '');
+
+            if (attr[1] === undefined) {
+                itemVal = (item[templateItem[0]][index] === undefined) ? "" : item[templateItem[0]][index];
+            } else {
+                index = index.replace('.' + attr[1], '');
+                if (item[templateItem[0]][index]) {
+                    itemVal = (item[templateItem[0]][index][attr[1]] === undefined) ? "" : item[templateItem[0]][index][attr[1]];
+                } else {
+                    itemVal = "";
+                }
+            }
+        }
+
+        return (this.options.highlightMatch) ? this.highlightMatches(itemVal) : itemVal;
+    }
 
     _buildMarkupForObjectList(templateItems, item, markup) {
+
         templateItems.forEach((templateItem) => {
-            let itemVal = (this.options.highlightMatch && templateItem === this.options.searchBy) ? this.highlightMatches(item[templateItem]) : item[templateItem];
-            markup = this.templateParser.replaceHandlebars(markup, templateItem, itemVal);
+            this._getItemVal(templateItem, item);
+            // let itemVal = (this.options.highlightMatch && templateItem === this.options.searchBy) ? this.highlightMatches(item[templateItem]) : item[templateItem];
+            markup = this.templateParser.replaceHandlebars(markup, templateItem, this._getItemVal(templateItem, item));
         });
 
         return markup;
@@ -157,6 +185,7 @@ class SuggestionList extends Dropdown {
     highlightMatches(suggestion) {
         // Replace all 
         let filterPattern = this.templateParser.replaceHandlebars(this.options.filter, "INPUT", this.inputEl.val());
+ 
         return suggestion.replace(new RegExp(filterPattern, 'gi'), '<b>$&</b>');
     }
 
@@ -180,10 +209,7 @@ class SuggestionList extends Dropdown {
     moveDown(scroll) {
         var listSize = this.$menu.find('#suggestion-list > li').length;
 
-/*        if (!this.isOpen() && this.suggestions.getSuggestions().length > 0) {
-            //this.show();
-            console.log('show!')
-        } else */if (this.selectedLi === (listSize - 1)) {
+        if (this.selectedLi === (listSize - 1)) {
             this.unselect(this.selectedLi);
             this.resetSelection();
         } else {
@@ -255,7 +281,8 @@ class SuggestionList extends Dropdown {
 
         // Set the isSuggestionChosen flag to true when a suggestion is selected
         this.setIsSuggestionChosen(true);
-
+        
+        this.typeahead.setCurrentInput(value);
         this.typeahead.removeTypeahead();
     }
 

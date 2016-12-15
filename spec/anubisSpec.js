@@ -147,4 +147,51 @@ describe('Anubis', function() {
         expect(anubis.getLastSearch()).toBe('');
     });
 
+    it('should set the data root', function() {
+        anubis.setDataRoot('foo');
+        expect(anubis.getDataRoot()).toBe('foo');
+    });
+
+    it('should extract the data from the data root', function() {
+        var data = {
+            root: [{ suggestion: 'foo' }]
+        };
+        anubis.setDataRoot('root');
+        anubis.setData(data);
+        expect(anubis.getData()[0]['suggestion']).toBe('foo')
+    });
+
+    it('should set the custom params', function() {
+        var params = { q: 'foo' };
+        anubis.setCustomParams(params);
+        expect(anubis.getCustomParams()).toEqual(params);
+    });
+
+    it('should send the custom search params', function() {
+        var params = { q: 'foo' };
+        anubis.setCustomParams(params);
+        spyOn($, 'ajax');
+        anubis.fetchSuggestions('/foo', function(data) {});
+
+        expect($.ajax.calls.mostRecent().args[0].data.q).toBe('foo');
+        expect($.ajax.calls.mostRecent().args[0].data.foo).not.toBe(undefined);
+    });
+
+    it('should filter against an array of data', function() {
+        var data = [{
+                suggestion: [{ name: "foo" }, { name: "bar" }]
+            }, {
+                suggestion: [{ name: "baz" }, { name: "qux" }]
+            }];
+
+        anubis.setSearchBy('suggestion.name');
+        anubis.setData(data);
+        anubis.setSearch('bar');
+        var filteredData = anubis.filterData();
+        expect(filteredData.length).toEqual(1)
+        expect(filteredData[0].suggestion[0].name).toBe('foo');
+        expect(filteredData[0].suggestion[1].name).toBe('bar');
+    });
+
+
 });
